@@ -1,0 +1,17 @@
+<RCC>
+  <qresource prefix="newPrefix">
+    <file>Background.png</file>
+    <file>beam_focus_pict_red.png</file>
+    <file>ButtonOff2.png</file>
+    <file>ButtonOn2.png</file>
+    <file>CameraPictThin.png</file>
+    <file>arrow_up_hollow.png</file>
+    <file>CameraPictWide.png</file>
+    <file>ButtonOff.png</file>
+    <file>ButtonOn.png</file>
+    <file>arrow_up.png</file>
+    <file>arrow_down_hollow.png</file>
+    <file>arrow_left_hollow.png</file>
+    <file>arrow_right_hollow.png</file>
+  </qresource>
+</RCC>

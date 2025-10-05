@@ -1,0 +1,6 @@
+/build
+/.cache
+/.qt
+build.ninja
+*.cmake
+tags

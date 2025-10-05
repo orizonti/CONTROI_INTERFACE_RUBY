@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>WidgetRotaryPlatformControl</class>
+ <widget class="QWidget" name="WidgetRotaryPlatformControl">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>189</width>
+    <height>200</height>
+   </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>220</width>
+    <height>220</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QLineEdit
+{
+	
+	background-color: rgba(32, 156, 19, 83);
+    border: 2px solid line;
+    border-radius: 6px;
+   
+	border-color: rgb(30, 221, 78);
+}
+
+</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>2</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QGroupBox
+{
+border: 0px solid line black;
+}
+
+QPushButton
+{
+	background-color: rgba(209, 142, 34, 60);
+    border: 2px solid line;
+    border-radius: 6px;
+   
+	border-color: rgb(214, 136, 41);
+}
+
+QPushButton:pressed
+{
+    background-color: rgba(209, 142, 34, 110);
+    border: 4px solid line;
+    border-radius: 6px;
+   
+	
+	border-color: rgb(171, 86, 38);
+}</string>
+     </property>
+     <property name="title">
+      <string/>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>1</number>
+      </property>
+      <item row="2" column="1">
+       <widget class="QPushButton" name="butRotaryY_Down">
+        <property name="minimumSize">
+         <size>
+          <width>10</width>
+          <height>10</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>140</width>
+          <height>140</height>
+         </size>
+        </property>
+        <property name="icon">
+         <iconset resource="Images.qrc">
+          <normaloff>:/newPrefix/arrow_down_hollow.png</normaloff>:/newPrefix/arrow_down_hollow.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>40</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="butRotaryY_Up">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>10</width>
+          <height>10</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>140</width>
+          <height>140</height>
+         </size>
+        </property>
+        <property name="icon">
+         <iconset resource="Images.qrc">
+          <normaloff>:/newPrefix/arrow_up_hollow.png</normaloff>:/newPrefix/arrow_up_hollow.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>40</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" rowspan="2">
+       <widget class="QPushButton" name="butRotaryX_Left">
+        <property name="minimumSize">
+         <size>
+          <width>10</width>
+          <height>10</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>120</width>
+          <height>120</height>
+         </size>
+        </property>
+        <property name="icon">
+         <iconset resource="Images.qrc">
+          <normaloff>:/newPrefix/arrow_left_hollow.png</normaloff>:/newPrefix/arrow_left_hollow.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>40</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2" rowspan="2">
+       <widget class="QPushButton" name="butRotaryX_Right">
+        <property name="minimumSize">
+         <size>
+          <width>10</width>
+          <height>10</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>120</width>
+          <height>120</height>
+         </size>
+        </property>
+        <property name="icon">
+         <iconset resource="Images.qrc">
+          <normaloff>:/newPrefix/arrow_right_hollow.png</normaloff>:/newPrefix/arrow_right_hollow.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>40</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QScrollBar" name="scrollRotaryAxisX">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>30</height>
+      </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QScrollBar:horizontal {
+	background-color: rgba(32, 156, 19, 43);
+    border: 2px solid line;
+    border-radius: 6px;
+   
+border-color: rgba(30, 221, 78,200);
+    width: 80px;
+        min-height: 26px;
+        max-height: 46px;
+  margin: 0px 0px 0px 0px;
+}
+
+ QScrollBar::handle:horizontal 
+ {
+	background-color: rgba(30, 221, 78,100);
+    border: 2px solid line;
+    border-radius: 4px;
+   
+	border-color: rgba(30, 221, 78,200);
+    min-width: 14px;
+    min-height: 20px;
+    max-height: 46px;
+ }
+
+
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal
+ {
+  background-color: none;
+ }</string>
+     </property>
+     <property name="value">
+      <number>40</number>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QScrollBar" name="scrollRotaryAxisY">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>35</height>
+      </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QScrollBar:horizontal {
+	background-color: rgba(32, 156, 19, 43);
+    border: 2px solid line;
+    border-radius: 6px;
+   
+border-color: rgba(30, 221, 78,200);
+    width: 80px;
+        min-height: 26px;
+        max-height: 46px;
+  margin: 0px 0px 5px 0px;
+}
+
+ QScrollBar::handle:horizontal 
+ {
+	background-color: rgba(30, 221, 78,100);
+    border: 2px solid line;
+    border-radius: 4px;
+   
+	border-color: rgba(30, 221, 78,200);
+    min-width: 14px;
+    min-height: 20px;
+    max-height: 46px;
+ }
+
+
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal
+ {
+  background-color: none;
+ }</string>
+     </property>
+     <property name="value">
+      <number>40</number>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="Images.qrc"/>
+ </resources>
+ <connections/>
+</ui>
