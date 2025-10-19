@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>189</width>
-    <height>200</height>
+    <height>211</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -34,19 +34,19 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
-    <number>2</number>
+    <number>3</number>
    </property>
    <property name="leftMargin">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="topMargin">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="rightMargin">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="bottomMargin">
-    <number>0</number>
+    <number>1</number>
    </property>
    <item>
     <widget class="QGroupBox" name="groupBox">
@@ -100,38 +100,6 @@ QPushButton:pressed
       <property name="spacing">
        <number>1</number>
       </property>
-      <item row="2" column="1">
-       <widget class="QPushButton" name="butRotaryY_Down">
-        <property name="minimumSize">
-         <size>
-          <width>10</width>
-          <height>10</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>140</width>
-          <height>140</height>
-         </size>
-        </property>
-        <property name="icon">
-         <iconset resource="Images.qrc">
-          <normaloff>:/newPrefix/arrow_down_hollow.png</normaloff>:/newPrefix/arrow_down_hollow.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="autoExclusive">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="1">
        <widget class="QPushButton" name="butRotaryY_Up">
         <property name="sizePolicy">
@@ -234,6 +202,38 @@ QPushButton:pressed
         </property>
        </widget>
       </item>
+      <item row="2" column="1">
+       <widget class="QPushButton" name="butRotaryY_Down">
+        <property name="minimumSize">
+         <size>
+          <width>10</width>
+          <height>10</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>140</width>
+          <height>140</height>
+         </size>
+        </property>
+        <property name="icon">
+         <iconset resource="Images.qrc">
+          <normaloff>:/newPrefix/arrow_down_hollow.png</normaloff>:/newPrefix/arrow_down_hollow.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>40</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -249,6 +249,12 @@ QPushButton:pressed
       <size>
        <width>0</width>
        <height>30</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>50</height>
       </size>
      </property>
      <property name="styleSheet">
@@ -271,7 +277,7 @@ border-color: rgba(30, 221, 78,200);
     border-radius: 4px;
    
 	border-color: rgba(30, 221, 78,200);
-    min-width: 14px;
+    min-width: 18px;
     min-height: 20px;
     max-height: 46px;
  }
@@ -301,7 +307,13 @@ QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>35</height>
+       <height>30</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>50</height>
       </size>
      </property>
      <property name="styleSheet">
@@ -314,7 +326,7 @@ border-color: rgba(30, 221, 78,200);
     width: 80px;
         min-height: 26px;
         max-height: 46px;
-  margin: 0px 0px 5px 0px;
+  margin: 0px 0px 0px 0px;
 }
 
  QScrollBar::handle:horizontal 
@@ -324,10 +336,11 @@ border-color: rgba(30, 221, 78,200);
     border-radius: 4px;
    
 	border-color: rgba(30, 221, 78,200);
-    min-width: 14px;
+    min-width: 18px;
     min-height: 20px;
     max-height: 46px;
  }
+
 
 
 QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal

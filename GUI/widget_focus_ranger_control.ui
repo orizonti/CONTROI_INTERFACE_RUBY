@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>175</width>
-    <height>213</height>
+    <width>174</width>
+    <height>214</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,7 +18,7 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>175</width>
+    <width>174</width>
     <height>16777215</height>
    </size>
   </property>
@@ -62,20 +62,56 @@ QLineEdit
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
-    <number>1</number>
+    <number>2</number>
    </property>
    <property name="topMargin">
-    <number>1</number>
+    <number>2</number>
    </property>
    <property name="rightMargin">
-    <number>1</number>
+    <number>2</number>
    </property>
    <property name="bottomMargin">
-    <number>1</number>
+    <number>2</number>
    </property>
    <property name="spacing">
-    <number>1</number>
+    <number>2</number>
    </property>
+   <item row="2" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="labelLaserPowerStatus">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>80</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLabel
+{
+	
+	background-color: rgba(213, 157, 27, 20);
+    border: 2px solid line;
+    border-radius: 4px;
+   
+	font: 700 9pt &quot;Hack Nerd Font&quot;;
+	
+	border-color: rgb(255, 168, 76);
+}</string>
+       </property>
+       <property name="text">
+        <string>Дальн:500 </string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
    <item row="0" column="0">
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <property name="spacing">
@@ -91,8 +127,14 @@ QLineEdit
        </property>
        <property name="minimumSize">
         <size>
-         <width>120</width>
+         <width>0</width>
          <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>80</width>
+         <height>16777215</height>
         </size>
        </property>
        <property name="styleSheet">
@@ -116,61 +158,7 @@ QPushButton:pressed
 }</string>
        </property>
        <property name="text">
-        <string>Дальномер</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="butCheckState">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>25</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QPushButton
-{
-	background-color: rgba(209, 142, 34, 60);
-    border: 2px solid line;
-    border-radius: 6px;
-   
-	border-color: rgb(214, 136, 41);
-}
-
-QPushButton:pressed
-{
-    background-color: rgba(229, 142, 34, 110);
-    border: 4px solid line;
-    border-radius: 6px;
-   
-	
-	border-color: rgb(171, 86, 38);
-}</string>
-       </property>
-       <property name="text">
-        <string>Проверка</string>
-       </property>
-       <property name="iconSize">
-        <size>
-         <width>36</width>
-         <height>36</height>
-        </size>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
+        <string>Дальность</string>
        </property>
       </widget>
      </item>
@@ -181,6 +169,12 @@ QPushButton:pressed
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>80</width>
+         <height>16777215</height>
+        </size>
        </property>
        <property name="styleSheet">
         <string notr="true">QPushButton
@@ -220,24 +214,56 @@ QPushButton::checked
      </item>
     </layout>
    </item>
-   <item row="0" column="1">
-    <layout class="QVBoxLayout" name="verticalLayout_3">
-     <item>
-      <widget class="QScrollBar" name="scrollSetFocus">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>55</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QScrollBar:vertical {
+   <item row="1" column="0">
+    <widget class="QLabel" name="labelLaserPowerStatus_2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>80</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QLabel
+{
+	
+	background-color: rgba(213, 157, 27, 20);
+    border: 2px solid line;
+    border-radius: 4px;
+   
+	font: 700 9pt &quot;Hack Nerd Font&quot;;
+	
+	border-color: rgb(255, 168, 76);
+}
+
+</string>
+     </property>
+     <property name="text">
+      <string>Фокус:100</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1" rowspan="3">
+    <widget class="QScrollBar" name="scrollSetFocus">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>55</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QScrollBar:vertical {
 	background-color: rgba(181, 126, 24, 0.16);
     border: 2px solid line;
     border-radius: 6px;
@@ -268,7 +294,7 @@ QPushButton::checked
      border: 2px solid grey;
      border-radius: 4px;
      height: 20px;
-     width: 40px;
+     width: 46px;
      subcontrol-position: top;
      subcontrol-origin: margin;
 
@@ -291,7 +317,7 @@ QPushButton::checked
      border: 2px solid grey;
      border-radius: 4px;
      height: 20px;
-     width: 40px;
+     width: 46px;
      subcontrol-position: bottom;
      subcontrol-origin: margin;
      image: url(D:/PICTURES/ImagesToPrograms/arrow_down.png);
@@ -330,53 +356,14 @@ QScrollBar::sub-page:vertical
   background-color: none;
 
  }</string>
-       </property>
-       <property name="value">
-        <number>40</number>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Orientation::Vertical</enum>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="1" column="0" colspan="2">
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="labelLaserPowerStatus">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QLabel
-{
-	
-	background-color: rgba(213, 157, 27, 20);
-    border: 2px solid line;
-    border-radius: 4px;
-   
-	
-	border-color: rgb(255, 168, 76);
-}
-
-</string>
-       </property>
-       <property name="text">
-        <string>Дальность: 500  Фокус: 500</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+     </property>
+     <property name="value">
+      <number>40</number>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

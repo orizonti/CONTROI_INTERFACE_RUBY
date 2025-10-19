@@ -7,20 +7,20 @@ class ConnectionInterface : public QObject
 {
   //Q_OBJECT
   public:
-  ConnectionInterface(QObject* parent = 0) : QObject(parent) {}; 
+  ConnectionInterface(QObject* parent = nullptr) : QObject(parent) {}; 
   virtual bool isMessageAvailable() = 0;
   virtual bool isConnected() = 0;
-  virtual void ConnectTo(QString IPDevice, int Port) = 0;
-  virtual void  ListenTo(QString IPDevice, int Port) = 0;
-  virtual void  ListenTo(QHostAddress::SpecialAddress IPDevice, int Port) = 0;
-  virtual void TryToConnectConstantly(QString address, int Port) = 0;
+  virtual void connectTo(QString IPDevice, int Port) = 0;
+  virtual void  listenTo(QString IPDevice, int Port) = 0;
+  virtual void  listenTo(QHostAddress::SpecialAddress IPDevice, int Port) = 0;
+  virtual void tryConnectConstantly(QString address, int Port) = 0;
 
   public slots:
-  virtual void SlotSendCommand(const QByteArray& ArrayCommand) = 0;
-  virtual void SlotSendCommand(const char* DataCommand, int size) {};
+  virtual void slotSendMessage(const QByteArray& ArrayCommand, uint8_t Param = 0) = 0;
+  virtual void slotSendMessage(const char* DataCommand, int size, uint8_t Param = 0) = 0 ;
 
-  virtual void SlotCheckConnection() = 0;
-  virtual void SlotCloseConnection() = 0;
+  virtual void slotCheckConnection() = 0;
+  virtual void slotCloseConnection() = 0;
 
 };
 

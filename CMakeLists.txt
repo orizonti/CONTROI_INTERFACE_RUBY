@@ -57,15 +57,18 @@ include_directories("./DEVICE_ZOOM_LIB_WIN")
 include_directories("./DEVICE_ROTARY")
 include_directories("./UTILITIES")
 include_directories("./DEVICES")
+include_directories("./COMMON")
+include_directories("./AIMING_MODULES")
+include_directories("D:/LIBRARY/MATH_LIBRARY/eigen")
+
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/GUI")
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION/CONNECTION_INTERFACE")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION/TRANSMISSION_MODULES")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION/DATA_STRUCTURES")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION/EMBEDED_RING_BUFFER")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION/GENERIC_MESSAGES")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION/RING_BUFFER_ADAPTERS")
-message("INCLUDE: ${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION/CONNECTION_INTERFACE")
 
 #======================LINK PROJECT===========================
 add_executable (testCameraRTSP
@@ -93,12 +96,17 @@ add_executable (testCameraRTSP
         "./GUI/widget_focus_ranger_control.cpp"
         "./GUI/widget_focus_ranger_control.ui"
 
+        "./GUI/widget_block_status.cpp"
+        "./GUI/widget_block_status.ui"
+
         "./GUI/widget_adjustable.cpp"
         "./GUI/label_active_image.cpp"
         "./GUI/Images.qrc"
+        "./DEVICES/device_rotary_interface.cpp"
 
-        "./UTILITES/register_settings.cpp"
-        "./DEVICES/scanator_control_class.cpp"
+        "./UTILITIES/debug_output_filter.cpp"
+
+        "./UTILITIES/register_settings.cpp"
         "./CAMERA_RTSP_INTERFACE/interface_camera_rtsp.cpp"
         "./CAMERA_RTSP_INTERFACE/interface_image_source.cpp"
         "./TRANSMISSION/TRANSMISSION_MODULES/engine_tcp_interface.cpp"

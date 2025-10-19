@@ -55,19 +55,19 @@ border: 0px solid line black;
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="topMargin">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="rightMargin">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="bottomMargin">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="spacing">
-    <number>1</number>
+    <number>3</number>
    </property>
    <item row="0" column="0">
     <widget class="QGroupBox" name="groupBox">
@@ -405,8 +405,20 @@ QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal
    </item>
    <item row="1" column="0">
     <layout class="QGridLayout" name="gridLayout_2">
-     <property name="spacing">
+     <property name="leftMargin">
       <number>1</number>
+     </property>
+     <property name="topMargin">
+      <number>1</number>
+     </property>
+     <property name="rightMargin">
+      <number>1</number>
+     </property>
+     <property name="bottomMargin">
+      <number>1</number>
+     </property>
+     <property name="spacing">
+      <number>3</number>
      </property>
      <item row="0" column="0">
       <widget class="QPushButton" name="butSetExposure">

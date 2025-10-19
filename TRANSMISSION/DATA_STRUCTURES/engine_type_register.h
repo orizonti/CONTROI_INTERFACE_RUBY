@@ -2,27 +2,29 @@
 #define TYPE_REGISTER_ENGINE_H
 #include <QString>
 #include <QDebug>
+#include <typeinfo>
 
 template<typename T = void*> 
 class TypeRegister
 {
 
 public:
-      static uint8_t TYPE_ID;
-      static int     GetTypeID()    { return TYPE_ID;}
+      static size_t  GetTypeID() { return TYPE_ID;}
+      static size_t  GetTypeMax() { return TypeRegister<>::TypeIDMax;}
       static size_t  GetTypeCount() { return TypeCount;}
-      static QString Name;
-      static QString GetTypeName()              { return Name; }
-      static QString GetTypeName(const int& ID) { return Name; }
+      static QString GetTypeName()  { return typeid(T).name(); }
 
-      static bool isTypeValid()              { return GetTypeID() > 0;}
-      static bool isTypeValid(const int& ID) { return ID <= TypeRegister<>::TypeCount;}
+      static bool isTypeRegistered()         { return ID() > 0;}
+      static bool isTypeValid(const int& TYPE_ID) { return TYPE_ID <= TypeRegister<>::TypeIDMax;}
 
-      static int RegisterType(QString TypeName = "NONE")  
+      constexpr static int ID() { return 0; };
+
+      static constinit const int TYPE_ID;
+
+      static int RegisterType()  
       { 
-                if(TYPE_ID > 0) return TYPE_ID; // ALREADY REGISTERED
-            Name = TypeName;
-            TypeRegister<>::TypeCount++; TYPE_ID = TypeRegister<>::TypeCount;
+            TypeRegister<>::TypeCount++; 
+            TypeRegister<>::TypeIDMax = (TYPE_ID > TypeRegister<>::TypeIDMax) ? TYPE_ID : TypeRegister<>::TypeIDMax;
             TypeRegister<>::SetTypeSize(sizeof(T));
             return TYPE_ID;
       }
@@ -38,17 +40,16 @@ public:
       };
 
       static uint8_t TypeCount;
+      static uint16_t TypeIDMax;
       static size_t TypeSizeMin;
       static size_t TypeSizeMax;
 };
 
-
-template<typename T> QString TypeRegister<T>::Name = "NONE";
-
 template<typename T> uint8_t TypeRegister<T>::TypeCount = 0;
+template<typename T> uint16_t TypeRegister<T>::TypeIDMax = 0;
 template<typename T> size_t TypeRegister<T>::TypeSizeMin = 60000;
 template<typename T> size_t TypeRegister<T>::TypeSizeMax = 0;
+template<typename T> constinit const int TypeRegister<T>::TYPE_ID{TypeRegister<T>::ID()} ;
 
-template<typename T> constinit uint8_t TypeRegister<T>::TYPE_ID = 0;
 
 #endif //TYPE_REGISTER_ENGINE_H

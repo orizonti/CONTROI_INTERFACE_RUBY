@@ -108,7 +108,7 @@ public:
 
 };
 
-template<typename T = double>
+template<typename T = float>
 class StatisticNode : public PassValueClass<T>, public PassCoordClass<T>
 {
 	public:
@@ -210,7 +210,7 @@ void StatisticCoord<T>::CalcDispersion()
 
 //================================================================================
 
-template<typename T = double>
+template<typename T = float>
 class StatisticGroup
 {
 public:
@@ -226,7 +226,7 @@ public:
     void PerformAvailableData() {};
 
     friend void operator>>(double NewValue, StatisticGroup& StatObj) {};
-    friend void operator>>(QPair<double, double> NewValue, StatisticGroup& StatObj) {};
+    friend void operator>>(QPair<float,float> NewValue, StatisticGroup& StatObj) {};
 
 
     int BestStatNumber = 1;

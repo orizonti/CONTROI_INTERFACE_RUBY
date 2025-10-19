@@ -16,6 +16,25 @@
 #include "engine_ring_buffer_generic.h"
 #include "message_command_structures.h"
 
+//class ConnectionInterface : public QObject
+//{
+//  //Q_OBJECT
+//  public:
+//  ConnectionInterface(QObject* parent = nullptr) : QObject(parent) {}; 
+//  virtual bool isMessageAvailable() = 0;
+//  virtual bool isConnected() = 0;
+//  virtual void connectTo(QString IPDevice, int Port) = 0;
+//  virtual void  listenTo(QString IPDevice, int Port) = 0;
+//  virtual void  listenTo(QHostAddress::SpecialAddress IPDevice, int Port) = 0;
+//  virtual void tryConnectConstantly(QString address, int Port) = 0;
+//
+//  public slots:
+//  virtual void slotSendMessage(const QByteArray& ArrayCommand, uint8_t Param = 0) = 0;
+//  virtual void slotSendMessage(const char* DataCommand, int size, uint8_t Param = 0) = 0 ;
+//
+//
+//};
+
 class UDPEngineInterface : public ConnectionInterface
 {
     Q_OBJECT
@@ -26,27 +45,25 @@ public:
 
     bool isMessageAvailable() override;
     bool isConnected() override;
-    void ConnectTo(QString IPDevice, int Port) override;
-    void  ListenTo(QString IPHost, int Port) override;
-    void  ListenTo(QHostAddress::SpecialAddress IPHost, int Port) override;
-    void TryToConnectConstantly(QString Address, int Port) override;
+    void connectTo(QString IPDevice, int Port) override;
+    void  listenTo(QString IPHost, int Port) override;
+    void  listenTo(QHostAddress::SpecialAddress IPHost, int Port) override;
+    void tryConnectConstantly(QString Address, int Port) override;
     int DataCounter = 0;
 
 public slots:
-  void SlotSendCommand(const QByteArray& ArrayCommand) override;
-  void SlotSendCommand(const char* DataCommand, int size) override;
-  void SlotCheckConnection() override;
-  void SlotCloseConnection() override;
+  void slotSendMessage(const QByteArray& ArrayCommand, uint8_t Param = 0) override;
+  void slotSendMessage(const char* DataCommand, int size, uint8_t Param = 0) override;
+
+  void slotCheckConnection() override;
+  void slotCloseConnection() override;
 
 private:
-   void SendCloseConnectionCommand();
-
    QUdpSocket* Socket = nullptr;
    QTimer timerConnectAttempt;
 
 private slots:
-   void SlotReadData();
-   void SlotCheckRequest();
+   void slotReadData();
 
 public: 
     QString IPRemote;
@@ -54,11 +71,11 @@ public:
         int PortLocal  = 7575;
        bool Connected  = false;
 
-RingBufferGeneric<MESSAGE_HEADER_GENERIC,sizeof(MessageMeasure1), 4,IteratorMode::Continous>* RingBuffer = nullptr;
+RingBufferGeneric<MESSAGE_HEADER_GENERIC,sizeof(MessageDevice<0>), 4,IteratorMode::Continous>* RingBuffer = nullptr;
 
 signals:
 void SignalDeviceConnected();
-void SignalMessageAvailable();
+void signalMessageAvailable();
 
 };
 

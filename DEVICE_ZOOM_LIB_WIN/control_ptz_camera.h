@@ -11,11 +11,11 @@ class ControlPTZCamera : public QObject
 public:
     explicit ControlPTZCamera(QObject *parent = nullptr);
             ~ControlPTZCamera();
-    void ConnectToCamera(QString ip, QString port, QString user, QString pass);
+    void connectToCamera(QString ip, QString port, QString user, QString pass);
 
 public slots:
 
-    void SlotMoveToHome();
+    void slotMoveToHome();
 
     void SlotZoomIn();
     void SlotZoomOut();

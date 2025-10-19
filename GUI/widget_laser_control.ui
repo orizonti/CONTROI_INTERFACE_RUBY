@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>175</width>
+    <width>174</width>
     <height>202</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -74,10 +74,13 @@ QLineEdit
     <number>1</number>
    </property>
    <property name="spacing">
-    <number>1</number>
+    <number>3</number>
    </property>
    <item row="0" column="0">
     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <property name="spacing">
+      <number>3</number>
+     </property>
      <item>
       <widget class="QPushButton" name="butLaserPower">
        <property name="sizePolicy">
@@ -88,8 +91,14 @@ QLineEdit
        </property>
        <property name="minimumSize">
         <size>
-         <width>120</width>
+         <width>0</width>
          <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>70</width>
+         <height>16777215</height>
         </size>
        </property>
        <property name="text">
@@ -105,8 +114,14 @@ QLineEdit
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="maximumSize">
+        <size>
+         <width>70</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
-        <string>Готовность</string>
+        <string>Гот</string>
        </property>
       </widget>
      </item>
@@ -124,15 +139,21 @@ QLineEdit
          <height>25</height>
         </size>
        </property>
+       <property name="maximumSize">
+        <size>
+         <width>70</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
         <string>Пилот</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="butLaserPowerCheck">
+      <widget class="QLineEdit" name="lineSetPower">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -145,21 +166,24 @@ QLineEdit
        </property>
        <property name="maximumSize">
         <size>
-         <width>16777215</width>
+         <width>70</width>
          <height>16777215</height>
         </size>
        </property>
+       <property name="styleSheet">
+        <string notr="true">QLineEdit
+{
+	background-color: rgba(209, 142, 34, 60);
+    border: 2px solid line;
+    border-radius: 6px;
+   
+	border-color: rgb(214, 136, 41);
+}
+
+</string>
+       </property>
        <property name="text">
-        <string>Проверка</string>
-       </property>
-       <property name="iconSize">
-        <size>
-         <width>36</width>
-         <height>36</height>
-        </size>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
+        <string>100 Вт</string>
        </property>
       </widget>
      </item>
@@ -167,10 +191,25 @@ QLineEdit
    </item>
    <item row="0" column="1">
     <layout class="QVBoxLayout" name="verticalLayout_3">
+     <property name="spacing">
+      <number>1</number>
+     </property>
+     <property name="leftMargin">
+      <number>1</number>
+     </property>
+     <property name="topMargin">
+      <number>1</number>
+     </property>
+     <property name="rightMargin">
+      <number>1</number>
+     </property>
+     <property name="bottomMargin">
+      <number>1</number>
+     </property>
      <item>
       <widget class="QScrollBar" name="scrollSetPower">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -211,7 +250,7 @@ QLineEdit
      border: 2px solid grey;
      border-radius: 4px;
      height: 20px;
-     width: 40px;
+     width: 46px;
      subcontrol-position: top;
      subcontrol-origin: margin;
 
@@ -234,7 +273,7 @@ QLineEdit
      border: 2px solid grey;
      border-radius: 4px;
      height: 20px;
-     width: 40px;
+     width: 46px;
      subcontrol-position: bottom;
      subcontrol-origin: margin;
      image: url(D:/PICTURES/ImagesToPrograms/arrow_down.png);
@@ -282,19 +321,6 @@ QScrollBar::sub-page:vertical
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QLineEdit" name="lineSetPower">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>25</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>100 Вт</string>
-       </property>
-      </widget>
-     </item>
     </layout>
    </item>
    <item row="1" column="0" colspan="2">
@@ -302,7 +328,7 @@ QScrollBar::sub-page:vertical
      <item>
       <widget class="QLabel" name="labelLaserPowerStatus">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+        <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>

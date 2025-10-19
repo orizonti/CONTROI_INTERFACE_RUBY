@@ -2,27 +2,32 @@
 #include "./ui_widget_laser_control.h"
 #include "widget_laser_control.h"
 #include <QTimer>
+#include "device_laser_interface.h"
 
 WidgetLaserControl::WidgetLaserControl(QWidget *parent)
     : WidgetAdjustable(parent)
     , ui(new Ui::WidgetLaserControl)
 {
     ui->setupUi(this);
-
-    //QGraphicsBlurEffect * glow1 = new QGraphicsBlurEffect();
-    //QGraphicsBlurEffect * glow2 = new QGraphicsBlurEffect();
-    //QGraphicsBlurEffect * glow3 = new QGraphicsBlurEffect();
-    ////glow->setStrength(4);
-    //glow1->setBlurRadius(3.2);
-    //glow2->setBlurRadius(3.2);
-    //glow3->setBlurRadius(1.2);
-
-    //ui->label->setGraphicsEffect(glow1);
-    //ui->label_2->setGraphicsEffect(glow2);
-    //ui->label_3->setGraphicsEffect(glow3);
 }
 
 WidgetLaserControl::~WidgetLaserControl() 
 { 
     delete ui; 
+}
+
+
+void WidgetLaserControl::linkTo(DeviceLaserGenericInterface* LaserControl)
+{
+
+}
+
+void WidgetLaserControl::setState(int State)
+{
+
+}
+
+void WidgetLaserControl::setParam(int ID, int Param)
+{
+
 }

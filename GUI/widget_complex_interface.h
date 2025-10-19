@@ -32,9 +32,13 @@ public:
     ~WidgetComplexInterface();
 
     WidgetControlBlock* ControlBlock = nullptr;
-    WidgetRotaryPlatformControl* ControlRotary = nullptr;
+
+    WidgetRotaryPlatformControl* ControlRotary   = nullptr;
     WidgetFocusRangerControl* ControlFocusRanger = nullptr;
     WidgetPanelSwitcher* ControlPanelSwitcher = nullptr;
+
+    WidgetRotaryPlatformControl* ControlRotaryPanel   = nullptr;
+    WidgetRotaryPlatformControl* ControlScanatorPanel = nullptr;
 
     SinkDisplayLabel* outputVideo1 = nullptr;
     SinkDisplayLabel* outputVideo2 = nullptr;

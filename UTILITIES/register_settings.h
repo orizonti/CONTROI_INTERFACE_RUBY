@@ -12,8 +12,8 @@ class SettingsRegister
     static std::map<QString,std::pair<float,float>> settings_pairs;
     static bool FLAG_SETTINGS_LOADED;
 
-    static void    LoadSettings();
-    static bool TryLoadSettings(QString file, QString GROUP);
+    static void    loadSettings();
+    static bool TryloadSettings(QString file, QString GROUP);
 
     static void AppendSettings(QString key, QString setting);
     static void AppendSettings(QString key, float setting);
@@ -28,7 +28,7 @@ class SettingsRegister
 
     static QString GetString(const QString& setting_name)
     {
-        if(!FLAG_SETTINGS_LOADED) LoadSettings();
+        if(!FLAG_SETTINGS_LOADED) loadSettings();
 
         if( settings.empty()) return "NONE";
         if(!settings.contains(setting_name)) return "NONE";
@@ -39,7 +39,7 @@ class SettingsRegister
 
     static float GetValue(const QString& setting_name)
     {
-        if(!FLAG_SETTINGS_LOADED) LoadSettings();
+        if(!FLAG_SETTINGS_LOADED) loadSettings();
 
         if( settings_values.empty()) return 0;
         if(!settings_values.contains(setting_name)) return 0;
@@ -49,7 +49,7 @@ class SettingsRegister
 
     static std::pair<float,float> GetPair(const QString& setting_name)
     {
-        if(!FLAG_SETTINGS_LOADED) LoadSettings();
+        if(!FLAG_SETTINGS_LOADED) loadSettings();
 
         if( settings_pairs.empty()) return std::pair<float,float>(0,0);
         if(!settings_pairs.contains(setting_name)) return std::pair<float,float>(0,0);

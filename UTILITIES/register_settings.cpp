@@ -3,7 +3,7 @@
 #include <QFile>
 #include <QDir>
 
-static char* TAG_NAME{"[ SETTINGS ]"};
+char TAG_NAME[13] = "[ SETTINGS ]";
 
 std::map<QString,QString>                SettingsRegister::settings;
 std::map<QString,float>                  SettingsRegister::settings_values;
@@ -11,7 +11,7 @@ std::map<QString,std::pair<float,float>> SettingsRegister::settings_pairs;
 
 bool SettingsRegister::FLAG_SETTINGS_LOADED = false;
 
-void SettingsRegister::LoadSettings()
+void SettingsRegister::loadSettings()
 {
   QString last_path;
 
@@ -52,9 +52,9 @@ void SettingsRegister::LoadSettings()
 
   bool result = false;
   for(auto& path: LocationList) 
-  { result = TryLoadSettings(path, "PATHS"); if(result) break; }
+  { result = TryloadSettings(path, "PATHS"); if(result) break; }
 
-    result = TryLoadSettings(SettingsRegister::GetString("FILE_PORTS"),"PORTS");
+    result = TryloadSettings(SettingsRegister::GetString("FILE_PORTS"),"PORTS");
 
   AppendSettings("CAMERA_IMAGE_POS",  std::pair<float,float>(720/2 -80,540/2 -80));
   AppendSettings("CAMERA_IMAGE_SIZE", 160.0);
@@ -84,7 +84,7 @@ void SettingsRegister::LoadSettings()
   //===========================================
 }
 
-bool SettingsRegister::TryLoadSettings(QString file, QString GROUP)
+bool SettingsRegister::TryloadSettings(QString file, QString GROUP)
 {
   if(!QFile::exists(file)) return false;;
 

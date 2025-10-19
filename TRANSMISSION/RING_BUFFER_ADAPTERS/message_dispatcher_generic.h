@@ -11,7 +11,7 @@ template<typename H, typename RingBufferType>
 class MessageDispatcher 
 {
 public:
-    MessageDispatcher() { CallList.resize(10); std::fill(CallList.begin(), CallList.end(), nullptr);}
+    MessageDispatcher() { CallList.resize(30); std::fill(CallList.begin(), CallList.end(), nullptr);}
     using MessageCall   = std::function<void (MessageGeneric<void*, H>&)>;
 
     void DispatchNextMessage(RingBufferType& RingBuffer);
@@ -31,7 +31,8 @@ public:
           auto List = CallList; CallList.resize(TypeRegister<>::TypeCount+2); 
                       CallList.insert(CallList.begin(), List.begin(), List.end());
        }
-       CallList[TypeRegister<T>::GetTypeID()] = Call;
+       CallList[TypeRegister<T>::ID()] = Call;
+       qDebug() << "APPEND CALLBACK TO : "<< typeid(T).name() << " ID:" << TypeRegister<T>::ID();
     }
 
     template< typename T, typename MessageType> 
@@ -62,6 +63,17 @@ void MessageDispatcher<H,RingBufferType>::DispatchNextMessage(RingBufferType& Ri
 
     if(RingBuffer.isMessageAvailable()) DispatchNextMessage(RingBuffer);
 }
+
+template<int ID_NUM>
+class CommandDispatcherGeneric
+{
+   public:
+   static const int ID{ID_NUM};
+   static void dispatchCommand(const QByteArray& Command) 
+   {
+      qDebug() << "[COMMAND DISPATCHER ] ID: " << ID << "COMMAND NOT REGISTERED";
+   };
+};
 
 
 #endif //MESSAGE_DISPATCHER_EXT_H

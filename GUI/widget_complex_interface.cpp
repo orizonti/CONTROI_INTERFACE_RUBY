@@ -18,6 +18,9 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
     ControlFocusRanger = new WidgetFocusRangerControl;
     ControlPanelSwitcher = new WidgetPanelSwitcher;
 
+    ControlRotaryPanel   = ui->widgetRotaryPlatformControl;
+    ControlScanatorPanel = ui->widgetScanatorControl;
+
     //ControlBlock->show();
     ControlFocusRanger->setMaximumHeight(220);
     ControlPanelSwitcher->setMaximumHeight(220);

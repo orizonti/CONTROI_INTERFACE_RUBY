@@ -7,13 +7,13 @@
 #include <message_dispatcher_generic.h>
 
 
-
 using MessageVoid = MessageGeneric<void*, MESSAGE_HEADER_GENERIC>;
 TCPConnectionEngine::TCPConnectionEngine(QObject *parent)
     : ConnectionInterface(parent)
 {
      RingBuffer = new BufferType;
-
+     Dispatcher = new MessageDispatcher<MESSAGE_HEADER_GENERIC, BufferType>;
+     *RingBuffer | *Dispatcher;
 }
 
 TCPConnectionEngine::~TCPConnectionEngine() 
@@ -24,7 +24,7 @@ TCPConnectionEngine::~TCPConnectionEngine()
 }
 
 //================================================================
-void TCPConnectionEngine::ConnectTo(QString address, int Port)
+void TCPConnectionEngine::connectTo(QString address, int Port)
 {
  IPRemote = address; PortRemote = Port; qDebug() << "CONNECT TO DEVICE : " << IPRemote << PortRemote;
 
@@ -38,24 +38,33 @@ void TCPConnectionEngine::ConnectTo(QString address, int Port)
 
 
 
-void TCPConnectionEngine::SlotReadData()
+void TCPConnectionEngine::slotReadData()
 {
    if(Socket->bytesAvailable() < RingBuffer->MIN_MESSAGE_SIZE) return;
 
    int bytes_available = Socket->bytesAvailable();
 
       RingBuffer->AppendData((uint8_t*)Socket->readAll().data(), bytes_available);
-   if(RingBuffer->isMessageAvailable()) { emit SignalMessageAvailable(); }
+   if(RingBuffer->isMessageAvailable()) { emit signalMessageAvailable(); }
 
-   if(Socket->bytesAvailable() > 24) SlotReadData();
+   if(Socket->bytesAvailable() > 24) slotReadData();
 }
 
 
-void TCPConnectionEngine::SlotSendCommand(const QByteArray& Command)
+void TCPConnectionEngine::slotSendMessage(const QByteArray& Command, uint8_t Param)
 {
-   if(!Socket->isOpen()) qDebug() << "SEND COMMAND: " << Command.toHex();
+   qDebug() << OutputFilter::Filter(1000) << "SEND COMMAND: " << QString(Command.toHex());
+
+   if(!Socket) return;
    if(!Socket->isOpen()) return; Socket->write(Command);
 }
+
+void TCPConnectionEngine::slotSendMessage(const char* DataCommand, int size, uint8_t Param)
+{
+   if(!Socket) return;
+   if(!Socket->isOpen()) return; Socket->write(DataCommand,size);
+}
+
 
 
 bool TCPConnectionEngine::isConnected()
@@ -66,14 +75,14 @@ bool TCPConnectionEngine::isConnected()
     return true;
 }
 
-void TCPConnectionEngine::TryToConnectConstantly(QString Address, int Port)
+void TCPConnectionEngine::tryConnectConstantly(QString Address, int Port)
 {
    IPRemote = Address; PortRemote = Port;
-   QObject::connect(&TimerAutoconnection,&QTimer::timeout,this,&TCPConnectionEngine::SlotConnectionAttempt);
+   QObject::connect(&TimerAutoconnection,&QTimer::timeout,this,&TCPConnectionEngine::slotConnectionAttempt);
    TimerAutoconnection.start(2000);
 }
 
-void TCPConnectionEngine::SlotConnectionAttempt()
+void TCPConnectionEngine::slotConnectionAttempt()
 {
   //qDebug() << "TRY TO CONNECT: " << IPRemote << PortRemote;
  if(Socket == 0)
@@ -94,14 +103,14 @@ void TCPConnectionEngine::SlotConnectionAttempt()
    qDebug() << "CONNECTED TO HOST " << IPRemote << PortRemote;
    connect(Socket, SIGNAL(readyRead()), this, SLOT(SlotReadData()),Qt::QueuedConnection);
    TimerAutoconnection.stop();
-   QObject::disconnect(&TimerAutoconnection,&QTimer::timeout,this,&TCPConnectionEngine::SlotConnectionAttempt);
+   QObject::disconnect(&TimerAutoconnection,&QTimer::timeout,this,&TCPConnectionEngine::slotConnectionAttempt);
    return;
  }
 
  Socket->close();
 }
 
-void TCPConnectionEngine::ListenTo(QString address, int Port)
+void TCPConnectionEngine::listenTo(QString address, int Port)
 {
 
   IPRemote = address; PortRemote = Port; if(Socket != 0) delete Socket; 
@@ -112,7 +121,7 @@ void TCPConnectionEngine::ListenTo(QString address, int Port)
   connect(Server, SIGNAL(newConnection()), this, SLOT(SlotAcceptConnection()),Qt::QueuedConnection);
 }
 
-void TCPConnectionEngine::ListenTo(QHostAddress::SpecialAddress address, int Port)
+void TCPConnectionEngine::listenTo(QHostAddress::SpecialAddress address, int Port)
 {
   qDebug() << "WAIT DEVICE AT ADDRESS : " << address << " PORT: " << Port;
 
@@ -122,37 +131,28 @@ void TCPConnectionEngine::ListenTo(QHostAddress::SpecialAddress address, int Por
   connect(Server, SIGNAL(newConnection()), this, SLOT(SlotAcceptConnection()),Qt::QueuedConnection);
 }
 
-void TCPConnectionEngine::SlotCloseConnection()
+void TCPConnectionEngine::slotCloseConnection()
 {
-   SendCloseConnectionCommand();
-
+   slotCloseConnection();
    Socket->flush();
    Socket->disconnectFromHost();
    Socket->close();
 }
 
-void TCPConnectionEngine::SendCloseConnectionCommand()
-{
+void TCPConnectionEngine::slotCheckConnection() { }
 
-}
-
-void TCPConnectionEngine::SlotCheckConnection()
-{
-
-}
-
-void TCPConnectionEngine::SlotAcceptConnection()
+void TCPConnectionEngine::slotAcceptConnection()
 {
   Socket = Server->nextPendingConnection();
-  connect(Socket, SIGNAL(readyRead()), this, SLOT(SlotReadData()),Qt::QueuedConnection);
-  disconnect(Server, SIGNAL(newConnection()), this, SLOT(SlotAcceptConnection()));
+  connect(Socket, SIGNAL(readyRead()), this, SLOT(slotReadData()),Qt::QueuedConnection);
+  disconnect(Server, SIGNAL(newConnection()), this, SLOT(slotAcceptConnection()));
 
   qDebug() << "ACCEPT CONNECTION DEVICE: " << Socket->peerAddress();
 }
 
-void TCPConnectionEngine::SlotConnectedToHost()
+void TCPConnectionEngine::slotConnectedToHost()
 {
-    emit SignalDeviceConnected(); qDebug() << "CONNECTED TO HOST: " << IPRemote << PortRemote; 
+    emit signalDeviceConnected(); qDebug() << "CONNECTED TO HOST: " << IPRemote << PortRemote; 
 }
 
 bool TCPConnectionEngine::isMessageAvailable() { return RingBuffer->isMessageAvailable(); }
