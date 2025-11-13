@@ -74,6 +74,47 @@ public:
 };
 
 template<typename T>
+class GainNode : public PassCoordClass<T>
+{
+	public:
+	GainNode(){};
+  GainNode(T Value): GainFirst(Value), GainSecond(Value) {}; 
+  GainNode(T Value1, T Value2): GainFirst(Value1), GainSecond(Value2) {}; 
+  T GainFirst  = 1;
+  T GainSecond = 1;
+
+	void SetInput(const QPair<T,T>& Coord) override
+	{
+    PassCoordClass<T>::OutputCoord.first = Coord.first * GainFirst;
+    PassCoordClass<T>::OutputCoord.second = Coord.second * GainSecond;
+	};
+
+	GainNode<T>& operator()(T Value) { GainFirst = Value; GainSecond = Value; return *this; }
+	GainNode<T>& operator()(T Value1, T Value2) { GainFirst = Value1; GainSecond = Value2; return *this; }
+};
+
+template<typename T>
+class OffsetNode : public PassCoordClass<T>
+{
+	public:
+	OffsetNode(){};
+  OffsetNode(T Value): OffsetFirst(Value), OffsetSecond(Value) {}; 
+  OffsetNode(T Value1, T Value2): OffsetFirst(Value1), OffsetSecond(Value2) {}; 
+  T OffsetFirst = 0;
+  T OffsetSecond = 0;
+
+	void SetInput(const QPair<T,T>& Coord) override
+	{
+    PassCoordClass<T>::OutputCoord.first = Coord.first + OffsetFirst;
+    PassCoordClass<T>::OutputCoord.second = Coord.second + OffsetSecond;
+	};
+
+	OffsetNode<T>& operator()(T Value) { OffsetFirst = Value; OffsetSecond = Value; return *this; }
+	OffsetNode<T>& operator()(T Value1, T Value2) { OffsetFirst = Value1; OffsetSecond = Value2; return *this; }
+};
+
+
+template<typename T>
 class CoordDetector : public PassCoordClass<T>
 {
 	public:

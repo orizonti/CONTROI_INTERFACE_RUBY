@@ -101,8 +101,32 @@ QLineEdit
          <height>16777215</height>
         </size>
        </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton
+{
+   background-color: rgba(204, 53, 10, 62);
+    border: 2px solid line;
+    border-radius: 6px;	
+	border-color: rgb(215, 50, 28);
+}
+
+QPushButton::checked
+{
+	background-color: rgba(32, 156, 19, 83);
+    border: 2px solid line;
+    border-radius: 6px;
+   
+	border-color: rgb(30, 221, 78);
+}</string>
+       </property>
        <property name="text">
         <string>Пуск</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -120,8 +144,29 @@ QLineEdit
          <height>16777215</height>
         </size>
        </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton
+{
+   background-color: rgba(204, 53, 10, 62);
+    border: 2px solid line;
+    border-radius: 6px;	
+	border-color: rgb(215, 50, 28);
+}
+
+QPushButton::checked
+{
+	background-color: rgba(32, 156, 19, 83);
+    border: 2px solid line;
+    border-radius: 6px;
+   
+	border-color: rgb(30, 221, 78);
+}</string>
+       </property>
        <property name="text">
         <string>Гот</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -145,179 +190,29 @@ QLineEdit
          <height>16777215</height>
         </size>
        </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton
+{
+   background-color: rgba(204, 53, 10, 62);
+    border: 2px solid line;
+    border-radius: 6px;	
+	border-color: rgb(215, 50, 28);
+}
+
+QPushButton::checked
+{
+	background-color: rgba(32, 156, 19, 83);
+    border: 2px solid line;
+    border-radius: 6px;
+   
+	border-color: rgb(30, 221, 78);
+}</string>
+       </property>
        <property name="text">
         <string>Пилот</string>
        </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineSetPower">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>25</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>70</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QLineEdit
-{
-	background-color: rgba(209, 142, 34, 60);
-    border: 2px solid line;
-    border-radius: 6px;
-   
-	border-color: rgb(214, 136, 41);
-}
-
-</string>
-       </property>
-       <property name="text">
-        <string>100 Вт</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="0" column="1">
-    <layout class="QVBoxLayout" name="verticalLayout_3">
-     <property name="spacing">
-      <number>1</number>
-     </property>
-     <property name="leftMargin">
-      <number>1</number>
-     </property>
-     <property name="topMargin">
-      <number>1</number>
-     </property>
-     <property name="rightMargin">
-      <number>1</number>
-     </property>
-     <property name="bottomMargin">
-      <number>1</number>
-     </property>
-     <item>
-      <widget class="QScrollBar" name="scrollSetPower">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>55</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QScrollBar:vertical {
-	background-color: rgba(181, 126, 24, 0.26);
-    border: 2px solid line;
-    border-radius: 6px;
-   
-	border-color: rgba(214, 136, 41, 0.87);
-    height: 10px;
-    min-width: 40px;
-  margin: 28px 2px 28px 2px;
-}
-
- QScrollBar::handle:vertical 
- {
-	
-	background-color: rgba(32, 156, 19, 0.4);
-    border: 2px solid line;
-    border-radius: 6px;
-   
-	border-color: rgba(214, 136, 41, 0.87);
-    height: 20px;
-    min-height: 20px;
- }
-
-
- QScrollBar::sub-line:vertical,QScrollBar::sub-line:vertical:pressed
- {
-     border: 2px solid grey;
-     border-radius: 4px;
-     height: 20px;
-     width: 46px;
-     subcontrol-position: top;
-     subcontrol-origin: margin;
-
-     image: url(D:/PICTURES/ImagesToPrograms/arrow_up.png);
-
-	 border-color: rgba(214, 136, 41, 0.87);
-     background: rgba(94, 84, 71, 0.38);
-
-     margin: 2px 2px 2px 2px;
- }
-
- QScrollBar::sub-line:vertical:pressed
- {
-	 border-color: rgba(214, 110, 41, 0.87);
-     background: rgba(94, 81, 71, 0.76);
- }
-
- QScrollBar::add-line:vertical, QScrollBar::add-line:vertical:pressed
- {
-     border: 2px solid grey;
-     border-radius: 4px;
-     height: 20px;
-     width: 46px;
-     subcontrol-position: bottom;
-     subcontrol-origin: margin;
-     image: url(D:/PICTURES/ImagesToPrograms/arrow_down.png);
-
-	 border-color: rgba(214, 136, 41, 0.87);
-     background: rgba(94, 84, 71, 0.38);
- }
-
- QScrollBar::add-line:vertical:pressed
- {
-	 border-color: rgba(214, 110, 41, 0.87);
-     background: rgba(94, 81, 71, 0.76);
- }
-
- QScrollBar::up-arrow:vertical 
- {
-     border: 0px solid grey;
-     width: 60px;
-     height: 15px;
- }
- 
- QScrollBar::down-arrow:vertical 
- {
-     border: 0px solid grey;
-     width: 60px;
-     height: 15px;
- }
-
-QScrollBar::add-page:vertical
-{
-	background-color: rgba(182, 36, 10, 0.74);
-}
-
-QScrollBar::sub-page:vertical
- {
-  background-color: none;
-
- }</string>
-       </property>
-       <property name="value">
-        <number>40</number>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Orientation::Vertical</enum>
+       <property name="checkable">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -357,6 +252,146 @@ QScrollBar::sub-page:vertical
       </widget>
      </item>
     </layout>
+   </item>
+   <item row="0" column="1">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="styleSheet">
+      <string notr="true">QGroupBox
+{
+border: 0px solid line black;
+}
+
+QPushButton
+{
+   background-color: rgba(204, 53, 10, 62);
+    border: 2px solid line;
+    border-radius: 6px;	
+	border-color: rgb(215, 50, 28);
+}
+
+QPushButton::checked
+{
+	background-color: rgba(32, 156, 19, 83);
+    border: 2px solid line;
+    border-radius: 6px;
+   
+	border-color: rgb(30, 221, 78);
+}</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <property name="spacing">
+       <number>1</number>
+      </property>
+      <property name="leftMargin">
+       <number>1</number>
+      </property>
+      <property name="topMargin">
+       <number>1</number>
+      </property>
+      <property name="rightMargin">
+       <number>1</number>
+      </property>
+      <property name="bottomMargin">
+       <number>1</number>
+      </property>
+      <item>
+       <widget class="QPushButton" name="butSetPowerHigh">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>70</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>100%</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="butSetPowerMiddle">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>70</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>50%</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="butSetPowerLow">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>70</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>15%</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
   </layout>
  </widget>

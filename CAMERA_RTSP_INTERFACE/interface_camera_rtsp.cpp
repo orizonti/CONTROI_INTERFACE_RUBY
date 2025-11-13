@@ -3,6 +3,8 @@
 #include <QDebug>
 #include <memory>
 #include <opencv2/videoio.hpp>
+#include <QRegularExpression>
+#include <QProcess>
 
 
 std::shared_ptr<SourceImageInterface> CameraInterfaceUniversal::getImageSource() { return ImageStore; }
@@ -12,7 +14,13 @@ void CameraInterfaceUniversal::slotStopStream()  { timerGetFrame.stop(); }
 
 CameraInterfaceUniversal::CameraInterfaceUniversal(std::string strVideoSource, QString NAME) : TAG_NAME(NAME)
 {
+  QRegularExpression ip_match("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
+
+           auto ip = ip_match.match(QString::fromStdString(strVideoSource)).captured(0); 
+  if(!checkHost(ip)) return;
+
   capture.set(cv::CAP_GSTREAMER,3);
+  //capture.set(cv::CAP_FFMPEG,3);
   capture.open(strVideoSource);
   
   if (!capture.isOpened()) qDebug()  << "[ ERROR ] CANNOT OPEN VIDEO SOURCE: " << strVideoSource.c_str();
@@ -126,3 +134,24 @@ void CameraInterfaceUniversal::CameraSetWidth(int Width) { }
 void CameraInterfaceUniversal::CameraSetOffset(int XOffset, int YOffset) { }
 void CameraInterfaceUniversal::CameraSetSize(int Width, int Height) { }
 void CameraInterfaceUniversal::CameraSetExposure(float Exposure) { }
+
+bool CameraInterfaceUniversal::checkHost(const QString& ipAddress)
+{
+    QProcess process;
+    process.start("nmap", QStringList() << "-sP" << ipAddress ); // Ping once on Windows
+    process.waitForFinished(3000);
+    auto output = QString(process.readAllStandardOutput());
+
+    //qDebug() << "===================";
+    //for(auto str: output) qDebug() << str;
+    //qDebug() << "===================";
+
+    //QRegularExpression re("Host is up");
+    QRegularExpression re("MAC Address");
+    QRegularExpressionMatch result = re.match(output);
+    
+    if(result.hasMatch()) qDebug() << ipAddress << "[ UP ]"; else qDebug() << ipAddress << "[ DOWN ]";
+
+           isCameraUp = result.hasMatch();
+    return isCameraUp;
+}

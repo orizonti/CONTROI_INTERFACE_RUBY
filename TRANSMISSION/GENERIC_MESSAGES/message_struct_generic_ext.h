@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <set>
 #include "engine_type_register.h"
-
+#include "message_command_structures.h"
 
 template<typename T, typename H>
 class MessageGenericExt
@@ -29,6 +29,9 @@ class MessageGenericExt
          int GetSize()    { return this->toByteArray().size(); };
          int GetSizeFromHeader(){ return HEADER.DATA_SIZE + sizeof(H);};
   static int GetSizeStatic() {return sizeof(T) + sizeof(H);};
+
+  void operator=(const T& command) { DATA = command; };
+  template<typename T_PARAM> void setData(const T_PARAM& DATA_PARAMS) { DATA = DATA_PARAMS; };
 
          MessageGenericExt<void*,H>& toGenericMessage() { return *reinterpret_cast<MessageGenericExt<void*,H>*>(this);  }
 
@@ -70,7 +73,5 @@ template<typename M, typename H> void operator<<(QDataStream& stream, MessageGen
   stream << Message.HEADER; 
   stream.writeRawData(reinterpret_cast<char*>(&Message.DATA), sizeof(Message.DATA));
 }
-
-
 
 #endif // MESSAGE_STRUCT_ENGINE_H

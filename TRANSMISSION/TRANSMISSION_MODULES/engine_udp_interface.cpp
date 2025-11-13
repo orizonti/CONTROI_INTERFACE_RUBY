@@ -1,10 +1,10 @@
 #include "engine_udp_interface.h"
 #include "connection_interface.h"
 #include <qhostaddress.h>
+#include "debug_output_filter.h"
 
 
-
-UDPEngineInterface::UDPEngineInterface(QString IPDevice, int Port, QString IPListen, int PortLocal, QObject *parent)
+UDPConnectionEngine::UDPConnectionEngine(QString IPDevice, int Port, QString IPListen, int PortLocal, QObject *parent)
     : ConnectionInterface{parent}
 {
 
@@ -13,10 +13,10 @@ UDPEngineInterface::UDPEngineInterface(QString IPDevice, int Port, QString IPLis
     listenTo(IPListen, PortLocal);
 
     RingBuffer = new std::remove_reference<decltype((*RingBuffer))>::type;
-    QObject::connect(Socket,SIGNAL(readyRead()),this,SLOT(SlotReadData()));
+    QObject::connect(Socket,SIGNAL(readyRead()),this,SLOT(slotReadData()));
 }
 
-UDPEngineInterface::UDPEngineInterface(QString IPDevice, int Port,QHostAddress::SpecialAddress IPListen, int PortLocal, QObject *parent)
+UDPConnectionEngine::UDPConnectionEngine(QString IPDevice, int Port,QHostAddress::SpecialAddress IPListen, int PortLocal, QObject *parent)
  : ConnectionInterface(parent)
 {
     connectTo(IPDevice, Port); 
@@ -24,10 +24,17 @@ UDPEngineInterface::UDPEngineInterface(QString IPDevice, int Port,QHostAddress::
     qDebug() << "[ UDP CONNECTION ]" << IPDevice << Port << IPListen << PortLocal;
 
     RingBuffer = new std::remove_reference<decltype((*RingBuffer))>::type;
-    QObject::connect(Socket,SIGNAL(readyRead()),this,SLOT(SlotReadData()));
+    QObject::connect(Socket,SIGNAL(readyRead()),this,SLOT(slotReadData()));
 }
 
-void UDPEngineInterface::connectTo(QString IPDevice, int Port) 
+UDPConnectionEngine::UDPConnectionEngine(QObject* parent) : ConnectionInterface(parent)
+{
+    qDebug() << "[ UDP CONNECTION NEED SET SOCKET]" ;
+    RingBuffer = new std::remove_reference<decltype((*RingBuffer))>::type;
+    QObject::connect(Socket,SIGNAL(readyRead()),this,SLOT(slotReadData()));
+}
+
+void UDPConnectionEngine::connectTo(QString IPDevice, int Port) 
 {
     if(isConnected()) slotCloseConnection();
 
@@ -35,31 +42,34 @@ void UDPEngineInterface::connectTo(QString IPDevice, int Port)
                             Socket->open(QIODevice::ReadWrite); }
 
     PortRemote = Port; IPRemote = IPDevice;
+   if(!Socket->isOpen()) Socket->open(QIODevice::ReadWrite);
 };
 
-void  UDPEngineInterface::listenTo(QString IPHost, int Port)
+void  UDPConnectionEngine::listenTo(QString IPHost, int Port)
 {
     if(Socket == nullptr) { Socket = new QUdpSocket(this); 
                             Socket->open(QIODevice::ReadWrite); }
        Socket->bind(QHostAddress(IPHost), Port); 
        Socket->flush();
+   if(!Socket->isOpen()) Socket->open(QIODevice::ReadWrite);
 }
-void  UDPEngineInterface::listenTo(QHostAddress::SpecialAddress IPHost, int Port)
+void  UDPConnectionEngine::listenTo(QHostAddress::SpecialAddress IPHost, int Port)
 {
     if(Socket == nullptr) { Socket = new QUdpSocket(this); 
                             Socket->open(QIODevice::ReadWrite); }
        //Socket->bind(IPHost, Port); 
-       Socket->bind(QHostAddress::Any, 1313); 
+       Socket->bind(QHostAddress::Any, Port); 
        Socket->flush();
+    if(!Socket->isOpen()) Socket->open(QIODevice::ReadWrite);
 }
 
-UDPEngineInterface::~UDPEngineInterface()
+UDPConnectionEngine::~UDPConnectionEngine()
 {
  qDebug() << "DELETE UDP INTERFACE";
  delete Socket;
 }
 
-void UDPEngineInterface::slotReadData()
+void UDPConnectionEngine::slotReadData()
 {
    if(Socket->bytesAvailable() < RingBuffer->MIN_MESSAGE_SIZE) return;
 
@@ -75,28 +85,28 @@ void UDPEngineInterface::slotReadData()
 }
 
 
-void UDPEngineInterface::slotSendMessage(const QByteArray& ArrayCommand, uint8_t Param)
+void UDPConnectionEngine::slotSendMessage(const QByteArray& Command, uint8_t Param)
 {
- Socket->writeDatagram(ArrayCommand,QHostAddress(IPRemote),PortRemote); 
- //Socket->waitForBytesWritten(5);
+ //qDebug() << OutputFilter::Filter(100) << "SEND COMMAND: " << QString(Command.toHex());
+ Socket->writeDatagram(Command,QHostAddress(IPRemote),PortRemote); 
 }
 
-void UDPEngineInterface::slotSendMessage(const char* DataCommand, int size, uint8_t Param)
+void UDPConnectionEngine::slotSendMessage(const char* Command, int size, uint8_t Param)
 {
-    Socket->writeDatagram(DataCommand,size,QHostAddress(IPRemote), PortRemote);
+    Socket->writeDatagram(Command,size,QHostAddress(IPRemote), PortRemote);
 }
 
 
 
-void UDPEngineInterface::slotCloseConnection()
+void UDPConnectionEngine::slotCloseConnection()
 {
     Connected = false; Socket->close();
 }
 
 
-bool UDPEngineInterface::isConnected() { return Connected;}
+bool UDPConnectionEngine::isConnected() { return Connected;}
 
-void UDPEngineInterface::tryConnectConstantly(QString Address, int Port)
+void UDPConnectionEngine::tryConnectConstantly(QString Address, int Port)
 {
    Connected = false; 
 
@@ -105,7 +115,7 @@ void UDPEngineInterface::tryConnectConstantly(QString Address, int Port)
    QTimer::singleShot(2000, this, SLOT(slotCheckConnection()));
 }
 
-void UDPEngineInterface::slotCheckConnection()
+void UDPConnectionEngine::slotCheckConnection()
 {
   if(RingBuffer->isMessageAvailable()) 
   {
@@ -114,8 +124,8 @@ void UDPEngineInterface::slotCheckConnection()
   }
 
   qDebug() << "TRY TO CONNECT TO : " << IPRemote << ":" << PortRemote; 
-  QTimer::singleShot(2000, this, SLOT(SlotCheckRequest()));
+  QTimer::singleShot(2000, this, SLOT(slotCheckConnection()));
 }
 
 
-bool UDPEngineInterface::isMessageAvailable() { return RingBuffer->isMessageAvailable(); }
+bool UDPConnectionEngine::isMessageAvailable() { return RingBuffer->isMessageAvailable(); }

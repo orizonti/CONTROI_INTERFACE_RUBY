@@ -5,6 +5,7 @@
 #include <QImage>
 #include <QString>
 #include <QTimer>
+#include <QDebug>
 
 template<int NUM> class RegisterNode
 {
@@ -76,6 +77,7 @@ class SinkDisplayNode : public QObject
     { 
         if(SrcNode == nullptr) return;
         if(OnOff) timerSetImage.start(1000/Frequency); else timerSetImage.stop(); 
+        qDebug() << "ACTIVATE RTSP DISPLAY" << OnOff;
     }; 
 
     private slots:

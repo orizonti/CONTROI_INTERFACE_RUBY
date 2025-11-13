@@ -6,12 +6,13 @@
 #include "message_struct_generic.h"
 #include "message_header_generic_ext.h"
 #include "interface_pass_coord.h"
+#include <typeinfo>
 
 template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
 class DeviceGenericInterface 
 {
 public:
-    DeviceGenericInterface(T_CONNECTION* Connection, QString Name = "[ DEVICE ]"): TAG_NAME(Name) 
+    DeviceGenericInterface(std::shared_ptr<T_CONNECTION> Connection, QString Name = "[ DEVICE ]"): TAG_NAME(Name) 
 	{ 
 		ConnectionDevice = Connection;
 		init();
@@ -21,11 +22,12 @@ public:
 	~DeviceGenericInterface() {};
 
 	virtual void setParam (uint8_t ID, uint16_t Value) = 0; 
-	virtual void setParams(uint16_t Value1, uint16_t Value2) = 0;
-	virtual void setParams(uint16_t Value1, uint16_t Value2, uint16_t Value3, uint16_t Value4) = 0; 
+	        void setParam (uint8_t ID, bool OnOff) { if(OnOff) setParam(ID,(uint16_t)1); else setParam(ID,(uint16_t)0);}; 
 
-    void sendCommand() { ConnectionDevice->slotSendMessage(Command.toByteArray());};
-	void sendCommand(T_COMMAND commandDevice) { Command = commandDevice;  ConnectionDevice->SlotSendCommand(Command.toByteArray());};
+	void sendCommand(T_COMMAND& command) { ConnectionDevice->slotSendMessage(command.toByteArray());};
+
+	template<typename T> 
+	void sendCommand(const QPair<T,T>& data) { Message.setData(data); ConnectionDevice->slotSendMessage(Message.toByteArray()); };
 
     virtual void putMessage(T_MESSAGE Message) = 0;
 	void init()
@@ -39,9 +41,10 @@ public:
 	}
 	
 protected:
-    T_CONNECTION* ConnectionDevice = nullptr;
-    MessageGenericExt<T_COMMAND,MESSAGE_HEADER_EXT> Command;
+    std::shared_ptr<T_CONNECTION> ConnectionDevice = nullptr;
+    T_COMMAND Message;
 };
+
 
 class DeviceLaserGenericInterface
 {
@@ -50,6 +53,12 @@ class DeviceLaserGenericInterface
 	virtual void setPowerEnable(bool OnOff) = 0;
 	virtual void setPilotEnable(bool OnOff) = 0;
 	virtual void setPower(uint16_t Value) = 0;
+
+	virtual void setPowerHigh() = 0;
+	virtual void setPowerMiddle() = 0;
+	virtual void setPowerLow() = 0;
+	virtual QString getName() { return QString("Силовой лазер"); }
+
 };
 
 class DeviceFocusGenericInterface
@@ -60,26 +69,34 @@ class DeviceFocusGenericInterface
 	virtual uint16_t getDistance() = 0;
 };
 
-class DeviceRotaryGenericInterface : public PassCoordClass<float>
+class DeviceLidInterface
+{
+	public:
+	virtual void openLid() = 0;
+	virtual void closeLid() = 0;
+};
+
+class DeviceRotaryInterface : public PassCoordClass<float>
 {
 	public:
 
 	virtual void moveToPosRelative(const QPair<int, int>& Pos) = 0;
 	virtual void moveOnStep(const QPair<int, int>& Pos) = 0;
 	virtual void moveToPos(const QPair<int, int>& Pos) = 0;
-	virtual void      setVelocity(const QPair<int, int>& Velocity) = 0;
 	virtual void moveWithVelocity(const QPair<int, int>& Velocity) = 0;
+	virtual void moveWithVelocityManual(const QPair<int, int>& Velocity) = 0;
 	virtual void stopMove() = 0;
 
 	const QPair<float, float>& GetOutput() { PassCoordClass<float>::OutputCoord = getPos(); return PassCoordClass<float>::OutputCoord;};
 	void SetInput(const QPair<float, float>& Coord) { moveToPos(Coord); };
 
 	virtual const QPair<int,int>& getPos() = 0;
+	virtual const QPair<float,float>& getPosDevice() = 0;
 	virtual const QPair<int,int>& getVelocity() = 0;
+	virtual const QPair<int,int>& getVelocityDevice() = 0;
 
-virtual	          bool checkRangeOffset(QPair<int,int> Pos) = 0;
-virtual	QPair<int,int> getLimits(int axis) = 0;
-virtual	QPair<int,int> getRange() = 0;
+	virtual QPair<int,int> getLimits(int axis)  = 0;
+	virtual QPair<int,int> getRange() = 0 ; 
 };
 
 

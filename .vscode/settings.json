@@ -4,6 +4,9 @@
         "array": "cpp",
         "*.rh": "cpp",
         "format": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "map": "cpp",
+        "memory": "cpp",
+        "qregularexpression": "cpp"
     }
 }

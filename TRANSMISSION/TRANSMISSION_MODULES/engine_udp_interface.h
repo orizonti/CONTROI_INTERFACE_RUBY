@@ -16,32 +16,14 @@
 #include "engine_ring_buffer_generic.h"
 #include "message_command_structures.h"
 
-//class ConnectionInterface : public QObject
-//{
-//  //Q_OBJECT
-//  public:
-//  ConnectionInterface(QObject* parent = nullptr) : QObject(parent) {}; 
-//  virtual bool isMessageAvailable() = 0;
-//  virtual bool isConnected() = 0;
-//  virtual void connectTo(QString IPDevice, int Port) = 0;
-//  virtual void  listenTo(QString IPDevice, int Port) = 0;
-//  virtual void  listenTo(QHostAddress::SpecialAddress IPDevice, int Port) = 0;
-//  virtual void tryConnectConstantly(QString address, int Port) = 0;
-//
-//  public slots:
-//  virtual void slotSendMessage(const QByteArray& ArrayCommand, uint8_t Param = 0) = 0;
-//  virtual void slotSendMessage(const char* DataCommand, int size, uint8_t Param = 0) = 0 ;
-//
-//
-//};
-
-class UDPEngineInterface : public ConnectionInterface
+class UDPConnectionEngine : public ConnectionInterface
 {
     Q_OBJECT
 public:
-    explicit UDPEngineInterface(QString IPDevice, int Port,QString IPListen, int PortLocal, QObject *parent = nullptr);
-             UDPEngineInterface(QString IPDevice, int Port,QHostAddress::SpecialAddress IPListen, int PortLocal, QObject *parent = nullptr);
-    ~UDPEngineInterface();
+    UDPConnectionEngine(QString IPDevice, int Port,QString IPListen, int PortLocal, QObject *parent = nullptr);
+    UDPConnectionEngine(QString IPDevice, int Port,QHostAddress::SpecialAddress IPListen, int PortLocal, QObject *parent = nullptr);
+    explicit UDPConnectionEngine(QObject* parent= nullptr);
+    ~UDPConnectionEngine();
 
     bool isMessageAvailable() override;
     bool isConnected() override;
@@ -52,8 +34,8 @@ public:
     int DataCounter = 0;
 
 public slots:
-  void slotSendMessage(const QByteArray& ArrayCommand, uint8_t Param = 0) override;
-  void slotSendMessage(const char* DataCommand, int size, uint8_t Param = 0) override;
+  void slotSendMessage(const QByteArray& Command, uint8_t Param = 0) override;
+  void slotSendMessage(const char* Command, int size, uint8_t Param = 0) override;
 
   void slotCheckConnection() override;
   void slotCloseConnection() override;
@@ -81,4 +63,4 @@ void signalMessageAvailable();
 
 
 
-#endif // UDPEngineInterface_H
+#endif // UDPConnectionEngine_H

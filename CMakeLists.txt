@@ -90,6 +90,9 @@ add_executable (testCameraRTSP
         "./GUI/widget_camera_control.cpp"
         "./GUI/widget_camera_control.ui"
 
+        "./GUI/widget_lid_control.cpp"
+        "./GUI/widget_lid_control.ui"
+
         "./GUI/widget_rotary_platform_control.cpp"
         "./GUI/widget_rotary_platform_control.ui"
 
@@ -110,6 +113,7 @@ add_executable (testCameraRTSP
         "./CAMERA_RTSP_INTERFACE/interface_camera_rtsp.cpp"
         "./CAMERA_RTSP_INTERFACE/interface_image_source.cpp"
         "./TRANSMISSION/TRANSMISSION_MODULES/engine_tcp_interface.cpp"
+        "./TRANSMISSION/TRANSMISSION_MODULES/engine_udp_interface.cpp"
         )
 
         

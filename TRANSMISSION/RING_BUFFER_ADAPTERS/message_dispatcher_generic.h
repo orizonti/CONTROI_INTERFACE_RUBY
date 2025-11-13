@@ -5,6 +5,7 @@
 #include "message_struct_generic.h"
 #include "engine_type_register.h"
 #include "message_header_generic.h"
+#include <map>
 
 
 template<typename H, typename RingBufferType>
@@ -64,7 +65,7 @@ void MessageDispatcher<H,RingBufferType>::DispatchNextMessage(RingBufferType& Ri
     if(RingBuffer.isMessageAvailable()) DispatchNextMessage(RingBuffer);
 }
 
-template<int ID_NUM>
+template<int ID_NUM = 0>
 class CommandDispatcherGeneric
 {
    public:
@@ -74,6 +75,5 @@ class CommandDispatcherGeneric
       qDebug() << "[COMMAND DISPATCHER ] ID: " << ID << "COMMAND NOT REGISTERED";
    };
 };
-
 
 #endif //MESSAGE_DISPATCHER_EXT_H

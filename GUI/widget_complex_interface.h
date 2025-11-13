@@ -16,6 +16,8 @@
 #include "widget_focus_ranger_control.h"
 #include "widget_panel_switcher.h"
 #include "label_active_image.h"
+#include "widget_laser_control.h"
+#include "widget_lid_control.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -34,11 +36,14 @@ public:
     WidgetControlBlock* ControlBlock = nullptr;
 
     WidgetRotaryPlatformControl* ControlRotary   = nullptr;
-    WidgetFocusRangerControl* ControlFocusRanger = nullptr;
-    WidgetPanelSwitcher* ControlPanelSwitcher = nullptr;
-
+    WidgetFocusRangerControl*    ControlFocusRanger = nullptr;
+    WidgetPanelSwitcher*         ControlPanelSwitcher = nullptr;
     WidgetRotaryPlatformControl* ControlRotaryPanel   = nullptr;
     WidgetRotaryPlatformControl* ControlScanatorPanel = nullptr;
+    WidgetLidControl* ControlLid = nullptr;
+
+    WidgetLaserControl* windowControlLaserPower      = nullptr;
+    WidgetLaserControl* windowControlLaserIllum      = nullptr;
 
     SinkDisplayLabel* outputVideo1 = nullptr;
     SinkDisplayLabel* outputVideo2 = nullptr;

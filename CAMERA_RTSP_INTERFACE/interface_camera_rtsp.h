@@ -55,6 +55,10 @@ class CameraInterfaceUniversal :public QObject, public SourceImageInterface, pub
   void CameraSetWidth(int Width);
   void CameraSetExposure(float Exposure);
 
+  bool checkHost(const QString& ipAddress);
+  bool isCameraAccessable() { return isCameraUp;};
+  bool isCameraUp = false;
+
   //=============================================
   std::pair<int,int> ImagePos {20 ,20 }; 
   std::pair<int,int> SizeImage{720,540}; 

@@ -23,24 +23,30 @@
 #include "device_laser_interface.h"
 #include "device_focus_ranger_interface.h"
 #include "engine_type_register.h"
+#include <memory>
+#include "widget_laser_control.h"
+#include "device_lid_interface.h"
+#include <QRegularExpression>
 
 QStringList LoadCameraLinks();
 
-template<> constexpr int TypeRegister<CommandSetPosScanator    >::ID() { return 1; }; int ID1 = TypeRegister<CommandSetPosScanator    >::RegisterType();
-template<> constexpr int TypeRegister<CommandSetPosRotary      >::ID() { return 2; }; int ID2 = TypeRegister<CommandSetPosRotary      >::RegisterType();
-template<> constexpr int TypeRegister<CommandDeviceController  >::ID() { return 3; }; int ID3 = TypeRegister<CommandDeviceController  >::RegisterType();
-template<> constexpr int TypeRegister<CommandDeviceLaserPower  >::ID() { return 4; }; int ID4 = TypeRegister<CommandDeviceLaserPower  >::RegisterType();
-template<> constexpr int TypeRegister<CommandDeviceLaserPointer>::ID() { return 5; }; int ID5 = TypeRegister<CommandDeviceLaserPointer>::RegisterType();
-template<> constexpr int TypeRegister<CommandDeviceFocusator   >::ID() { return 6; }; int ID6 = TypeRegister<CommandDeviceFocusator   >::RegisterType();
-template<> constexpr int TypeRegister<MessageDeviceController  >::ID() { return 7; }; int ID7 = TypeRegister<MessageDeviceController  >::RegisterType();
-template<> constexpr int TypeRegister<MessageDeviceLaserPower  >::ID() { return 8; }; int ID8 = TypeRegister<MessageDeviceLaserPower  >::RegisterType();
-template<> constexpr int TypeRegister<MessageDeviceLaserPointer>::ID() { return 9; }; int ID9 = TypeRegister<MessageDeviceLaserPointer>::RegisterType();
-template<> constexpr int TypeRegister<MessageDeviceFocusator   >::ID() { return 10;}; int ID10 = TypeRegister<CommandSetPosScanator   >::RegisterType();
-template<> constexpr int TypeRegister<CommandCalibration       >::ID() { return 11;}; int ID11 = TypeRegister<CommandSetPosScanator   >::RegisterType();
-template<> constexpr int TypeRegister<MessagePositionState<0>  >::ID() { return 12;}; int ID12 = TypeRegister<MessagePositionState<0> >::RegisterType();
-template<> constexpr int TypeRegister<MessagePositionState<1>  >::ID() { return 20;}; int ID13 = TypeRegister<MessagePositionState<1> >::RegisterType();
-template<> constexpr int TypeRegister<CommandCheckConnection   >::ID() { return 24;}; int ID14 = TypeRegister<CommandCheckConnection  >::RegisterType();
-template<> constexpr int TypeRegister<CommandCloseConnection   >::ID() { return 25;}; int ID15 = TypeRegister<CommandCloseConnection  >::RegisterType();
+#include "message_command_id.h"
+
+int ID1 = TypeRegister<CommandSetPosScanator    >::RegisterType();
+int ID2 = TypeRegister<CommandSetPosRotary      >::RegisterType();
+int ID3 = TypeRegister<CommandDeviceController  >::RegisterType();
+int ID4 = TypeRegister<CommandDeviceLaserPower  >::RegisterType();
+int ID5 = TypeRegister<CommandDeviceLaserPointer>::RegisterType();
+int ID6 = TypeRegister<CommandDeviceFocusator   >::RegisterType();
+int ID7 = TypeRegister<MessageDeviceController  >::RegisterType();
+int ID8 = TypeRegister<MessageDeviceLaserPower  >::RegisterType();
+int ID9 = TypeRegister<MessageDeviceLaserPointer>::RegisterType();
+int ID10 = TypeRegister<CommandSetPosScanator   >::RegisterType();
+int ID11 = TypeRegister<CommandSetPosScanator   >::RegisterType();
+int ID12 = TypeRegister<MessagePositionState<0> >::RegisterType();
+int ID13 = TypeRegister<MessagePositionState<1> >::RegisterType();
+int ID14 = TypeRegister<CommandCheckConnection  >::RegisterType();
+int ID15 = TypeRegister<CommandCloseConnection  >::RegisterType();
 
 void printRegisteredTypes()
 {
@@ -78,83 +84,130 @@ int main(int argc, char* argv[])
 
   printRegisteredTypes();
 
-  QThread* threadCamera1 = new QThread;
-  QThread* threadCamera2 = new QThread;
   QByteArray array; array.resize(20);
-
-  //CommandDispatcherGeneric<TypeRegister<CommandSetPosRotary>::ID()>::dispatchCommand(array);
-  CommandDispatcherGeneric<TypeRegister<CommandSetPosRotary>::TYPE_ID>::dispatchCommand(array);
-  qDebug() << "TYPE COUNT: " << TypeRegister<>::GetTypeCount();
-  qDebug() << "TYPE MAX  : " << TypeRegister<>::GetTypeMax();
-
-  int val = 2;
-  switch(val)
-  {
-    case TypeRegister<CommandSetPosRotary>::TYPE_ID: 
-    qDebug() << "GET COMMAND ROTARY: " <<TypeRegister<CommandSetPosRotary>::TYPE_ID;
-    break;
-    qDebug() << "GET COMMAND : " << val;
-  };
-
 
   //ControlPTZCamera PTZDevice;
   //                 PTZDevice.connectToCamera("192.168.1.11", "8899", "admin", "admin");
 
   WidgetComplexInterface* WindowInterface = new WidgetComplexInterface;
 
-  TCPConnectionEngine ConnectionInterface;
+  //=====================================================================================================
+  //CONNECTIONS
+  std::shared_ptr<UDPConnectionEngine> ConnectionInterface = std::make_shared<UDPConnectionEngine>();
+  ConnectionInterface->listenTo("192.168.0.36",2323);
+  ConnectionInterface->connectTo("192.168.0.57",2525);
 
-  DeviceLaserInterface<TCPConnectionEngine,CommandDevice<1>,MessageDevice<1>> ControlLaserPower  {&ConnectionInterface , "[ LPOWER]"};
-  DeviceLaserInterface<TCPConnectionEngine,CommandDevice<2>,MessageDevice<2>> ControlLaserPointer{&ConnectionInterface , "[ LPOINTER ]"};
-  DeviceFocusRangerInterface<TCPConnectionEngine,CommandDevice<3>,MessageDevice<3>> ControlFocus{&ConnectionInterface , "[ FOCUSATOR ]"};
+  std::shared_ptr<UDPConnectionEngine> ConnectionInterface2 = std::make_shared<UDPConnectionEngine>();
+  ConnectionInterface2->listenTo("192.168.0.36",40805);
+  ConnectionInterface2->connectTo("192.168.0.106",40804);
 
-  DeviceRotaryInterface<TCPConnectionEngine,CommandSetPos<0>,MessageMoveState<0>> ControlRotary  {&ConnectionInterface , "[ ROTARY ]"};
-  DeviceRotaryInterface<TCPConnectionEngine,CommandSetPos<1>,MessageMoveState<1>> ControlScanator{&ConnectionInterface , "[ SCANATOR ]"};
+  std::shared_ptr<UDPConnectionEngine> ConnectionInterface3 = std::make_shared<UDPConnectionEngine>();
+  ConnectionInterface3->listenTo("192.168.0.36",2323);
+  ConnectionInterface3->connectTo("192.168.0.120",9000);
 
-  //std::shared_ptr<DeviceRotaryGenericInterface> ptr = std::make_shared<DeviceRotaryInterface<TCPConnectionEngine,CommandSetPos<1>,MessageMoveState<1>>>(nullptr);
+  //=====================================================================================================
+  //LASERS
+  using CommandLaserPointer = MessageGenericExt<CommandDeviceLaserPointer,MESSAGE_HEADER_EXT>;
+  using RequestLaserPointer = MessageDevice<1>;
 
-    ControlRotary.linkTo(WindowInterface->ControlRotary);
-    ControlRotary.linkTo(WindowInterface->ControlRotaryPanel);
-  ControlScanator.linkTo(WindowInterface->ControlScanatorPanel);
+  using CommandLaserPower = MessageGenericExt<CommandDeviceLaserPower,MESSAGE_HEADER_EXT>;
+  using RequestLaserPower = MessageDevice<2>;
+
+  DeviceLaserInterface<UDPConnectionEngine,CommandLaserPower,RequestLaserPower> ControlLaserPower  
+  {ConnectionInterface , "Силовой лазер"};
+
+  DeviceLaserInterface<UDPConnectionEngine,CommandLaserPointer,RequestLaserPointer> ControlLaserPointer
+  {ConnectionInterface , "Подсветчик"};
+
+  //=====================================================================================================
+  //LIDS
+  QString open1  {"value: open, pin: 0, down: 2470, top: 1300, step: 50, interval: 0.03" };
+  QString close1 {"value: close, pin: 0, down: 2470, top: 1300, step: 2, interval: 0.001"};
+  QString open2  {"value: open, pin: 1, down: 530, top: 1750, step: 50, interval: 0.03"  };
+  QString close2 {"value: close, pin: 1, down: 530, top: 1750, step: 2, interval: 0.001" };
+
+  std::shared_ptr<DeviceLidInterface> LidControl 
+  = std::make_shared<DeviceLidControl<UDPConnectionEngine>>(ConnectionInterface3, open1, close1);
+
+  std::shared_ptr<DeviceLidInterface> LidControl2
+  = std::make_shared<DeviceLidControl<UDPConnectionEngine>>(ConnectionInterface3, open2, close2);
+
+  WindowInterface->ControlLid->linkTo(LidControl,LidControl2);
 
   //==================================================================================================================
+  //ROTARY SCANATOR
+  using CommandScanator = MessageGenericExt<CommandSetPosScanator,MESSAGE_HEADER_EXT>;
+  using RequestScanator = CommandSetPosScanator;
+
+  std::shared_ptr<DeviceRotaryInterface> ControlScanator 
+  = std::make_shared<DeviceRotaryControl<UDPConnectionEngine,CommandScanator,RequestScanator>>(ConnectionInterface);
+
+  std::shared_ptr<DeviceRotaryInterface> ControlRotary 
+  = std::make_shared<DeviceRotaryControl<UDPConnectionEngine,ControlTX,ControlRX>>(ConnectionInterface2);
+  //ControlRotary->moveWithVelocity(QPair<int,int>(0,0));
+
+                                               WindowInterface->ControlRotary->linkToDevice(ControlRotary);
+                                               WindowInterface->ControlScanatorPanel->linkToDevice(ControlScanator);
+
+                                               WindowInterface->windowControlLaserPower->linkTo(&ControlLaserPower);
+                                               WindowInterface->windowControlLaserIllum->linkTo(&ControlLaserPointer);
+  //==================================================================================================================
+
+  //DeviceFocusRangerInterface<TCPConnectionEngine,CommandDevice<3>,MessageDevice<3>> ControlFocus{&ConnectionInterface , "[ FOCUSATOR ]"};
+
+  //==================================================================================================================
+  //CAMERAS
   QStringList links; 
             //links = LoadCameraLinks();
-  
   links.resize(3);
-  links[0] = "rtsp://192.168.1.11:554/user=admin_password=_channel=1_stream=0.sdp";
+  links[0] = "rtsp://192.168.1.21:554/user=admin_password=_channel=1_stream=0.sdp";
   links[1] = "rtsp://192.168.1.75:8554/test";
+  links[2] = "rtsp://192.168.1.59:8554/test";
 
-  //CameraInterfaceUniversal* Camera1 = new CameraInterfaceUniversal(links[0].toStdString(), "[CAMERA1]");
-  //CameraInterfaceUniversal* Camera2 = new CameraInterfaceUniversal(links[1].toStdString(), "[CAMERA2]");
+  CameraInterfaceUniversal* Camera1 = new CameraInterfaceUniversal(links[0].toStdString(), "[CAMERA1]");
+  CameraInterfaceUniversal* Camera2 = new CameraInterfaceUniversal(links[1].toStdString(), "[CAMERA2]");
+  CameraInterfaceUniversal* Camera3 = new CameraInterfaceUniversal(links[2].toStdString(), "[CAMERA3]");
 
-  //WindowInterface->outputVideo1->linkToSource(Camera1); WindowInterface->outputVideo1->slotActivate(true);
-  //WindowInterface->outputVideo2->linkToSource(Camera2); WindowInterface->outputVideo2->slotActivate(true);
+                                         QThread* threadCamera1 = new QThread;
+                                         QThread* threadCamera2 = new QThread;
+                                         QThread* threadCamera3 = new QThread;
 
-  //WindowInterface->outputVideo1Control->linkToSource(Camera1);
-  //WindowInterface->outputVideo2Control->linkToSource(Camera2);
+                            Camera1->moveToThread(threadCamera1);
+                            Camera2->moveToThread(threadCamera2);
+                            Camera3->moveToThread(threadCamera2);
 
-  //WindowInterface->outputVideo1Mini->linkToSource(Camera1);
-  //WindowInterface->outputVideo2Mini->linkToSource(Camera2);
-  //  WindowInterface->outputVideoBig->linkToSource(Camera1);
+  QObject::connect(threadCamera1, &QThread::started, Camera1, &CameraInterfaceUniversal::slotStartStream);
+  QObject::connect(threadCamera2, &QThread::started, Camera2, &CameraInterfaceUniversal::slotStartStream);
+  QObject::connect(threadCamera3, &QThread::started, Camera3, &CameraInterfaceUniversal::slotStartStream);
 
-  //Camera1->moveToThread(threadCamera1);
-  //Camera2->moveToThread(threadCamera2);
-
-  //QObject::connect(threadCamera1, &QThread::started, Camera1, &CameraInterfaceUniversal::slotStartStream);
-  //QObject::connect(threadCamera2, &QThread::started, Camera2, &CameraInterfaceUniversal::slotStartStream);
   //QObject::connect(WindowInterface, &WidgetComplexInterface::signalEndWork, Camera1, &CameraInterfaceUniversal::slotEndWork, Qt::QueuedConnection);
   //QObject::connect(WindowInterface, &WidgetComplexInterface::signalEndWork, Camera2, &CameraInterfaceUniversal::slotEndWork, Qt::QueuedConnection);
 
   QObject::connect(WindowInterface, &WidgetComplexInterface::signalEndWork, threadCamera1, &QThread::quit, Qt::QueuedConnection);
   QObject::connect(WindowInterface, &WidgetComplexInterface::signalEndWork, threadCamera2, &QThread::quit, Qt::QueuedConnection);
+  QObject::connect(WindowInterface, &WidgetComplexInterface::signalEndWork, threadCamera3, &QThread::quit, Qt::QueuedConnection);
 
-  //WindowInterface->showFullScreen();
-  WindowInterface->showMaximized();
+                          WindowInterface->outputVideo1->linkToSource(Camera1); 
+                          WindowInterface->outputVideo2->linkToSource(Camera2); 
+                          WindowInterface->outputVideo3->linkToSource(Camera3); 
 
+                          WindowInterface->outputVideo1Control->linkToSource(Camera1);
+                          WindowInterface->outputVideo2Control->linkToSource(Camera2);
+                          WindowInterface->outputVideo3Control->linkToSource(Camera3);
 
-  //threadCamera1->start();
-  //threadCamera2->start();
+                          WindowInterface->outputVideo1Mini->linkToSource(Camera1);
+                          WindowInterface->outputVideo2Mini->linkToSource(Camera2);
+                          WindowInterface->outputVideo3Mini->linkToSource(Camera3);
+
+                          WindowInterface->outputVideoBig->linkToSource(Camera1);
+
+  if(Camera1->isCameraAccessable()) { threadCamera1->start(); WindowInterface->outputVideo1->slotActivate(true); }
+  if(Camera2->isCameraAccessable()) { threadCamera2->start(); WindowInterface->outputVideo2->slotActivate(true); }
+  if(Camera3->isCameraAccessable()) { threadCamera3->start(); WindowInterface->outputVideo3->slotActivate(true); }
+
+                          WindowInterface->showMaximized();
+                        //WindowInterface->showFullScreen();
+
   app.exec();
 }
 
@@ -193,5 +246,5 @@ for(auto Device: DevicesList) qDebug() << "[ CAMERA ] " << Device;
 return DevicesList;
 }
 
-  //EnginePort = new UDPEngineInterface("192.168.0.178",2323); 
+  //EnginePort = new UDPConnectionEngine("192.168.0.178",2323); 
   //EnginePort->BindTo(QHostAddress::Any,1313);

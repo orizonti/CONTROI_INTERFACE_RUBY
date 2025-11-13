@@ -16,38 +16,65 @@
 #include "engine_tcp_interface.h"
 #include "widget_laser_control.h"
 #include "device_generic_interface.h"
+#include <QDebug>
+#include <QTimer>
+
+//class DeviceLaserDelayedControl: public QObject
+//{
+//    public slots:
+//    void slotEnableLaser();
+//    void slotSetPowerHigh();
+//    void slotSetPowerMiddle();
+//    void slotSetPowerLow();
+//};
 
 template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
 class DeviceLaserInterface : public DeviceGenericInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>, public DeviceLaserGenericInterface
 {
 public:
     using DEVICE_BASE_TYPE = DeviceGenericInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>; 
-    explicit DeviceLaserInterface(T_CONNECTION* Connection, QString Name = "[ DEVICE ]");
+    explicit DeviceLaserInterface(std::shared_ptr<T_CONNECTION> Connection, QString Name = "[ DEVICE ]");
+	        ~DeviceLaserInterface();
 	QString TAG_NAME{"[ LASER ]"};
+	QString DISPLAY_NAME{"Силовой лазер"};
 
-	~DeviceLaserInterface();
                              WidgetLaserControl* ControlWindow  = nullptr;
 	void linkToControlWindow(WidgetLaserControl* ControlWindow ) {};
 
 	public:
     void loadSettings(){};
 	void setParam(uint8_t ID, uint16_t Value) override;
-	void setParams(uint16_t Value1, uint16_t Value2) override {};
-	void setParams(uint16_t Value1, uint16_t Value2, uint16_t Value3, uint16_t Value4) override {}; 
-
     void putMessage(T_MESSAGE Message) override; 
+	QString getName() override { return DISPLAY_NAME; }
 
 	public:
-	void setEnable(bool OnOff)      override {};
-	void setPowerEnable(bool OnOff) override {};
-	void setPilotEnable(bool OnOff) override {};
-	void setPower(uint16_t Value)   override {};
+
+    void setCheckProcedure();
+	void setEnable(bool OnOff)      override { setParam(LASER_MODULE,OnOff); };
+	void setPowerEnable(bool OnOff) override { setParam(LASER_MODULE_BEAM ,OnOff); };
+	void setPilotEnable(bool OnOff) override { setParam(LASER_MODULE_PILOT,OnOff); };
+
+	void setPower(uint16_t Value)   override 
+    { 
+        qDebug() << "====================================";
+        qDebug() << "SET POWER: " << Value;
+        QTimer::singleShot(10,   [this]() { this->setPowerEnable(false);qDebug() << "[ LASER BEAM OFF ]";        });
+        QTimer::singleShot(1000, [this]() { this->setEnable(false);     qDebug() << "[ LASER DISABLE  ]";        });
+        QTimer::singleShot(2000, [this]() { this->setCheckProcedure();  qDebug() << "[ LASER ENABLE   ]";        });
+        QTimer::singleShot(3000, [this]() { this->setEnable(true);      qDebug() << "[ LASER ENABLE   ]";        });
+        QTimer::singleShot(4000, [this,Value]() { this->setParam(LASER_MODULE_POWER, Value);   
+                                                                        qDebug() << "[ LASER SET POWER ]" << Value; });
+    };
+	void setPowerHigh()   { setPower(99); };
+	void setPowerMiddle() { setPower(50);  };
+	void setPowerLow()    { setPower(15);  };
 	bool getState() { return messageState.Param1 == 0 ? false : true; }
     T_MESSAGE messageState;
 private:
     std::map<uint8_t, uint8_t> KEY_MODULE;       //GET NUMBER MODULE FROM COMMAND CODE
     std::map<uint8_t, uint8_t> KEY_MODULE_PARAM; //KEY PARAM VALUE FROM COMMAND CODE
 	std::map<uint8_t, std::map<uint8_t,uint8_t>> ID_PARAM_KEY; //GET COMMAND CODE FROM [COMMAND_ID PARAM]
+    T_COMMAND Command;
 };
 
 template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
@@ -57,12 +84,19 @@ template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
 void DeviceLaserInterface<T_CONNECTION,T_COMMAND,T_MESSAGE>::setParam(uint8_t ID, uint16_t Value)
 {
 	uint8_t param = Value > 0 ? 1 : 0;  
+	Command.DATA.Command = ID_PARAM_KEY[ID][param];
+	Command.DATA.Param    = Value;
+    qDebug() << "CODE: " << Qt::hex << Command.DATA.Command << " PARAM: " << Qt::dec << Command.DATA.Param;
+    this->sendCommand(Command);
+}
 
-	DEVICE_BASE_TYPE::Command.DATA.DeviceID = 0;
-	DEVICE_BASE_TYPE::Command.DATA.DeviceID = TypeRegister<T_COMMAND>::GetTypeID();
-	DEVICE_BASE_TYPE::Command.DATA.Command  = ID_PARAM_KEY[ID][param];
-	DEVICE_BASE_TYPE::Command.DATA.Param    = Value;
-	DEVICE_BASE_TYPE::sendCommand();
+template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
+void DeviceLaserInterface<T_CONNECTION,T_COMMAND,T_MESSAGE>::setCheckProcedure()
+{
+	Command.DATA.Command  = 0x20;
+	Command.DATA.Param    = 0;
+    qDebug() << "CODE: " << Qt::hex << Command.DATA.Command << " PARAM: " << Qt::dec << Command.DATA.Param;
+	this->sendCommand(Command);
 }
 
 template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
@@ -75,9 +109,12 @@ void DeviceLaserInterface<T_CONNECTION,T_COMMAND,T_MESSAGE>::putMessage(T_MESSAG
 }
 
 template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
-DeviceLaserInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>::DeviceLaserInterface(T_CONNECTION* Connection, QString Name): 
+DeviceLaserInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>::DeviceLaserInterface(std::shared_ptr<T_CONNECTION> Connection, QString Name): 
 DeviceGenericInterface<T_CONNECTION,T_COMMAND, T_MESSAGE>(Connection, Name)
 {
+  QTimer::singleShot(100, [this]()  { this->setCheckProcedure(); qDebug() << "[ LASER ENABLE ]";        });
+
+  DISPLAY_NAME = Name;
   KEY_MODULE[LASER_FAULT]     = LASER_MODULE;
   KEY_MODULE[LASER_ON]        = LASER_MODULE;       KEY_MODULE[LASER_OFF]       = LASER_MODULE;
   KEY_MODULE[LASER_BEAM_ON]   = LASER_MODULE_BEAM ; KEY_MODULE[LASER_BEAM_OFF]  = LASER_MODULE_BEAM;

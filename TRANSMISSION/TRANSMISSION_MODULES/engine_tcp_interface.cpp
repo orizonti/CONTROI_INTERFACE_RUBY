@@ -53,8 +53,9 @@ void TCPConnectionEngine::slotReadData()
 
 void TCPConnectionEngine::slotSendMessage(const QByteArray& Command, uint8_t Param)
 {
-   qDebug() << OutputFilter::Filter(1000) << "SEND COMMAND: " << QString(Command.toHex());
+   qDebug() << OutputFilter::Filter(200) << "SEND COMMAND: " << QString(Command.toHex());
 
+   return;
    if(!Socket) return;
    if(!Socket->isOpen()) return; Socket->write(Command);
 }

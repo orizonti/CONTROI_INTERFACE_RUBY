@@ -14,6 +14,7 @@ TransformCoordClass::TransformCoordClass()
 		TransformedCoord.second = CoordError.second * Scale + Offset;
 	};
 	//TRANSFORM SECS TO RADIAN
+
 }
 TransformCoordClass::TransformCoordClass(double ScaleParam, double OffsetParam)
 {

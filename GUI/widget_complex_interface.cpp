@@ -7,24 +7,33 @@
 #include <QGraphicsPixmapItem>
 #include "label_active_image.h"
 
+#include "message_command_id.h"
+
 WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
     : WidgetAdjustable(parent)
     , ui(new Ui::WidgetComplexInterface)
 {
     ui->setupUi(this);
 
+
     ControlBlock = new WidgetControlBlock;
     ControlRotary = new WidgetRotaryPlatformControl;
     ControlFocusRanger = new WidgetFocusRangerControl;
     ControlPanelSwitcher = new WidgetPanelSwitcher;
+    ControlLid = new WidgetLidControl;
 
     ControlRotaryPanel   = ui->widgetRotaryPlatformControl;
     ControlScanatorPanel = ui->widgetScanatorControl;
+
+    windowControlLaserPower = ui->widgetLaserPowerControl;
+    windowControlLaserIllum = ui->widgetLaserIllumControl;
 
     //ControlBlock->show();
     ControlFocusRanger->setMaximumHeight(220);
     ControlPanelSwitcher->setMaximumHeight(220);
     ControlPanelSwitcher->setMaximumWidth(80);
+    ControlLid->setMaximumHeight(220);
+    ControlLid->setMaximumWidth(80);
     ControlPanelSwitcher->hideButton(1);
 
     ui->layoutControlBlock->addWidget(ControlBlock);
@@ -32,6 +41,8 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
     ui->layoutControlBlock->addWidget(ControlRotary);
     ui->layoutControlBlock->addWidget(ControlFocusRanger);
     ui->layoutControlBlock->addWidget(ControlPanelSwitcher);
+    ui->layoutControlBlock->addWidget(ControlPanelSwitcher);
+    ui->layoutControlBlock->addWidget(ControlLid);
     ui->widgetSwitcherFullMode->hideButton(1);
 
     connect(ControlPanelSwitcher, &WidgetPanelSwitcher::signalRegim1, this, &WidgetComplexInterface::slotSetMainMode);
