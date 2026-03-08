@@ -1,8 +1,8 @@
 #include "transform_coord_class.h"  
 
 
-const QPair<float,float>& TransformCoordClass::GetOutput() { return TransformedCoord; }
-void TransformCoordClass::SetInput(const QPair<float,float>& Coord) { TransformCoord(Coord); }
+const QPair<float,float>& TransformCoordClass::getOutput() { return TransformedCoord; }
+void TransformCoordClass::setInput(const QPair<float,float>& Coord) { TransformCoord(Coord); }
 
 TransformCoordClass::TransformCoordClass()
 {

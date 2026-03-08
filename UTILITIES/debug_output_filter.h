@@ -21,7 +21,7 @@ class BlockCounterClass
   bool isOpen() { return (Counter >= Peak) ^ FlagInverse;}
   bool isClosed() { return (Counter < Peak) ^ FlagInverse;}
   void Increment() { Counter++;}
-  void Reset() { Counter = 0;}
+  void reset() { Counter = 0;}
 };
 
 class ThinningCounter : public BlockCounterClass
@@ -55,8 +55,8 @@ class OutputFilter
 
     static OutputFilter& Filter(int size, const std::source_location& location = std::source_location::current()) 
     {
-                              current_ident = location.line() + strlen(location.file_name()) + 
-                                                                strlen(location.function_name()); 
+                              current_ident = location.line() + (int)strlen(location.file_name()) + 
+                                                                (int)strlen(location.function_name()); 
          if(!Filters.contains(current_ident))  qDebug() << "CREATE FILTER FOR POS: " << current_ident << location.line();
          if(!Filters.contains(current_ident)) 
              Filters.emplace (current_ident, OutputFilter(size));

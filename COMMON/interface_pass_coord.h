@@ -14,31 +14,31 @@ public:
     QPair<V,V> OutputCoord{0,0};
     bool PassBlocked = false;
 
-	virtual const QPair<V, V>& GetOutput() { return OutputCoord;};
-	virtual void SetInput(const QPair<V, V>& Coord) {OutputCoord = Coord;};
+	virtual const QPair<V, V>& getOutput() { return OutputCoord;};
+	virtual void setInput(const QPair<V, V>& Coord) {OutputCoord = Coord;};
 
-    void SetLink(PassCoordClass<V>* NewLink) { NodesLinked.push_back(NewLink); }
-	void PassCoord() { if(!isLinked() || PassBlocked) return; for(auto& link: NodesLinked) {*this >> *link;} }
+    void setLink(PassCoordClass<V>* NewLink) { NodesLinked.push_back(NewLink); }
+	void passCoord() { if(!isLinked() || PassBlocked) return; for(auto& link: NodesLinked) {*this >> *link;} }
 	
-	virtual QPair<V,V>& operator >>(QPair<V, V>& Coord) { Coord = GetOutput(); return Coord;}
+	virtual QPair<V,V>& operator >>(QPair<V, V>& Coord) { Coord = getOutput(); return Coord;}
 
     virtual PassCoordClass& operator >>(PassCoordClass& Reciever)
     { 
-        Reciever.SetInput(GetOutput()); if(Reciever.isLinked()) Reciever.PassCoord(); return Reciever; 
+        Reciever.setInput(getOutput()); if(Reciever.isLinked()) Reciever.passCoord(); return Reciever; 
     }
 
 	friend PassCoordClass& operator >>(const     QPair<V,V>&  Coord, PassCoordClass& Reciever)
-    { Reciever.SetInput(Coord); if(Reciever.isLinked()) Reciever.PassCoord(); return Reciever; } 
+    { Reciever.setInput(Coord); if(Reciever.isLinked()) Reciever.passCoord(); return Reciever; } 
 
     friend PassCoordClass& operator | (PassCoordClass& Sender, PassCoordClass& Reciever)
-    { Sender.SetLink(&Reciever); return Reciever; }
+    { Sender.setLink(&Reciever); return Reciever; }
 
     friend std::shared_ptr<PassCoordClass>  operator | (std::shared_ptr<PassCoordClass> Sender, 
 	                                                    std::shared_ptr<PassCoordClass> Reciever)
-    { Sender->SetLink(Reciever.get()); return Reciever; }
+    { Sender->setLink(Reciever.get()); return Reciever; }
 
     friend PassCoordClass& operator | (std::shared_ptr<PassCoordClass> Sender, PassCoordClass& Reciever)
-    { Sender->SetLink(&Reciever); return Reciever; }
+    { Sender->setLink(&Reciever); return Reciever; }
 
 };
 
@@ -62,10 +62,8 @@ QPair<V, V> operator/(QPair<V, V> x, const QPair<T, T>& y) { x.first /= y.first;
 template<typename T>
 std::pair<T, T> operator+(std::pair<T, T> x, const std::pair<T, T>& y) { x.first += y.first; x.second += y.second; return x; }
 
-template<typename T>
-std::pair<float,float> operator+(std::pair<float,float> x, const std::pair<T, T>& y) { x.first += y.first; x.second += y.second; return x; }
-template<typename T>
-std::pair<float,float> operator+(const std::pair<T, T>& x, std::pair<float,float> y) { y.first += x.first; y.second += x.second; return y; }
+template<typename T, typename V>
+std::pair<V, V> operator+(std::pair<V, V> x, const std::pair<T, T>& y) { x.first += y.first; x.second += y.second; return x; }
 
 template<typename T>
 std::pair<T, T> operator-(std::pair<T, T> x, const std::pair<T, T>& y) { x.first -= y.first; x.second -= y.second; return x; }
@@ -87,7 +85,7 @@ class PortAdapter : public PassCoordClass<float>
 {
 public:
     PortAdapter(){};
-    void LinkAdapter(T* LinkObject,std::function<void(T&,QPair<float,float>)> SetFunction, std::function<QPair<float,float>(T&)> GetFunction)
+    void linkAdapter(T* LinkObject,std::function<void(T&,QPair<float,float>)> SetFunction, std::function<QPair<float,float>(T&)> GetFunction)
     { InputFunction = SetFunction; OutputFunction = GetFunction; Receiver = LinkObject; };
 
     T* Receiver =  nullptr;
@@ -95,8 +93,8 @@ public:
     std::function<void(T&,QPair<float,float>)> InputFunction = nullptr;
     std::function<QPair<float,float>(T&)> OutputFunction = nullptr;
 
-    void SetInput(const QPair<float,float>& coord) { if(InputFunction != nullptr) InputFunction(*Receiver,coord);};
-    const QPair<float,float>& GetOutput() { if(OutputFunction != nullptr) PassCoordClass<float>::OutputCoord = OutputFunction(*Receiver); 
+    void setInput(const QPair<float,float>& coord) { if(InputFunction != nullptr) InputFunction(*Receiver,coord);};
+    const QPair<float,float>& getOutput() { if(OutputFunction != nullptr) PassCoordClass<float>::OutputCoord = OutputFunction(*Receiver); 
                                                                    return PassCoordClass<float>::OutputCoord;};
 
 };

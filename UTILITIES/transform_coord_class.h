@@ -16,8 +16,8 @@ public:
 	}
 	std::function<void(QPair<float,float>)> TransformCoord;
 
-    const QPair<float,float>& GetOutput() { return Output; }
-    void SetInput(const QPair<float,float>& Coord) { TransformCoord(Coord); }
+    const QPair<float,float>& getOutput() { return Output; }
+    void setInput(const QPair<float,float>& Coord) { TransformCoord(Coord); }
 
 	QPair<float,float> Output;
 

@@ -25,13 +25,21 @@ set(COMPILER "msvc2022_64")
 endif()
 
 if(EXISTS "${LIBRARY_DIR}/IMAGE_PROCESSING/OPENCV/opencv412")
-set(CV_VERSION "/opencv412/build/")
+set(CV_VERSION "/opencv412/build/install")
 endif()
 #D:\LIBRARY\IMAGE_PROCESSING\OPENCV\opencv412\opencv\build\x64\vc16\lib
 
-if(EXISTS "${LIBRARY_DIR}/IMAGE_PROCESSING/OPENCV/opencv411")
-set(CV_VERSION "opencv411")
-endif()
+#set(PKG_CONFIG_EXECUTABLE "C:/ProgramData/chocolatey/bin/pkg-config.exe")
+set(PKG_CONFIG_PATH "D:/LIBRARY/IMAGE_PROCESSING/GSTREAMER/1.0/msvc_x86_64/lib/pkgconfig")
+
+find_package(PkgConfig REQUIRED)
+#pkg_check_modules(GstreamerLib REQUIRED IMPORTED_TARGET "gstreamer-1.0")
+
+pkg_search_module(gstreamer REQUIRED IMPORTED_TARGET gstreamer-1.0>=1.4)
+pkg_search_module(gstreamer-sdp REQUIRED IMPORTED_TARGET gstreamer-sdp-1.0>=1.4)
+pkg_search_module(gstreamer-app REQUIRED IMPORTED_TARGET gstreamer-app-1.0>=1.4)
+pkg_search_module(gstreamer-video REQUIRED IMPORTED_TARGET gstreamer-video-1.0>=1.4)
+pkg_search_module(gstreamer-rtsp-server REQUIRED IMPORTED_TARGET gstreamer-rtsp-server-1.0>=1.4)
 
 set(QT_LIB_DIR "${LIBRARY_DIR}/Qt683/6.8.3/${COMPILER}")
 set(OPENCV_LIB_DIR "${LIBRARY_DIR}/IMAGE_PROCESSING/OPENCV/${CV_VERSION}/")
@@ -43,7 +51,7 @@ message("SET OPENCV LIBRARY - ${LIBRARY_DIR}/IMAGE_PROCESSING/OPENCV/${CV_VERSIO
 list(APPEND CMAKE_PREFIX_PATH ${QT_LIB_DIR})
 list(APPEND CMAKE_PREFIX_PATH ${OPENCV_LIB_DIR})
 
-find_package(Qt6 COMPONENTS Widgets Network Core Xml PrintSupport REQUIRED)
+find_package(Qt6 COMPONENTS Widgets Network Core Xml PrintSupport SerialPort SerialBus REQUIRED)
 
 find_package(OpenCV REQUIRED )
 
@@ -64,11 +72,16 @@ include_directories("D:/LIBRARY/MATH_LIBRARY/eigen")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/GUI")
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION/TRANSMISSION_MODULES")
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION/DATA_STRUCTURES")
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION/EMBEDED_RING_BUFFER")
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION/GENERIC_MESSAGES")
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION/RING_BUFFER_ADAPTERS")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION_MODULES/NETWORK_INTERFACES")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION_MODULES/DATA_STRUCTURES")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION_MODULES/RING_BUFFER")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION_MODULES/GENERIC_MESSAGES")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION_MODULES/RING_BUFFER_ADAPTERS")
+include_directories("D:/LIBRARY/IMAGE_PROCESSING/GSTREAMER/1.0/msvc_x86_64/lib/gstreamer-1.0/include")
+include_directories("D:/PROGRAMS/IDE/VisualStudio2022/VC/Tools/MSVC/14.44.35207/include")
+include_directories("D:/LIBRARY/Qt683/6.8.3/msvc2022_64/include")
+
+
 
 #======================LINK PROJECT===========================
 add_executable (testCameraRTSP
@@ -81,23 +94,16 @@ add_executable (testCameraRTSP
         "./GUI/widget_control_block.cpp"
         "./GUI/widget_control_block.ui"
 
+        "./GUI/widget_device_control.cpp"
+        "./GUI/widget_device_control.ui"
+
         "./GUI/widget_panel_switcher.cpp"
         "./GUI/widget_panel_switcher.ui"
-
-        "./GUI/widget_laser_control.cpp"
-        "./GUI/widget_laser_control.ui"
-
-        "./GUI/widget_camera_control.cpp"
-        "./GUI/widget_camera_control.ui"
-
-        "./GUI/widget_lid_control.cpp"
-        "./GUI/widget_lid_control.ui"
 
         "./GUI/widget_rotary_platform_control.cpp"
         "./GUI/widget_rotary_platform_control.ui"
 
-        "./GUI/widget_focus_ranger_control.cpp"
-        "./GUI/widget_focus_ranger_control.ui"
+        "./GUI/widget_rotary_control.cpp"
 
         "./GUI/widget_block_status.cpp"
         "./GUI/widget_block_status.ui"
@@ -108,14 +114,24 @@ add_executable (testCameraRTSP
         "./DEVICES/device_rotary_interface.cpp"
 
         "./UTILITIES/debug_output_filter.cpp"
+        "./UTILITIES/sinus_generator_class.cpp"
 
         "./UTILITIES/register_settings.cpp"
         "./CAMERA_RTSP_INTERFACE/interface_camera_rtsp.cpp"
+
         "./CAMERA_RTSP_INTERFACE/interface_image_source.cpp"
-        "./TRANSMISSION/TRANSMISSION_MODULES/engine_tcp_interface.cpp"
-        "./TRANSMISSION/TRANSMISSION_MODULES/engine_udp_interface.cpp"
+        "./TRANSMISSION_MODULES/NETWORK_INTERFACES/engine_tcp_interface.cpp"
+        "./TRANSMISSION_MODULES/NETWORK_INTERFACES/engine_udp_interface.cpp"
+        "./TRANSMISSION_MODULES/NETWORK_INTERFACES/engine_uart_interface.cpp"
+        "./TRANSMISSION_MODULES/DATA_STRUCTURES/message_command_structures_rotary.cpp"
         )
 
+target_link_libraries(testCameraRTSP
+                PkgConfig::gstreamer
+                PkgConfig::gstreamer-sdp
+                PkgConfig::gstreamer-app
+                PkgConfig::gstreamer-rtsp-server
+                PkgConfig::gstreamer-video)
         
 target_link_libraries(testCameraRTSP ${OpenCV_LIBS})
 target_link_libraries(testCameraRTSP Qt6::Core)
@@ -123,6 +139,8 @@ target_link_libraries(testCameraRTSP Qt6::Widgets)
 target_link_libraries(testCameraRTSP Qt6::Xml)
 target_link_libraries(testCameraRTSP Qt6::Network)
 target_link_libraries(testCameraRTSP Qt6::PrintSupport)
+target_link_libraries(testCameraRTSP Qt6::SerialPort)
+target_link_libraries(testCameraRTSP Qt6::SerialBus)
 target_link_libraries(testCameraRTSP "${CMAKE_SOURCE_DIR}/DEVICE_ZOOM_LIB_WIN/controlPTZCamera.lib")
 
 

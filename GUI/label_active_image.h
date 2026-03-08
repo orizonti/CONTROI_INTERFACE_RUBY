@@ -6,6 +6,7 @@
 #include <QImage>
 #include "interface_image_source.h"
 #include <QPainter>
+#include "device_generic_interface.h"
 
 
 class LabelActiveImage : public LabelAdjustable
@@ -17,6 +18,7 @@ public:
 	~LabelActiveImage();
 	int posX = 0;
 	int posY = 0;
+	std::pair<int,int> PosPicked;
 	std::pair<int,int> getPos() { return std::pair<int,int>(posX,posY); }
 
 protected:
@@ -24,7 +26,7 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent * ev);
 
 signals:
-	void signalPosPicked(int,int);
+	void signalPosPicked(QPair<int,int> Pos);
 	void signalLabelPicked();
 };
 
@@ -34,6 +36,7 @@ class SinkDisplayLabel : public SinkDisplayNode
 	public:
 	LabelActiveImage* LabelDisplay = nullptr;
      SinkDisplayNode* NodeLinked = nullptr;
+    void linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device);    
 
 	void setImageFrom(SourceImageDisplayInterface* Src) override;
 	void linkToDisplay(LabelActiveImage* Display) 
@@ -49,8 +52,15 @@ class SinkDisplayLabel : public SinkDisplayNode
 	  QImage DisplayImage;
 	QPainter Painter;
 
+	std::pair<float,float> CoordRect;
+	std::pair<int  ,int  > SizeRect ;
+	void setCoordPaint(std::pair<float,float> Coord) { CoordRect = Coord; }
+
+	//std::vector<std::pair<float,float>> CoordsObjects;
+
 	private slots:
 	void slotNodePicked() { if(NodeLinked != nullptr) NodeLinked->linkToSource(this->GetSource()); }
+	void slotPosPicked(std::pair<int,int> pos)  { qDebug() << "SINK DISPLAY POS: " << pos.first << pos.second;  }
 }
 ;
 

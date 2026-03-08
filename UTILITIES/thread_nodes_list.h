@@ -1,4 +1,4 @@
-// PassCoordNop
+// passCoordNop
 // CoordPassEnd
 // SubstractNode
 // SumNode

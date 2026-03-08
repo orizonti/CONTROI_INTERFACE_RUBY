@@ -65,6 +65,51 @@ border: 0px solid line black;
      </property>
      <widget class="QWidget" name="page">
       <layout class="QGridLayout" name="gridLayout">
+       <item row="1" column="0">
+        <widget class="LabelActiveImage" name="labelCameraZoom">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>201</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>624</width>
+           <height>344</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QLabel
+{
+  border: 2px solid line;
+	border-color: rgb(231, 164, 60);
+  
+border-radius: 8px;
+
+	background-color: rgba(173, 164, 123, 37);
+}</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="pixmap">
+          <pixmap resource="Images.qrc">:/newPrefix/Background.png</pixmap>
+         </property>
+         <property name="scaledContents">
+          <bool>true</bool>
+         </property>
+         <property name="margin">
+          <number>3</number>
+         </property>
+        </widget>
+       </item>
        <item row="0" column="0">
         <widget class="LabelActiveImage" name="labelCameraFast">
          <property name="sizePolicy">
@@ -148,7 +193,7 @@ border-radius: 8px;
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap>../../../../../STORAGE/Yandex.Disk/PICTURES/ImagesToPrograms/Background.png</pixmap>
+          <pixmap>C:/STORAGE/Yandex.Disk/PICTURES/ImagesToPrograms/Background.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
@@ -158,24 +203,126 @@ border-radius: 8px;
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="LabelActiveImage" name="labelCameraZoom">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>200</width>
-           <height>201</height>
-          </size>
-         </property>
+       <item row="1" column="2">
+        <widget class="QStackedWidget" name="widgetStackedMainControl">
          <property name="maximumSize">
           <size>
            <width>624</width>
            <height>344</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QStackedWidget
+{
+border: 0px solid line;
+border-color: green;
+}</string>
+         </property>
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <widget class="QWidget" name="page_5">
+          <layout class="QGridLayout" name="gridLayout_3">
+           <item row="0" column="0">
+            <layout class="QHBoxLayout" name="layoutControlBlock"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_6">
+          <layout class="QGridLayout" name="gridLayout_5">
+           <item row="1" column="0">
+            <layout class="QVBoxLayout" name="layoutControlListLeft"/>
+           </item>
+           <item row="1" column="1">
+            <layout class="QVBoxLayout" name="layoutControlListRight">
+             <item>
+              <spacer name="verticalSpacer">
+               <property name="orientation">
+                <enum>Qt::Orientation::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item row="0" column="0" colspan="2">
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <item>
+              <widget class="WidgetBlockStatus" name="widget_2" native="true">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>30</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="butToMainControl">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">QPushButton
+{
+	background-color: rgba(209, 192, 34, 60);
+    border: 2px solid line;
+    border-radius: 6px;
+   
+	border-color: rgb(214, 136, 41);
+}
+
+QPushButton:pressed
+{
+    background-color: rgba(209, 142, 34, 110);
+    border: 4px solid line;
+    border-radius: 6px;
+   
+	
+	border-color: rgb(171, 86, 38);
+}</string>
+               </property>
+               <property name="text">
+                <string>Работа</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="page_3">
+      <layout class="QGridLayout" name="gridLayout_4">
+       <item row="1" column="0">
+        <widget class="LabelActiveImage" name="labelMiniCameraFast">
+         <property name="maximumSize">
+          <size>
+           <width>120</width>
+           <height>120</height>
           </size>
          </property>
          <property name="styleSheet">
@@ -188,486 +335,6 @@ border-radius: 8px;
 
 	background-color: rgba(173, 164, 123, 37);
 }</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="pixmap">
-          <pixmap resource="Images.qrc">:/newPrefix/Background.png</pixmap>
-         </property>
-         <property name="scaledContents">
-          <bool>true</bool>
-         </property>
-         <property name="margin">
-          <number>3</number>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <layout class="QHBoxLayout" name="layoutControlBlock"/>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="page_2">
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <layout class="QGridLayout" name="gridLayout_5">
-         <property name="spacing">
-          <number>1</number>
-         </property>
-         <item row="2" column="0" colspan="4">
-          <widget class="LabelActiveImage" name="labelCameraThermalControl">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>40</width>
-             <height>40</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>440</width>
-             <height>270</height>
-            </size>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">QLabel
-{
-  border: 2px solid line;
-	border-color: rgb(231, 164, 60);
-  
-border-radius: 8px;
-
-	background-color: rgba(173, 164, 123, 37);
-}</string>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="margin">
-            <number>2</number>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="WidgetLaserControl" name="widgetLaserIllumControl" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>110</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>170</width>
-             <height>220</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="WidgetLaserControl" name="widgetLaserPowerControl" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>170</width>
-             <height>220</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="WidgetCameraControl" name="widgetCameraFastControl" native="true">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>175</width>
-             <height>220</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="3">
-          <widget class="WidgetFocusRangerControl" name="widgetRangerFocusControl" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>60</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>170</width>
-             <height>220</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2">
-          <widget class="WidgetRotaryPlatformControl" name="widgetRotaryPlatformControl" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>110</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>220</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QGridLayout" name="gridLayout_7">
-         <property name="spacing">
-          <number>1</number>
-         </property>
-         <item row="0" column="0">
-          <widget class="QWidget" name="widget1" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>110</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>175</width>
-             <height>220</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QWidget" name="widget2" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>60</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>170</width>
-             <height>220</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="WidgetCameraControl" name="widgetCameraZoomControl" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>110</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>175</width>
-             <height>220</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="QWidget" name="widget3" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>60</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>170</width>
-             <height>220</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="WidgetRotaryPlatformControl" name="widgetScanatorControl" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>110</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>175</width>
-             <height>220</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0" colspan="3">
-          <widget class="LabelActiveImage" name="labelCameraFastControl">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>40</width>
-             <height>40</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>600</width>
-             <height>270</height>
-            </size>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">QLabel
-{
-  border: 2px solid line;
-	border-color: rgb(231, 164, 60);
-  
-border-radius: 8px;
-
-	background-color: rgba(173, 164, 123, 37);
-}</string>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="margin">
-            <number>2</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QGridLayout" name="gridLayout_8">
-         <property name="spacing">
-          <number>1</number>
-         </property>
-         <item row="2" column="0" colspan="3">
-          <widget class="LabelActiveImage" name="labelCameraZoomControl">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>40</width>
-             <height>40</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>600</width>
-             <height>270</height>
-            </size>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">QLabel
-{
-  border: 2px solid line;
-	border-color: rgb(231, 164, 60);
-  
-border-radius: 8px;
-
-	background-color: rgba(173, 164, 123, 37);
-}</string>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="margin">
-            <number>2</number>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QWidget" name="widget2_3" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>60</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>170</width>
-             <height>220</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="WidgetPanelSwitcher" name="widgetSwitcher" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>110</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>220</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2" rowspan="2">
-          <widget class="QWidget" name="widget_2" native="true">
-           <property name="minimumSize">
-            <size>
-             <width>110</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>600</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0" colspan="2">
-          <widget class="WidgetBlockStatus" name="widgetStatusControl" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>60</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>340</width>
-             <height>220</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="page_3">
-      <layout class="QGridLayout" name="gridLayout_4">
-       <item row="1" column="1">
-        <widget class="LabelActiveImage" name="labelMiniCameraZoom">
-         <property name="maximumSize">
-          <size>
-           <width>120</width>
-           <height>120</height>
-          </size>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="LabelActiveImage" name="labelMiniCameraFast">
-         <property name="maximumSize">
-          <size>
-           <width>120</width>
-           <height>120</height>
-          </size>
          </property>
          <property name="text">
           <string/>
@@ -694,6 +361,41 @@ border-radius: 8px;
            <height>550</height>
           </size>
          </property>
+         <property name="styleSheet">
+          <string notr="true">QLabel
+{
+  border: 2px solid line;
+	border-color: rgb(231, 164, 60);
+  
+border-radius: 8px;
+
+	background-color: rgba(173, 164, 123, 37);
+}</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="LabelActiveImage" name="labelMiniCameraThermal">
+         <property name="maximumSize">
+          <size>
+           <width>120</width>
+           <height>120</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QLabel
+{
+  border: 2px solid line;
+	border-color: rgb(231, 164, 60);
+  
+border-radius: 8px;
+
+	background-color: rgba(173, 164, 123, 37);
+}</string>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -717,13 +419,24 @@ border-radius: 6px;
          </property>
         </widget>
        </item>
-       <item row="1" column="2">
-        <widget class="LabelActiveImage" name="labelMiniCameraThermal">
+       <item row="1" column="1">
+        <widget class="LabelActiveImage" name="labelMiniCameraZoom">
          <property name="maximumSize">
           <size>
            <width>120</width>
            <height>120</height>
           </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QLabel
+{
+  border: 2px solid line;
+	border-color: rgb(231, 164, 60);
+  
+border-radius: 8px;
+
+	background-color: rgba(173, 164, 123, 37);
+}</string>
          </property>
          <property name="text">
           <string/>
@@ -740,6 +453,9 @@ border-radius: 6px;
          </property>
         </widget>
        </item>
+       <item row="0" column="6">
+        <layout class="QVBoxLayout" name="layoutControlBlockBigPanel"/>
+       </item>
       </layout>
      </widget>
     </widget>
@@ -747,30 +463,6 @@ border-radius: 6px;
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>WidgetLaserControl</class>
-   <extends>QWidget</extends>
-   <header location="global">widget_laser_control.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>WidgetCameraControl</class>
-   <extends>QWidget</extends>
-   <header location="global">widget_camera_control.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>WidgetFocusRangerControl</class>
-   <extends>QWidget</extends>
-   <header location="global">widget_focus_ranger_control.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>WidgetRotaryPlatformControl</class>
-   <extends>QWidget</extends>
-   <header location="global">widget_rotary_platform_control.h</header>
-   <container>1</container>
-  </customwidget>
   <customwidget>
    <class>WidgetPanelSwitcher</class>
    <extends>QWidget</extends>

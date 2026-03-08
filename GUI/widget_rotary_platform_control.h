@@ -21,6 +21,7 @@ public:
         void linkToDevice(std::shared_ptr<DeviceRotaryInterface> Device);
 
         QPair<int,int> Position{0,0};
+void setName(QString name);
 private:
 Ui::WidgetRotaryPlatformControl *ui;
 

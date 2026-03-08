@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>WidgetLidControl</class>
+ <widget class="QWidget" name="WidgetLidControl">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>174</width>
+    <height>146</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>174</width>
+    <height>16777215</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string/>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget
+{
+	background-color: rgb(43, 43, 43);
+}
+
+QPushButton
+{
+	
+	background-color: rgba(32, 156, 19, 83);
+    border: 2px solid line;
+    border-radius: 6px;
+   
+	border-color: rgb(30, 221, 78);
+}
+
+QPushButton:checked
+{
+	
+	background-color: rgba(204, 53, 10, 62);
+    border: 2px solid line;
+    border-radius: 6px;	
+	border-color: rgb(215, 50, 28);
+}
+
+QLineEdit
+{
+	
+	background-color: rgba(32, 156, 19, 83);
+    border: 2px solid line;
+    border-radius: 6px;
+   
+	border-color: rgb(30, 221, 78);
+}</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="1" column="0">
+    <widget class="QPushButton" name="butLidOpen">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>80</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton
+{
+   background-color: rgba(204, 53, 10, 32);
+    border: 2px solid line;
+    border-radius: 6px;	
+	border-color: rgb(215, 50, 28);
+   
+   
+	image: url(:/newPrefix/ButtonOff2.png);
+
+}
+
+QPushButton::checked
+{
+	
+	background-color: rgba(32, 156, 19, 33);
+    border: 2px solid line;
+    border-radius: 6px;
+   
+	border-color: rgb(66, 197, 37);
+   
+	image: url(:/newPrefix/ButtonOn2.png);
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="styleSheet">
+      <string notr="true">QLabel
+{
+	color: rgb(214, 136, 41);
+	font: 600 12pt &quot;Segoe UI&quot;;
+   
+	background-color: rgba(255, 255, 255,0);
+}</string>
+     </property>
+     <property name="text">
+      <string>Крышки</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="Images.qrc"/>
+ </resources>
+ <connections/>
+</ui>

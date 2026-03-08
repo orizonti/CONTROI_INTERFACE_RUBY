@@ -8,30 +8,49 @@
 #include <QTimer>
 #include <QMutex>
 
+#include <gst/gst.h>
+#include <gst/app/gstappsrc.h>
+#include <gst/app/gstappsink.h>
+#include "device_camera_remote_interface.h"
+#include "engine_udp_interface.h"
 
-class CameraInterface
+
+//#define CV_CAPTURE 1
+#define GST_CAPTURE 1
+
+struct frameStateStruct
 {
-  public:
-  virtual void CameraSetSize(int Width, int Height) = 0;
-  virtual void CameraSetOffset(int XOffset, int YOffset) = 0;
-  virtual void CameraSetHeight(int Height) = 0;
-  virtual void CameraSetWidth(int Width) = 0;
-  virtual void CameraSetExposure(float Exposure) = 0;
+  GstSample*    frameSample = nullptr;
+  GstCaps*      frameCaps   = nullptr;
+  GstStructure* frameParams = nullptr;
+            int frameWidth     = 0;
+            int frameHeight    = 0;
+            int frameFreqNum   = 0; 
+            int frameFreqDenum = 0;
+            int frameSize      = 0;
+
 };
 
 
+
 class CameraImageStorage;
-class CameraInterfaceUniversal :public QObject, public SourceImageInterface, public SourceImageDisplayInterface, public CameraInterface
+class CameraInterfaceUniversal :public QObject, public SourceImageInterface, 
+                                                public SourceImageDisplayInterface 
 {
   Q_OBJECT
   public:
-
-  public:
-  explicit CameraInterfaceUniversal(std::string strVideoSource, QString NAME = "[ CAMERA ]");
+  explicit CameraInterfaceUniversal(QString strVideoSource, QString NAME = "[ CAMERA ]");
            ~CameraInterfaceUniversal();
   public:
   QString    TAG_NAME{"[ CAMERA ]"};
   QString CAMERA_INFO{"[ CAMERA NO DATA ]"};
+  //DeviceCameraRemoteInterface<UDPConnectionEngine, int,int> ControlCameraRemote;
+
+  cv::VideoCapture capture;
+            QTimer timerGetFrame{this};
+            QTimer timerWaitFrame{this};
+  frameStateStruct frameState; 
+  GstElement *frameInputNode = nullptr;
 
   std::shared_ptr<SourceImageInterface> getImageSource();
 
@@ -58,6 +77,7 @@ class CameraInterfaceUniversal :public QObject, public SourceImageInterface, pub
   bool checkHost(const QString& ipAddress);
   bool isCameraAccessable() { return isCameraUp;};
   bool isCameraUp = false;
+  bool isStreamActive = false;
 
   //=============================================
   std::pair<int,int> ImagePos {20 ,20 }; 
@@ -65,9 +85,6 @@ class CameraInterfaceUniversal :public QObject, public SourceImageInterface, pub
 
   std::vector<QPair<int,int>> CameraPoints{2};
   std::vector<QRect>          CameraRects {2};
-
-  cv::VideoCapture capture;
-  QTimer timerGetFrame{this};
 
   QMutex mutexStorage;
   std::shared_ptr<CameraImageStorage> ImageStore = std::make_shared<CameraImageStorage>(this);
@@ -79,45 +96,45 @@ class CameraInterfaceUniversal :public QObject, public SourceImageInterface, pub
   void slotStopStream();
   void slotEndWork();
 
-  private:
-
-  void enumerateCameras();
-  void initCamera();
-  void deinitCamera();
+  #ifdef GST_CAPTURE
+  void slotWaitFrame();
+  #endif
 };
 
-  class CameraImageStorage: public SourceImageInterface
-  {
-    public:
-    explicit CameraImageStorage(CameraInterfaceUniversal* CameraDevice) { initStorage(); };
-            ~CameraImageStorage() {deinitStorage(); };
-    void initStorage();
-    void deinitStorage();
-    cv::Mat& getBuffer();
-    cv::Mat InputImage;
-
-              std::vector<cv::Mat> Buffers;
-    std::vector<cv::Mat>::iterator BufferToWrite;
-    std::vector<cv::Mat>::iterator BufferToRead;
-
-    cv::Mat ImageToProcess;
-     QImage ImageToDisplay;
-
-    std::pair<int,int> SizeImage; 
-
-    void putNewFrameToStorage(cv::Mat& Frame);
-
-    int getAvailableFrames() override { return BufferToWrite - BufferToRead; }
-     bool isFrameAvailable() override { return BufferToWrite != BufferToRead;};
-    bool switchToNextFrame() override;
-    void skipFrames()        override;
 
 
-    std::pair<int,int> getSizeImage() { return std::pair<int,int>(ImageToProcess.cols, ImageToProcess.rows); };
+class CameraImageStorage: public SourceImageInterface
+{
+  public:
+  explicit CameraImageStorage(CameraInterfaceUniversal* CameraDevice) { initStorage(); };
+          ~CameraImageStorage() { deinitStorage(); };
+  void initStorage();
+  void deinitStorage();
+  cv::Mat& getBuffer();
+  cv::Mat InputImage;
 
-  cv::Mat& getImageToProcess() override ;
-      void getImageToProcess(cv::Mat& ImageDst) override ;
-  };
+            std::vector<cv::Mat> Buffers;
+  std::vector<cv::Mat>::iterator BufferToWrite;
+  std::vector<cv::Mat>::iterator BufferToRead;
+
+   cv::Mat ImageToProcess;
+    QImage ImageToDisplay;
+
+  std::pair<int,int> SizeImage; 
+
+  void putNewFrameToStorage(cv::Mat& Frame);
+  void putNewFrameToStorage(void* Frame, int width, int height);
+
+  int getAvailableFrames() override { return BufferToWrite - BufferToRead; }
+   bool isFrameAvailable() override { return BufferToWrite != BufferToRead;};
+  bool switchToNextFrame() override;
+  void skipFrames()        override;
+
+  std::pair<int,int> getSizeImage() { return std::pair<int,int>(ImageToProcess.cols, ImageToProcess.rows); };
+
+cv::Mat& getImageToProcess() override ;
+    void getImageToProcess(cv::Mat& ImageDst) override ;
+};
 
 #endif "WIDGET_CAMERA_INTERFACE_H"
 

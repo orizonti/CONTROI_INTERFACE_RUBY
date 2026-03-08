@@ -14,7 +14,7 @@ public:
 	virtual const V& GetValue() { return Value;};
 	virtual void SetValue(V InputValue) { Value = InputValue; };
 
-    void SetLink(PassValueClass* NewLink) { NodesLinked.push_back(NewLink);}
+    void setLink(PassValueClass* NewLink) { NodesLinked.push_back(NewLink);}
 
 	void PassValue() { if(!isLinked()) return; for(auto& Link: NodesLinked) *this >> *Link; }
 	
@@ -41,12 +41,12 @@ public:
 	{ Value = Sender.GetValue(); return Sender; }
 
     friend PassValueClass& operator | (PassValueClass& Sender, PassValueClass& Reciever)
-	{ Sender.SetLink(&Reciever); return Reciever; }
+	{ Sender.setLink(&Reciever); return Reciever; }
 
     friend std::shared_ptr<PassValueClass>  operator | (std::shared_ptr<PassValueClass> Sender, 
 														std::shared_ptr<PassValueClass> Reciever)
-	{ Sender->SetLink(Reciever.get()); return Reciever; }
+	{ Sender->setLink(Reciever.get()); return Reciever; }
 
     friend PassValueClass& operator | (std::shared_ptr<PassValueClass> Sender, PassValueClass& Reciever)
-	{ Sender->SetLink(&Reciever); return Reciever; }
+	{ Sender->setLink(&Reciever); return Reciever; }
 };

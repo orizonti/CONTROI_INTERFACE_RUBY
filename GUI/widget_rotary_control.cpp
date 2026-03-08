@@ -1,0 +1,1 @@
+﻿#include "widget_rotary_control.h"

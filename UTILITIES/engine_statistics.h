@@ -19,7 +19,7 @@ public:
 	StatisticValue() { SetSize(10);};
 	StatisticValue(int WindowSize) {SetSize(WindowSize);};
 
-	void SetSize(int SizeStat){StatSample.resize(SizeStat); Reset(); this->Size = SizeStat;};
+	void SetSize(int SizeStat){StatSample.resize(SizeStat); reset(); this->Size = SizeStat;};
 
 	std::vector<T> StatSample;
 
@@ -36,7 +36,7 @@ public:
 
 	void CalcDispersion();
 
-	void Reset(){ValueMax = 0; ValueMin = 0; ValueAvarage = 0; ValueDispersion = 0; 
+	void reset(){ValueMax = 0; ValueMin = 0; ValueAvarage = 0; ValueDispersion = 0; 
 				 std::fill(StatSample.begin(), StatSample.end(),0); 
 				 CurrentElement = StatSample.begin(); EndPos = StatSample.end(); StatLoaded = false;};
 
@@ -58,7 +58,7 @@ public:
 	StatisticCoord() {SetSize(10); };
 	StatisticCoord(int WindowSize) { SetSize(WindowSize); };
 
-    void SetSize(int WindowSize) { Size = WindowSize; StatSample.resize(Size); Reset();}
+    void SetSize(int WindowSize) { Size = WindowSize; StatSample.resize(Size); reset();}
 	std::vector<QPair<T,T>> StatSample;
 	decltype(StatSample.begin()) CurrentElement = StatSample.begin();
 	decltype(StatSample.begin()) EndPos = StatSample.end();
@@ -81,7 +81,7 @@ public:
 
 	void CalcDispersion();
 
-	void Reset(){QPair<T,T> Null(0,0); CoordMax = Null; CoordMin = Null; CoordAvarage = Null; CoordDispersion = Null;
+	void reset(){QPair<T,T> Null(0,0); CoordMax = Null; CoordMin = Null; CoordAvarage = Null; CoordDispersion = Null;
 	                                   NormMin = 0; NormMax = 0; NormAvarage = 0; 
 									   std::fill(StatSample.begin(), StatSample.end(),Null); 
 									   CurrentElement = StatSample.begin(); EndPos = StatSample.end(); StatLoaded = false;
@@ -90,8 +90,8 @@ public:
 	bool isLoaded() { return StatLoaded;};
 	bool isValueRising();
 
-	void SetInput(const QPair<T,T>& Input);
-	const QPair<T,T>& GetOutput() { return CoordAvarage;};
+	void setInput(const QPair<T,T>& Input);
+	const QPair<T,T>& getOutput() { return CoordAvarage;};
 
 	static T Norm(QPair<T,T> Coord) { return std::sqrt(std::pow(Coord.first,2) + std::pow(Coord.second,2)); }
 
@@ -119,8 +119,8 @@ class StatisticNode : public PassValueClass<T>, public PassCoordClass<T>
 	StatisticValue<T> NodeValue{10};
 	StatisticCoord<T> NodeCoord{10};
 
-	 const QPair<T, T>& GetOutput() override { return NodeCoord.GetOutput();};
-	 void SetInput(const QPair<T, T>& Coord) override  { Coord >> NodeCoord;};
+	 const QPair<T, T>& getOutput() override { return NodeCoord.getOutput();};
+	 void setInput(const QPair<T, T>& Coord) override  { Coord >> NodeCoord;};
 
 	 const T& GetValue() override  { return NodeValue.GetValue();};
 	 void SetValue(T InputValue) override  { InputValue >> NodeValue; };
@@ -131,7 +131,7 @@ class StatisticNode : public PassValueClass<T>, public PassCoordClass<T>
 	 bool IsCoordLoaded() { return NodeCoord.isLoaded();}
 	 T GetDispersionNorm() { return NodeCoord.GetDispersionNorm();}
 	 T GetDispersionValue() { return NodeValue.GetDispersionValue();}
-	 void Reset() { NodeValue.Reset(); NodeCoord.Reset();}
+	 void reset() { NodeValue.reset(); NodeCoord.reset();}
 };
 //================================================================================
 
@@ -164,7 +164,7 @@ void StatisticValue<T>::CalcDispersion()
 //================================================================================
 
 template<typename T>
-void StatisticCoord<T>::SetInput(const QPair<T,T>& Input)
+void StatisticCoord<T>::setInput(const QPair<T,T>& Input)
 {
 	//qDebug() << EngFilter << "[ STAT COORD SET ] " << Input.first << Input.second << "AVARAGE: " << CoordAvarage.first << CoordAvarage.second;
 
@@ -220,7 +220,7 @@ public:
 
     std::map<int,StatisticNode<T>> Statistics;
 
-    void Reset() {};
+    void reset() {};
     bool IsBestStatisticFaund() { return BestStatNumber != -1; };
     bool IsStatisticsLoaded() { return Statistics[Statistics.size()-1].IsCoordLoaded();};
     void PerformAvailableData() {};

@@ -11,14 +11,13 @@
 #include <QSettings>
 #include <QTimer>
 #include "engine_udp_interface.h"
-#include "engine_tcp_interface.h"
-#include "message_command_structures.h"
-#include "message_struct_generic_ext.h"
-#include "message_header_generic_ext.h"
+
 #include "device_generic_interface.h"
 #include "debug_output_filter.h"
 #include "widget_rotary_platform_control.h"
 #include "transform_coord_class.h"
+#include "sinus_generator_class.h"
+#include <QThread>
 
 class DynamicModule: public QObject
 {
@@ -27,12 +26,23 @@ class DynamicModule: public QObject
   explicit DynamicModule(DeviceRotaryInterface* DeviceRotary) 
   { 
     Device = DeviceRotary; QObject::connect(&timerMove, &QTimer::timeout, this, &DynamicModule::slotMove); 
+    reset();
   };
+
+  void reset()
+  {
+    VelocityLimit.first  = Device->getLimits().first/600;
+    VelocityLimit.second = Device->getLimits().second/600;
+  }
+
+  int PeriodStep  = 40;
+
+  QPair<float,float> VelocityLimit;
+  QPair<float,float> Velocity;
  
-  QPair<int,int> Velocity;
-  void moveWithVelocity(QPair<int,int> Value) 
+  void moveWithVelocity(QPair<float,float> Scale) 
   { 
-    Velocity = Value; if(timerMove.isActive()) return; timerMove.start(1); 
+    Velocity = VelocityLimit*Scale; if(timerMove.isActive()) return; timerMove.start(PeriodStep); 
   }
   void stopMove() { timerMove.stop(); }
 
@@ -40,14 +50,49 @@ class DynamicModule: public QObject
   void slotMove() { Device->moveOnStep(Velocity); }
   private:
   QTimer timerMove;
+  protected:
   DeviceRotaryInterface* Device = nullptr;
 };
 
+class SinusMoveModule : public DynamicModule , public PassCoordClass<float>
+{
+  Q_OBJECT
+  public:
+  explicit SinusMoveModule(DeviceRotaryInterface* DeviceRotary) : DynamicModule(DeviceRotary)
+  {
+    QObject::connect(this, SIGNAL(signalStartMove(bool)), &SinusGenerator, SLOT(slotStartGenerate(bool)));
+
+    SinusGenerator | *this;
+    SinusGenerator.slotSetOffset(0);
+    SinusGenerator.moveToAnotherThread();
+  }
+
+  QThread thread;
+  SinusGeneratorClass SinusGenerator;
+   QPair<float,float> Position{0,0};
+
+  void setAmplitude(float Value) { SinusGenerator.slotSetAmplitude(Value); };
+  void setFreq(float Value)      { SinusGenerator.slotSetFrequency(Value); };
+
+  void enableMove(bool OnOff) { if(OnOff && SinusGenerator.isActive()) return; emit signalStartMove(OnOff); }
+
+        void setInput(const QPair<float,float>& Coord) { Position = Coord; slotMove(); }
+        const QPair<float,float>& getOutput() { return Position;};
+
+  public slots:
+  void slotMove() { Device->moveToPos(Position); }
+  signals:
+  void signalStartMove(bool);
+};
+
+enum class CONTROL_PARAM { NONE = 0, POS = 1, VEL = 2, ACCEL = 3};
 template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
-class DeviceRotaryControl : public DeviceGenericInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>, public DeviceRotaryInterface
+class DeviceRotaryControl : public DeviceGenericInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>, 
+                            public DeviceRotaryInterface,
+                            public DeviceGenericHandleControl
 {
 public:
-  using DEVICE_BASE_TYPE = DeviceGenericInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>; 
+  using DEVICE_INTERFACE = DeviceGenericInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>; 
   DeviceRotaryControl(std::shared_ptr<T_CONNECTION> Connection, QString Name = "[ DEVICE ]");
 
   GainNode<float>   Gain{1,1};
@@ -58,57 +103,107 @@ public:
 
 	~DeviceRotaryControl() { qDebug() << TAG_NAME << "DELETE"; }
   //================================================
-  QPair<int, int> LimitDown{-10000,-10000};
-	QPair<int, int> LimitUp  { 10000, 10000};
-	QPair<int, int> Range{LimitUp - LimitDown};
+  StateRotaryControl ControlEngineTarget;
+  StateRotaryControl ControlEngineState;
 
-	QPair<int, int> PositionNull   {0,0};
-	QPair<int, int> Position       {0,0};
-	QPair<int, int> PositionTarget {0,0};
+	std::array<QPair<float, float>,3> Limits
+  {
+    QPair<float,float>{180 ,180 },
+    QPair<float,float>{100 ,100 },
+    QPair<float,float>{100 ,100 }
+  };
+
+	QPair<float, float> PositionNullDevice   {72,0};
+
+	QPair<float, float> PositionTarget {0,0};
+	QPair<float, float> PositionTargetDevice {0,0};
+	QPair<float, float> PositionRelativeAnchor {0,0};
 
   //================================================
-  QPair<int, int> LimitVelocityDown{-10000,-10000};
-	QPair<int, int> LimitVelocityUp  { 10000, 10000};
-	QPair<int, int> RangeVelocity{LimitVelocityUp - LimitVelocityDown};
-
-	QPair<int, int> Velocity       {0,0};
-	QPair<int, int> VelocityTarget {0,0};
+	QPair<float, float> VelocityTarget {0,0};
   //================================================
-
 	QPair<float, float> PositionDevice{0,0};
 	QPair<float, float> VelocityDevice{0,0};
 
-	void moveToPos(const QPair<int, int>& Pos)         override;
-	void moveToPosRelative(const QPair<int, int>& Pos) override;
-	void moveOnStep(const QPair<int, int>& Pos)        override;
-	void moveWithVelocity(const QPair<int, int>& VelocityVector) override; 
-	void moveWithVelocityManual(const QPair<int, int>& Vel) override { ModuleMoveVelocity.moveWithVelocity(Vel);}; 
-	void stopMove()  override { ModuleMoveVelocity.stopMove(); }
+	void moveToPos        (const QPair<float, float>& Pos) override;
+	void moveToPosRelative(const QPair<float, float>& Pos) override;
+	void moveOnStep       (const QPair<float, float>& Pos) override;
+	void moveWithVelocity (const QPair<float, float>& VelocityVector) override; 
+	void moveWithVelocityManual(const QPair<float, float>& Vel) override { ModuleMoveVelocity.moveWithVelocity(Vel);}; 
+	//void stopMove()  override { ModuleMoveVelocity.stopMove(); }
+	void stopMove()  override 
+  { 
+    //moveWithVelocity(QPair<float,float>(0,0)); 
+    ModuleMoveVelocity.stopMove(); 
+  }
+  //===============================================================================================
+  //DEVICE_GENERIC_HANDLE_CONTROL
+	                  void setCoord(std::pair<float,float> Coord) override { moveToPos(Coord);};
+	std::pair<float,float> getCoord() override { return getPosDevice(); };
+	                  void setEnable(bool OnOff, int Number = 0) override {};
   //===============================================================================================
 
-	const QPair<int,int>&     getPos()            { return Position;      } 
-	const QPair<float,float>& getPosDevice()      { return PositionDevice;}
-	const QPair<int,int>&     getVelocity()       { return Velocity;      };
-	const QPair<int,int>&     getVelocityDevice() { return Velocity;      };
+	const QPair<float,float>& getPos()            { return PositionTarget;} //       POS SET TO DEVICE
+	const QPair<float,float>& getPosDevice()      { return PositionDevice;} //ACTUAL POS FROM DEVICE
+	const QPair<float,float>& getVelocity()       { return VelocityTarget;};
+	const QPair<float,float>& getVelocityDevice() { return VelocityDevice;};
+
+	const QPair<float, float>& getOutput() { PassCoordClass<float>::OutputCoord = getPos(); return PassCoordClass<float>::OutputCoord;};
+	void setInput(const QPair<float, float>& Coord) { moveToPos(Coord); };
 
   bool isAtLimit();
-  std::function<void (QPair<int,int>&)> checkPositionOffset;
-  std::function<void (QPair<int,int>&)> checkVelocityOffset;
+  void checkPositionOffset();
+  void checkPositionOffset(QPair<float,float>& Position);
+  void checkVelocityOffset();
 
-	QPair<int,int> getLimits(int axis) override;
-	QPair<int,int> getRange()  override { return Range; } 
-
+	QPair<float,float> getLimits() { return Limits[0]; };
   //===============================================================================================
-	void setParam(uint8_t ID, uint16_t Value) override {};
 
-  void putMessage(T_MESSAGE Message) override {}; 
+	void setMode  (CONTROL_PARAM Mode); 
+	void setPositonMode() { setMode(CONTROL_PARAM::POS); };
+	void setVelocityMode(){ setMode(CONTROL_PARAM::VEL); };
+
+  template<CONTROL_PARAM PARAM_TYPE> 
+	void setLimit  (float Limit) { ControlEngineTarget.Engine1.Limits[(int)PARAM_TYPE] = Limit; 
+                                 ControlEngineTarget.Engine2.Limits[(int)PARAM_TYPE] = Limit; 
+                                 Limits[0].first = Limit;
+                                 Limits[0].second = Limit;
+
+                                 this->Limits[(int)PARAM_TYPE] = QPair<int,int>(Limit, Limit);
+                                 DEVICE_INTERFACE::Message.setData(ControlEngineTarget);  
+                                 ModuleMoveVelocity.reset();
+                                }; 
+
+  template<CONTROL_PARAM PARAM_TYPE> 
+  void setLimits (float Limit1, float Limit2) { ControlEngineTarget.Engine1.Limits[(int)PARAM_TYPE-1]= Limit1; 
+                                                ControlEngineTarget.Engine2.Limits[(int)PARAM_TYPE-1]= Limit2; 
+
+                                                this->Limits[(int)PARAM_TYPE-1] = QPair<int,int>(Limit1, Limit2);
+                                                DEVICE_INTERFACE::Message.setData(ControlEngineTarget);   
+                                                ModuleMoveVelocity.reset();
+                                              };
+
+  void putMessage(T_MESSAGE Message) override 
+  {
+      ControlEngineTarget << Message;
+     PositionDevice.first = ControlEngineTarget.Engine1.Position;
+    PositionDevice.second = ControlEngineTarget.Engine2.Position;
+
+     VelocityDevice.first = ControlEngineTarget.Engine1.Velocity;
+    VelocityDevice.second = ControlEngineTarget.Engine2.Velocity;
+  }; 
   //===============================================================================================
 
 	void setToNull();
   void loadSettings();
   std::shared_ptr<PortAdapter<DeviceRotaryInterface>> PortMoveRelative = nullptr;
+  std::shared_ptr<PortAdapter<DeviceRotaryInterface>> PortMoveVelocity = nullptr;
+  std::shared_ptr<PortAdapter<DeviceRotaryInterface>> PortMovePosition = nullptr;
+
+  std::shared_ptr<PortAdapter<DeviceRotaryInterface>> PortMoveActive = nullptr;
 
 	DynamicModule ModuleMoveVelocity{this};
+	SinusMoveModule ModuleMoveSinus{this};
 private:
 	RotateVectorClass<int>   RotAxis;
   std::vector<WidgetRotaryPlatformControl*> ControlWindows;
@@ -120,101 +215,103 @@ DeviceGenericInterface<T_CONNECTION,T_COMMAND, T_MESSAGE>(Connection, Name)
 {
 	setToNull();
 
+  //setLimit<CONTROL_PARAM::POS  >(180); // POSITION
+  //setLimit<CONTROL_PARAM::VEL  >(100); // VELOCITY
+  //setLimit<CONTROL_PARAM::ACCEL>(100); // ACCELERATION
+
   PortMoveRelative = std::make_shared<PortAdapter<DeviceRotaryInterface>>();
-  PortMoveRelative->LinkAdapter(this, &DeviceRotaryInterface::moveToPosRelative, 
+  PortMovePosition = std::make_shared<PortAdapter<DeviceRotaryInterface>>();
+  PortMoveVelocity = std::make_shared<PortAdapter<DeviceRotaryInterface>>();
+
+  PortMoveRelative->linkAdapter(this, &DeviceRotaryInterface::moveToPosRelative, 
                                       &DeviceRotaryInterface::getPos);
-
-
-  auto Offset = QPair<int,int>(0,0);
-  checkVelocityOffset = [this, Offset](QPair<int,int>& Vector) mutable 
-  {
-    Offset = abs_pair(Vector - LimitDown) + abs_pair(LimitUp - Vector);
-       
-    if(Offset.first  > Range.first  ) Vector.first  = Vector.first  < 0 ? LimitDown.first  : LimitUp.first; 
-    if(Offset.second > Range.second ) Vector.second = Vector.second < 0 ? LimitDown.second : LimitUp.second; 
-  };
-
-
-  checkPositionOffset = [this, Offset](QPair<int,int>& Vector) mutable 
-  {
-    Offset = abs_pair(Vector - LimitVelocityDown) + abs_pair(LimitVelocityUp - Vector);
-       
-    if(Offset.first  > Range.first  ) Vector.first  = Vector.first  < 0 ? LimitVelocityDown.first  : LimitUp.first; 
-    if(Offset.second > Range.second ) Vector.second = Vector.second < 0 ? LimitVelocityDown.second : LimitUp.second; 
-  };
-
+  PortMovePosition->linkAdapter(this, &DeviceRotaryInterface::moveToPos, 
+                                      &DeviceRotaryInterface::getPos);
+  PortMoveVelocity->linkAdapter(this, &DeviceRotaryInterface::moveWithVelocity, 
+                                      &DeviceRotaryInterface::getPos);
+  setMode(CONTROL_PARAM::VEL); 
 }
+
 template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
-QPair<int,int> DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::getLimits(int axis)
+void DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::checkPositionOffset(QPair<float,float>& Position)
 {
-   QPair<int,int> Limits(LimitDown.first, LimitUp.first);
-    if(axis == 1) Limits = QPair<int,int>(LimitDown.second, LimitUp.second);
-    return Limits;
+    if(abs(Position.first)  > Limits[0].first)  
+           Position.first   = Limits[0].first *Position.first /abs(Position.first); 
+
+    if(abs(Position.second) > Limits[0].second) 
+           Position.second  = Limits[0].second*Position.second/abs(Position.second); 
+}
+
+template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
+void DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::checkPositionOffset()
+{
+    if(abs(PositionTarget.first)  > Limits[0].first)  
+           PositionTarget.first   = Limits[0].first *PositionTarget.first /abs(PositionTarget.first); 
+
+    if(abs(PositionTarget.second) > Limits[0].second) 
+           PositionTarget.second  = Limits[0].second*PositionTarget.second/abs(PositionTarget.second); 
+}
+
+
+template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
+void DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::checkVelocityOffset()
+{
+    if(abs(VelocityTarget.first)  > Limits[0].first)  
+           VelocityTarget.first   = Limits[0].first *VelocityTarget.first /abs(VelocityTarget.first); 
+    if(abs(VelocityTarget.second) > Limits[0].second) 
+           VelocityTarget.second  = Limits[0].second*VelocityTarget.second/abs(VelocityTarget.second); 
 }
 
 template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
 bool DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::isAtLimit() 
 { 
-    auto Offset = abs_pair(Position - LimitVelocityDown) + abs_pair(LimitVelocityUp - Position);
-       
-    if(Offset.first  > Range.first  ) Position.first  = Position.first  < 0 ? LimitVelocityDown.first  : LimitUp.first; 
-    if(Offset.second > Range.second ) Position.second = Position.second < 0 ? LimitVelocityDown.second : LimitUp.second; 
-
-  return false; 
+  if(abs(PositionTarget.first)  > Limits[0].first || 
+     abs(PositionTarget.second) > Limits[0].second  ) return true; 
+                                                    return false; 
 }
-
 
 template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
 void DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::setToNull() 
 { 
-                                   Position = QPair<float,float>(0,0);
-                                   PositionDevice = Position + PositionNull; 
-                 this->sendCommand(PositionDevice);
-  qDebug() << "SET TO NULL: " << PositionDevice.first << PositionDevice.second;
+                    PositionTarget = QPair<float,float>(0,0);
+                    PositionTargetDevice = PositionTarget + PositionNullDevice; 
+  this->sendCommand(PositionTargetDevice);                  PositionRelativeAnchor = PositionTarget;
+
+  qDebug() << "SET TO NULL: " << PositionTargetDevice.first << PositionTargetDevice.second;
 }
 
-
 template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
-void DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::moveOnStep(const QPair<int, int>& Step)
-{
-         PositionTarget = Position + Step; checkPositionOffset(PositionTarget);
-                                                    Position = PositionTarget;
-                                   PositionDevice = Position + PositionNull;
-                                   PositionDevice >> Offset >> Gain >> PositionDevice;
-                 this->sendCommand(PositionDevice);
-  qDebug() << "MOVE STEP TO POS: " << PositionDevice.first << PositionDevice.second << "STEP: " << Step.first;
-}
-
-
-template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
-void DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::moveWithVelocity(const QPair<int, int>& Velocity)
+void DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::moveWithVelocity(const QPair<float, float>& Velocity)
 {
                                    VelocityTarget = Velocity;
                  this->sendCommand(VelocityTarget);
-  qDebug() << "MOVE WITH VELOCITY: " << PositionDevice.first << PositionDevice.second;
+
+  qDebug() << "MOVE WITH VELOCITY: " << VelocityTarget.first << VelocityTarget.second;
 }
 
 template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
-void DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::moveToPos(const QPair<int, int>& Pos)
+void DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::moveOnStep(const QPair<float, float>& Step)
 {
-    PositionTarget = Pos; checkPositionOffset(PositionTarget);
-                                   Position = PositionTarget;
-                                   PositionDevice = Position + PositionNull;
-                                   PositionDevice >> Offset >> Gain >> PositionDevice;
-                 this->sendCommand(PositionDevice);
-    qDebug() << "MOVE TO POS: " << PositionDevice.first << PositionDevice.second;
+                          PositionTarget = PositionTarget + Step; checkPositionOffset();
+                    PositionTargetDevice = PositionTarget + PositionNullDevice; 
+  this->sendCommand(PositionTargetDevice);                  PositionRelativeAnchor = PositionTarget;
+  qDebug() << OutputFilter::Filter(5) << "MOVE STEP TO POS: " << PositionTargetDevice.first << PositionTargetDevice.second << "STEP: " << Step.first;
 }
 
 template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
-void DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::moveToPosRelative(const QPair<int, int>& PosRelative) 
+void DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::moveToPos(const QPair<float, float>& Pos)
 {
-                                    auto PositionAbs = Position + PosRelative;
-                     checkPositionOffset(PositionAbs);
-                        PositionTarget = PositionAbs; 
+                    PositionTarget = Pos; checkPositionOffset();
+                    PositionTargetDevice = PositionTarget + PositionNullDevice; 
+  this->sendCommand(PositionTargetDevice);                  PositionRelativeAnchor = PositionTarget;
+}
 
-                                   PositionDevice = PositionTarget + PositionNull;
-                                   PositionDevice >> Offset >> Gain >> PositionDevice;
-                 this->sendCommand(PositionDevice);
+template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
+void DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::moveToPosRelative(const QPair<float, float>& PosRelative) 
+{
+                    PositionTarget = PositionRelativeAnchor + PosRelative; checkPositionOffset();
+                    PositionTargetDevice = PositionTarget + PositionNullDevice;
+  this->sendCommand(PositionTargetDevice);
 }
 
 //================================================================================================================
@@ -227,5 +324,12 @@ void DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::loadSettings()
   //this->RotEngineToCamera.LoadRotationFromFile(RotateParamEngCam);
 }
 
+template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
+void DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::setMode  (CONTROL_PARAM Mode) 
+{                                   ControlEngineTarget.Engine1.Mode = (int)Mode; 
+                                    ControlEngineTarget.Engine2.Mode = (int)Mode; 
+  DEVICE_INTERFACE::Message.setData(ControlEngineTarget); qDebug() << "ROTARY MODE: " << Qt::hex << (int)Mode;
+  if(Mode == CONTROL_PARAM::VEL) PortMoveActive = PortMoveVelocity;
+  if(Mode == CONTROL_PARAM::POS) PortMoveActive = PortMovePosition; };
 
 #endif 

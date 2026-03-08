@@ -40,8 +40,8 @@ public:
 
     void LoadRotationFromFile(QString Filename);
 
-	void SetInput(const QPair<T,T>& Coord) override;
-	const QPair<T,T>& GetOutput() override;
+	void setInput(const QPair<T,T>& Coord) override;
+	const QPair<T,T>& getOutput() override;
 
 	std::string RotationToString(std::vector<std::pair<RotateAxisenum,double>> Sequence);
 	std::string MatrixToString();
@@ -55,7 +55,7 @@ public:
 };
 
 template<typename T>
-RotateVectorClass<T>::RotateVectorClass<T>(RotateVectorClass<T>& RotateObject)
+RotateVectorClass<T>::RotateVectorClass(RotateVectorClass<T>& RotateObject)
 {
 	this->RotateMatrix = RotateObject.RotateMatrix;
 	this->RotateVector = RotateObject.RotateVector;
@@ -100,7 +100,7 @@ void RotateVectorClass<T>::AppendRotateOperation(std::pair<RotateAxisenum, float
 
 
 template<typename T>
-void RotateVectorClass<T>::SetInput(const QPair<T,T>& Coord)
+void RotateVectorClass<T>::setInput(const QPair<T,T>& Coord)
 {
 	Eigen::Matrix<float, 3, 1> InputVector;
 							   InputVector << Coord.first, Coord.second, 0;
@@ -109,7 +109,7 @@ void RotateVectorClass<T>::SetInput(const QPair<T,T>& Coord)
 }
 
 template<typename T>
-const QPair<T, T>& RotateVectorClass<T>::GetOutput() 
+const QPair<T, T>& RotateVectorClass<T>::getOutput() 
 { 
 	PassCoordClass<T>::OutputCoord = QPair<T, T>(this->OutputVector(0, 0), this->OutputVector(1, 0)); 
 	return PassCoordClass<T>::OutputCoord;
@@ -146,7 +146,7 @@ void RotateVectorClass<T>::operator=(RotateVectorClass<T> && Matrix)
 }
 
 template<typename T>
-RotateVectorClass<T>::RotateVectorClass<T>(std::initializer_list<std::pair<RotateAxisenum,float>> RotationList) 
+RotateVectorClass<T>::RotateVectorClass(std::initializer_list<std::pair<RotateAxisenum,float>> RotationList) 
 {
 	RotateMatrix << 1, 0, 0,
 					0, 1, 0,
