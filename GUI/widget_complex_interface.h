@@ -31,23 +31,23 @@ public:
     WidgetComplexInterface(QWidget* parent = nullptr);
     ~WidgetComplexInterface();
 
-    WidgetControlBlock* ControlBlock = nullptr;
-    WidgetRotaryPlatformControl* ControlRotary   = nullptr;
-    WidgetRotaryPlatformControl* ControlRotary2   = nullptr;
+    WidgetControlBlock* widgetControlBlock = nullptr;
+    WidgetRotaryPlatformControl* widgetControlRotary   = nullptr;
+    WidgetRotaryPlatformControl* widgetControlRotary2   = nullptr;
 
-    WidgetDeviceControl* ControlLaserPower = nullptr;
-    WidgetDeviceControl* ControlLaserIllum = nullptr;
+    WidgetDeviceControl* widgetControlLaserPower = nullptr;
+    WidgetDeviceControl* widgetControlLaserIllum = nullptr;
 
-    WidgetDeviceControl* ControlScanator = nullptr;
-    WidgetDeviceControl* ControlPlatform = nullptr;
+    WidgetDeviceControl* widgetControlScanator = nullptr;
+    WidgetDeviceControl* widgetControlPlatform = nullptr;
 
-    WidgetDeviceControl* ControlRanger    = nullptr;
-    WidgetDeviceControl* ControlFocusator = nullptr;
+    WidgetDeviceControl* widgetControlRanger    = nullptr;
+    WidgetDeviceControl* widgetControlFocusator = nullptr;
 
-    WidgetDeviceControl* ControlCamera1 = nullptr;
-    WidgetDeviceControl* ControlCamera2 = nullptr;
-    WidgetDeviceControl* ControlCamera3 = nullptr;
-    WidgetDeviceControl* ControlCamera4 = nullptr;
+    WidgetDeviceControl* widgetControlCamera1 = nullptr;
+    WidgetDeviceControl* widgetControlCamera2 = nullptr;
+    WidgetDeviceControl* widgetControlCamera3 = nullptr;
+    WidgetDeviceControl* widgetControlCamera4 = nullptr;
 
     SinkDisplayLabel* outputVideo1 = nullptr;
     SinkDisplayLabel* outputVideo2 = nullptr;

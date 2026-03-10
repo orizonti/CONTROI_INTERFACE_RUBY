@@ -43,12 +43,13 @@ public:
 
     //========================================================
     //DEVICE_GENERIC_HANDLE_CONTROL
-	void setLevel(uint32_t Level) override { if(Level == 0) setPowerLow(); if(Level == 1) setPowerHigh(); };
+	void setLevel(uint32_t Level) override { if(Level == 1) setPowerLow(); if(Level == 2) setPowerHigh(); };
     void setValue(float Value) override { setPower(90*Value); }
 	void setEnable(bool OnOff, uint16_t Number = 0) override
     {
-        if(Number == 0) setPowerEnable(OnOff); 
-        if(Number == 1) setPilotEnable(OnOff); 
+        qDebug() << TAG_NAME << "[ ENAGLE BLOCK ]" << Number << OnOff;
+        if(Number == 1) setPowerEnable(OnOff); 
+        if(Number == 2) setPilotEnable(OnOff); 
     }
     //========================================================
 

@@ -15,52 +15,53 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
 {
     ui->setupUi(this);
 
-    ControlBlock = new WidgetControlBlock;
-    ControlRotary  = new WidgetRotaryPlatformControl;
-    ControlRotary2 = new WidgetRotaryPlatformControl;
+    widgetControlBlock = new WidgetControlBlock;
+    widgetControlRotary  = new WidgetRotaryPlatformControl;
+    widgetControlRotary2 = new WidgetRotaryPlatformControl;
 
-    ControlRanger    = new WidgetDeviceControl("Дальномер");
-    ControlFocusator = new WidgetDeviceControl("Фокусатор");
+    widgetControlRanger    = new WidgetDeviceControl("Дальномер");
+    widgetControlFocusator = new WidgetDeviceControl("Фокусатор");
 
-    ControlRanger->enableScheme(1,0,1,0); ControlRanger->setScheme(0,0,1); 
-    ControlFocusator->enableScheme(1,0,1,0); ControlFocusator->setScheme(0,0,1);
+    widgetControlRanger->enableScheme(1,0,1,0);    widgetControlRanger->setScheme(0,0,1); 
+    widgetControlFocusator->enableScheme(1,0,1,0); widgetControlFocusator->setScheme(0,0,1);
 
-    ControlLaserPower = new WidgetDeviceControl("Лазер    "); 
-    ControlLaserIllum = new WidgetDeviceControl("Подсвет  "); 
-    ControlLaserPower->enableScheme(1,1,1,0); ControlLaserPower->setScheme(0,2,2); 
-    ControlLaserIllum->enableScheme(1,1,1,0); ControlLaserIllum->setScheme(0,2,1);
+    widgetControlLaserPower = new WidgetDeviceControl("Лазер    "); 
+    widgetControlLaserIllum = new WidgetDeviceControl("Подсвет  "); 
+    widgetControlLaserPower->enableScheme(1,1,1,0); widgetControlLaserPower->setScheme(0,2,2); 
+    widgetControlLaserIllum->enableScheme(1,1,1,0); widgetControlLaserIllum->setScheme(0,2,1);
 
-       ControlCamera1 = new WidgetDeviceControl("КамераТК "); 
-       ControlCamera2 = new WidgetDeviceControl("КамераТК "); 
-       ControlCamera3 = new WidgetDeviceControl("КамераГК "); 
-       ControlCamera4 = new WidgetDeviceControl("Тепловиз "); 
-    ControlCamera1->enableScheme(1,1,0,0); ControlCamera1->setScheme(1,5,0); ControlCamera1->setLevelsName(QStringList({"X1", "X2", "X3", "X4", "X5"}));
-    ControlCamera2->enableScheme(1,1,0,0); ControlCamera2->setScheme(1,5,0); ControlCamera2->setLevelsName(QStringList({"X1", "X2", "X3", "X4", "X5"})); ControlCamera3->enableScheme(1,1,0,0); ControlCamera3->setScheme(1,5,0); ControlCamera3->setLevelsName(QStringList({"X1", "X2", "X3", "X4", "X5"}));
-    ControlCamera4->enableScheme(1,1,0,0); ControlCamera4->setScheme(1,5,0); ControlCamera4->setLevelsName(QStringList({"X1", "X2", "X3", "X4", "X5"}));
+       widgetControlCamera1 = new WidgetDeviceControl("КамераТК "); 
+       widgetControlCamera2 = new WidgetDeviceControl("КамераТК "); 
+       widgetControlCamera3 = new WidgetDeviceControl("КамераГК "); 
+       widgetControlCamera4 = new WidgetDeviceControl("Тепловиз "); 
+    widgetControlCamera1->enableScheme(1,1,0,0); widgetControlCamera1->setScheme(1,5,0); widgetControlCamera1->setLevelsName(QStringList({"X1", "X2", "X3", "X4", "X5"}));
+    widgetControlCamera2->enableScheme(1,1,0,0); widgetControlCamera2->setScheme(1,5,0); widgetControlCamera2->setLevelsName(QStringList({"X1", "X2", "X3", "X4", "X5"})); 
+    widgetControlCamera3->enableScheme(1,1,0,0); widgetControlCamera3->setScheme(1,5,0); widgetControlCamera3->setLevelsName(QStringList({"X1", "X2", "X3", "X4", "X5"}));
+    widgetControlCamera4->enableScheme(1,1,0,0); widgetControlCamera4->setScheme(1,5,0); widgetControlCamera4->setLevelsName(QStringList({"X1", "X2", "X3", "X4", "X5"}));
 
 
-      ControlScanator = new WidgetDeviceControl("Сканатор "); 
-      ControlPlatform = new WidgetDeviceControl("Платформа"); 
-    ControlScanator->enableScheme(1,0,0,1); ControlScanator->setScheme(0,0,1); 
-    ControlPlatform->enableScheme(1,0,0,1); ControlPlatform->setScheme(0,0,1);
+      widgetControlScanator = new WidgetDeviceControl("Сканатор "); 
+      widgetControlPlatform = new WidgetDeviceControl("Платформа"); 
+    widgetControlScanator->enableScheme(1,0,0,1); widgetControlScanator->setScheme(0,0,1); 
+    widgetControlPlatform->enableScheme(1,0,0,1); widgetControlPlatform->setScheme(0,0,1);
 
-    ui->layoutControlListRight->addWidget(ControlRanger);
-    ui->layoutControlListRight->addWidget(ControlFocusator);
+    ui->layoutControlListRight->addWidget(widgetControlRanger);
+    ui->layoutControlListRight->addWidget(widgetControlFocusator);
 
-    ui->layoutControlListRight->addWidget(ControlScanator);
-    ui->layoutControlListRight->addWidget(ControlPlatform);
+    ui->layoutControlListRight->addWidget(widgetControlScanator);
+    ui->layoutControlListRight->addWidget(widgetControlPlatform);
 
-    ui->layoutControlListLeft->addWidget(ControlLaserPower);
-    ui->layoutControlListLeft->addWidget(ControlLaserIllum);
-    ui->layoutControlListLeft->addWidget(ControlCamera1);
-    ui->layoutControlListLeft->addWidget(ControlCamera2);
-    ui->layoutControlListLeft->addWidget(ControlCamera3);
-    ui->layoutControlListLeft->addWidget(ControlCamera4);
+    ui->layoutControlListLeft->addWidget(widgetControlLaserPower);
+    ui->layoutControlListLeft->addWidget(widgetControlLaserIllum);
+    ui->layoutControlListLeft->addWidget(widgetControlCamera1);
+    ui->layoutControlListLeft->addWidget(widgetControlCamera2);
+    ui->layoutControlListLeft->addWidget(widgetControlCamera3);
+    ui->layoutControlListLeft->addWidget(widgetControlCamera4);
 
-    ui->layoutControlBlock->addWidget(ControlBlock);
-    ui->layoutControlBlock->addWidget(ControlRotary);
+    ui->layoutControlBlock->addWidget(widgetControlBlock);
+    ui->layoutControlBlock->addWidget(widgetControlRotary);
 
-    ui->layoutControlBlockBigPanel->addWidget(ControlRotary2);
+    ui->layoutControlBlockBigPanel->addWidget(widgetControlRotary2);
 
     ui->widgetSwitcherFullMode->hideButton(1);
 
@@ -98,9 +99,9 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
     outputVideo2Mini->linkToSinkNode(outputVideoBig);
     outputVideo3Mini->linkToSinkNode(outputVideoBig);
 
-    slotSetMainMode();
+    //slotSetMainMode();
     //slotSetBigImageMode();
-    //slotSetHandleMode();
+    slotSetHandleMode();
     //slotSetControlPanelMode();
 }
 
@@ -160,7 +161,7 @@ void WidgetComplexInterface::slotSetMainMode()
 {
     ui->stackedWidget->setCurrentIndex(0);
     ui->widgetStackedMainControl->setCurrentIndex(0);
-           ControlRotary->hide(); ControlBlock->show();
+           widgetControlRotary->hide(); widgetControlBlock->show();
     activateMainOutput(true);
 }
 void WidgetComplexInterface::slotSetHandleMode()

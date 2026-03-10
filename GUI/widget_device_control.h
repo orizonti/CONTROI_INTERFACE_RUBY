@@ -4,6 +4,9 @@
 #include <QGraphicsEffect>
 #include <QPainter>
 #include "widget_adjustable.h"
+#include <QTimer>
+
+#include "device_generic_interface.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -24,7 +27,11 @@ public:
     void setLevelsName(QVector<QString> names);
     void setName(QString name);
 
-public slots:
+    void linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device);
+
+    std::shared_ptr<DeviceGenericHandleControl> DeviceLinked = nullptr;
+    void linkSignals();
+    QTimer timerCheckDevice;
 
 private:
     Ui::WidgetDeviceControl *ui;

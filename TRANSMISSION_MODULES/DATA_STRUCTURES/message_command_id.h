@@ -11,7 +11,8 @@ template<> constexpr int TypeRegister<RequestPositionState<1>  >::ID() { return 
 template<> constexpr int TypeRegister<RequestDeviceController  >::ID() { return 7;};
 template<> constexpr int TypeRegister<CommandCheckConnection   >::ID() { return 8;}; 
 template<> constexpr int TypeRegister<CommandCloseConnection   >::ID() { return 9;}; 
-template<> constexpr int TypeRegister<CommandAiming            >::ID() { return 10;}; 
+template<> constexpr int TypeRegister<CommandAiming1            >::ID() { return 10;}; 
+template<> constexpr int TypeRegister<CommandAiming2            >::ID() { return 11;}; 
 
 template<> constexpr int TypeRegister<CommandDeviceLaserPointer>::ID() { return 0x110; };
 template<> constexpr int TypeRegister<CommandDeviceLaserPower  >::ID() { return 0x120; };

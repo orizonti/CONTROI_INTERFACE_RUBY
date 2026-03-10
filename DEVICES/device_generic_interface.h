@@ -9,9 +9,9 @@ class DeviceGenericHandleControl
 	public:
 	virtual void setLevel( uint32_t Level) {setParam(0, Level);};
 	virtual void setValue( float    Value) {setParam(1, Value);};
-	virtual void setCoord(std::pair<float,float> Coord) {};
+	virtual void setPair(std::pair<float,float> Coord) {};
 
-	virtual std::pair<float,float> getCoord() { return std::pair<float,float>(0,0); };
+	virtual std::pair<float,float> getPair() { return std::pair<float,float>(0,0); };
 	virtual                  float getValue() { return 0; };
 
 	virtual void setParam (uint16_t CommandID, uint32_t CommandParam) = 0;
@@ -76,7 +76,7 @@ template<typename T_CONNECTION, int NUM_DEVICE>
 class DeviceGenericControl : public DeviceGenericInterface<T_CONNECTION, MessageDeviceGeneric<NUM_DEVICE> ,MessageDeviceGeneric<NUM_DEVICE> >
 {
 public:
-    using DEVICE_INTERFACE = DeviceGenericInterface<T_CONNECTION, CommandDevice<NUM_DEVICE>, RequestDevice<NUM_DEVICE>>; 
+    using DEVICE_INTERFACE = DeviceGenericInterface<T_CONNECTION, MessageDeviceGeneric<NUM_DEVICE>, MessageDeviceGeneric<NUM_DEVICE>>; 
     explicit DeviceGenericControl(std::shared_ptr<T_CONNECTION> Connection, QString Name = "[ DEVICE ]") : DEVICE_INTERFACE(Connection, Name)
 	{
 
@@ -85,6 +85,17 @@ public:
 	{
 
 	};
+
+
+	void setParam (uint16_t CommandID, uint32_t CommandParam) override
+	{
+      qDebug() << "DEVICE SET PARAM: " << CommandParam;     
+	}
+	void setParam (uint16_t CommandID, float    CommandParam) override
+	{
+
+	}
+
 	QString TAG_NAME{"[ DEVICE_ANY ]"};
 	QString DISPLAY_NAME{"Устройство"};
 };
@@ -109,7 +120,7 @@ public:
 	QString TAG_NAME{"[ AIMING CONTROL ]"};
 	QString DISPLAY_NAME{"Наведение"};
 
-	void setCoord(std::pair<float,float> Coord) 
+	void setPair(std::pair<float,float> Coord) override
     { 
     qDebug() << TAG_NAME << "SET COORD: " << Coord.first << Coord.second; 
     this->sendCommand(Coord);

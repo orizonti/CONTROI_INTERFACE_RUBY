@@ -258,16 +258,16 @@ int main(int argc, char* argv[])
      qDebug() << "GET COMMAND: " << data->Param1 << data->Param2;
     });
 
-    Dispatcher1_1->AppendCallback<CommandAiming> ( [WindowInterface](MessageType1& Message)
+    Dispatcher1_1->AppendCallback<CommandAiming1> ( [WindowInterface](MessageType1& Message)
     {
-     auto data = DispatcherType1::ExtractData<CommandAiming>(&Message);
+     auto data = DispatcherType1::ExtractData<CommandAiming1>(&Message);
      qDebug() << "GET AIMING STATE: " << data->Param1 << data->Param2 << "[CHANNEL]" << 1;
      WindowInterface->outputVideo1->setCoordPaint(std::pair<float,float>(data->Param1, data->Param2));
     });
 
-    Dispatcher1_2->AppendCallback<CommandAiming> ( [WindowInterface](MessageType1& Message)
+    Dispatcher1_2->AppendCallback<CommandAiming2> ( [WindowInterface](MessageType1& Message)
     {
-     auto data = DispatcherType1::ExtractData<CommandAiming>(&Message);
+     auto data = DispatcherType1::ExtractData<CommandAiming2>(&Message);
      qDebug() << "GET AIMING STATE: " << data->Param1 << data->Param2 << "[CHANNEL]" << 2;
      WindowInterface->outputVideo2->setCoordPaint(std::pair<float,float>(data->Param1, data->Param2));
     });
@@ -296,16 +296,13 @@ int main(int argc, char* argv[])
   using CommandFocusRanger   = MessageGenericExt<CommandDeviceFocusator,MESSAGE_HEADER_EXT>;
   using RequestFocusRanger   = RequestDevice<3>;
 
-  DeviceLaserInterface<UDPConnectionEngine,CommandLaserPower,RequestLaserPower>     ControlLaserPower  
-  {ConnectionInterface3 , "Силовой лазер"};
+  using DeviceLaserPower = DeviceLaserInterface<UDPConnectionEngine,CommandLaserPower,RequestLaserPower  >; 
+  using DeviceLaserIllum = DeviceLaserInterface<UDPConnectionEngine,CommandLaserPower,RequestLaserPointer>; 
+  using DeviceFocusator  = DeviceFocusRangerInterface<UDPConnectionEngine,CommandFocusRanger,RequestFocusRanger> ; 
 
-  DeviceLaserInterface<UDPConnectionEngine,CommandLaserPointer,RequestLaserPointer> ControlLaserPointer
-  {ConnectionInterface3 , "Подсветчик"};
-
-  DeviceFocusRangerInterface<UDPConnectionEngine,CommandFocusRanger,RequestFocusRanger> ControlFocusRanger
-  {ConnectionInterface3 , "Фокусатор"};
-
-  //WindowInterface->ControlFocusRanger->linkTo(&ControlFocusRanger);
+  std::shared_ptr<DeviceGenericHandleControl> ControlLaserPower = std::make_shared<DeviceLaserPower>(ConnectionInterface3 , "Силовой лазер");
+  std::shared_ptr<DeviceGenericHandleControl> ControlLaserIllum = std::make_shared<DeviceLaserIllum>(ConnectionInterface3 , "Подсветчик");
+  std::shared_ptr<DeviceGenericHandleControl> ControlFocusator  = std::make_shared<DeviceFocusator >(ConnectionInterface3 , "Фокусатор");
 
   //=====================================================================================================
   //LIDS
@@ -349,14 +346,13 @@ int main(int argc, char* argv[])
     //ControlRotary->ModuleMoveSinus.setAmplitude(40);
     //ControlRotary->ModuleMoveSinus.enableMove(true);
 
-                                               //WindowInterface->ControlRotary->linkToDevice(ControlRotary);
-                                               //WindowInterface->ControlRotaryPanel->linkToDevice(ControlRotary);
+  WindowInterface->widgetControlRotary->linkToDevice(ControlRotary);
+  WindowInterface->widgetControlRotary->linkToDevice(ControlScanator);
+  WindowInterface->widgetControlLaserPower->linkToDevice(ControlLaserPower);
+  WindowInterface->widgetControlLaserIllum->linkToDevice(ControlLaserIllum);
 
-                                               //WindowInterface->ControlRotary->linkToDevice(ControlScanator);
-                                               //WindowInterface->ControlScanatorPanel->linkToDevice(ControlScanator);
-
-                                               //WindowInterface->windowControlLaserPower->linkTo(&ControlLaserPower);
-                                               //WindowInterface->windowControlLaserIllum->linkTo(&ControlLaserPointer);
+  WindowInterface->outputVideo1->linkToDevice(ControlAiming1);
+  WindowInterface->outputVideo2->linkToDevice(ControlAiming2);
   //==================================================================================================================
 
   //==================================================================================================================

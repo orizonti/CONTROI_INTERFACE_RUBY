@@ -68,10 +68,66 @@ void WidgetDeviceControl::setLevelsName(QVector<QString> names)
     {
        button->setText(*name); name++; if(name == names.end()) break;  
     }
-
 }
 
 void WidgetDeviceControl::setName(QString name) { ui->labelName->setText(name); }
+
+void WidgetDeviceControl::linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device)
+{
+   DeviceLinked = Device; 
+               if(Device) linkSignals();
+}
+
+void WidgetDeviceControl::linkSignals()
+{
+    QVector<QPushButton*> buttonsLevel;
+
+    buttonsLevel.append(ui->butLevel1);
+    buttonsLevel.append(ui->butLevel2);
+    buttonsLevel.append(ui->butLevel3);
+    buttonsLevel.append(ui->butLevel4);
+    buttonsLevel.append(ui->butLevel5);
+
+    int level = 1;
+    for(auto button: buttonsLevel)
+    {
+      connect(button, &QPushButton::toggled, [level, this](bool OnOff) { if(OnOff) DeviceLinked->setLevel(level); } ); level++;
+    }
+
+      connect(ui->butOnOff1, &QPushButton::toggled, [this](bool OnOff) { DeviceLinked->setEnable(OnOff,1); } ); 
+      connect(ui->butOnOff2, &QPushButton::toggled, [this](bool OnOff) { DeviceLinked->setEnable(OnOff,2); } ); 
+
+      connect(ui->spinParam, &QSpinBox::valueChanged, [this](int Value) { DeviceLinked->setValue(Value); } ); 
+
+    float VelocityScale = 0.5;
+    //float VelocityScale = 2;
+
+    std::vector<QPushButton*> buttonsArrow;
+    std::vector<QPair<float,float>> Vels;
+
+    if(!ui->groupArrows->isVisible()) return;
+
+        buttonsArrow.push_back(ui->butMoveLeft);  Vels.push_back(QPair<float,float>(-VelocityScale, 0));
+        buttonsArrow.push_back(ui->butMoveRight); Vels.push_back(QPair<float,float>( VelocityScale, 0));
+        buttonsArrow.push_back(ui->butMoveUp);    Vels.push_back(QPair<float,float>( 0, VelocityScale));
+        buttonsArrow.push_back(ui->butMoveDown);  Vels.push_back(QPair<float,float>( 0,-VelocityScale));
+
+        for(int n = 0; n < 4; n++)
+        {
+        auto Velocity = Vels[n];
+        auto button = buttonsArrow[n];
+        QObject::connect(button, &QPushButton::pressed,  [this, Velocity]() { DeviceLinked->setPair(Velocity); timerCheckDevice.start(1);});
+        QObject::connect(button, &QPushButton::released, [this     ]()      { DeviceLinked->setEnable(false);  timerCheckDevice.stop(); });
+        }
+
+                                              std::pair<float,float> Position;
+        QObject::connect(&timerCheckDevice, &QTimer::timeout, [this, Position]() mutable
+        {
+            Position = DeviceLinked->getPair(); 
+            ui->labelParam->setText(QString("%1 %2").arg(Position.first).arg(Position.second));
+        });
+
+}
 
 WidgetDeviceControl::~WidgetDeviceControl() { delete ui; }
 

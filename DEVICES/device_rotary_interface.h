@@ -153,16 +153,17 @@ public:
 	void moveWithVelocity (const QPair<float, float>& VelocityVector) override; 
 	void moveWithVelocityManual(const QPair<float, float>& Vel) override { ModuleMoveVelocity.moveWithVelocity(Vel);}; 
 	//void stopMove()  override { ModuleMoveVelocity.stopMove(); }
+
 	void stopMove()  override 
   { 
-    //moveWithVelocity(QPair<float,float>(0,0)); 
+    moveWithVelocity(QPair<float,float>(0,0)); 
     ModuleMoveVelocity.stopMove(); 
   }
   //===============================================================================================
   //DEVICE_GENERIC_HANDLE_CONTROL
-	                  void setCoord(std::pair<float,float> Coord) override { moveToPos(Coord);};
-	std::pair<float,float> getCoord() override { return getPosDevice(); };
-	                  void setEnable(bool OnOff, uint16_t Number = 0) override {};
+	                  void setPair(std::pair<float,float> Coord) override { moveWithVelocity(Coord);};
+	std::pair<float,float> getPair()       override { return getPosDevice(); };
+	void setEnable(bool OnOff, uint16_t Number = 0) { if(!OnOff) stopMove(); };
   //===============================================================================================
 
 	const QPair<float,float>& getPos()            { return PositionTarget;} //       POS SET TO DEVICE

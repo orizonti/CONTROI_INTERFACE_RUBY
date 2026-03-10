@@ -338,21 +338,19 @@ QWidget
 
 QPushButton
 {
-	
+   background-color: rgba(204, 53, 10, 62);
+    border: 2px solid line;
+    border-radius: 6px;	
+	border-color: rgb(215, 50, 28);
+}
+
+QPushButton::checked
+{
 	background-color: rgba(32, 156, 19, 83);
     border: 2px solid line;
     border-radius: 6px;
    
 	border-color: rgb(30, 221, 78);
-}
-
-QPushButton:checked
-{
-	
-	background-color: rgba(204, 53, 10, 62);
-    border: 2px solid line;
-    border-radius: 6px;	
-	border-color: rgb(215, 50, 28);
 }</string>
      </property>
      <property name="title">
@@ -458,6 +456,9 @@ QPushButton:checked
           <width>50</width>
           <height>16777215</height>
          </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true"/>
         </property>
         <property name="text">
          <string>60%</string>
