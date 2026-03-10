@@ -15,20 +15,19 @@
 //};
 
 template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
-class DeviceFocusRangerInterface : public DeviceGenericInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>, 
-                                   public DeviceGenericHandleControl
+class DeviceFocusRangerInterface : public DeviceGenericInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>
 {
 public:
     explicit DeviceFocusRangerInterface(std::shared_ptr<T_CONNECTION> Connection, QString Name = "[ DEVICE ]") :
              DeviceGenericInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>(Connection,Name) 
              {
-              commandArray = QByteArray((char*)(&DEVICE_INTERFACE::Message.DATA), 4);
+              //commandArray = QByteArray((char*)(&DEVICE_INTERFACE::Message.DATA), 4);
              };
         	~DeviceFocusRangerInterface() { };
 
     using DEVICE_INTERFACE = DeviceGenericInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>; 
 
-	void setParam(uint8_t ID, uint32_t Param) override
+	void setParam(uint16_t ID, uint32_t Param) 
     {
                 QDataStream stream(&commandArray, QIODevice::WriteOnly);
                  stream << ID;
@@ -36,14 +35,14 @@ public:
         DEVICE_INTERFACE::sendCommand(commandArray);
     }
 
-	void setEnable(bool OnOff, int Number = 0)  override { if(OnOff) setParam(0,1); else setParam(0,0); }; 
+	void setEnable(bool OnOff, uint16_t Number = 0)  override { if(OnOff) setParam(0,1); else setParam(0,0); }; 
     void setValue(float Value) override 
     { 
-                   int8_t* DataPtr = (int8_t*)&Value+1;
-                 QDataStream stream(&commandArray, QIODevice::WriteOnly);
+       //            int8_t* DataPtr = (int8_t*)&Value+1;
+       //          QDataStream stream(&commandArray, QIODevice::WriteOnly);
 
-        qDebug() << "[ FOCUSATOR ] [ SEND COMMAND ]" << this->Message.toByteArray().toHex(); 
-        DEVICE_INTERFACE::sendCommand(this->Message);
+       // qDebug() << "[ FOCUSATOR ] [ SEND COMMAND ]" << this->Message.toByteArray().toHex(); 
+       // DEVICE_INTERFACE::sendCommand(this->Message);
     };
 
 	float getDistance() { return (float)messageState.Param1; };

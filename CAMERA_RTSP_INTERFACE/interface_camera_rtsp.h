@@ -11,7 +11,7 @@
 #include <gst/gst.h>
 #include <gst/app/gstappsrc.h>
 #include <gst/app/gstappsink.h>
-#include "device_camera_remote_interface.h"
+#include "device_generic_interface.h"
 #include "engine_udp_interface.h"
 
 
@@ -44,7 +44,8 @@ class CameraInterfaceUniversal :public QObject, public SourceImageInterface,
   public:
   QString    TAG_NAME{"[ CAMERA ]"};
   QString CAMERA_INFO{"[ CAMERA NO DATA ]"};
-  //DeviceCameraRemoteInterface<UDPConnectionEngine, int,int> ControlCameraRemote;
+
+  //std::shared_ptr<DeviceCameraRemoteInterface<UDPConnectionEngine, int,int>> ControlCameraRemote = nullptr; 
 
   cv::VideoCapture capture;
             QTimer timerGetFrame{this};

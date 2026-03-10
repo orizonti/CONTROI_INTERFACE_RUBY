@@ -23,7 +23,6 @@
 #include "message_command_structures.h"
 #include "device_rotary_interface.h"
 #include "device_laser_interface.h"
-#include "device_aiming_interface.h"
 #include "device_focus_ranger_interface.h"
 #include "engine_type_register.h"
 #include <memory>
@@ -48,13 +47,13 @@ int ID3 = TypeRegister<CommandDeviceController  >::RegisterType();
 int ID4 = TypeRegister<CommandDeviceLaserPower  >::RegisterType();
 int ID5 = TypeRegister<CommandDeviceLaserPointer>::RegisterType();
 int ID6 = TypeRegister<CommandDeviceFocusator   >::RegisterType();
-int ID7 = TypeRegister<MessageDeviceController  >::RegisterType();
-int ID8 = TypeRegister<MessageDeviceLaserPower  >::RegisterType();
-int ID9 = TypeRegister<MessageDeviceLaserPointer>::RegisterType();
+int ID7 = TypeRegister<RequestDeviceController  >::RegisterType();
+int ID8 = TypeRegister<RequestDeviceLaserPower  >::RegisterType();
+int ID9 = TypeRegister<RequestDeviceLaserPointer>::RegisterType();
 int ID10 = TypeRegister<CommandSetPosScanator   >::RegisterType();
 int ID11 = TypeRegister<CommandSetPosScanator   >::RegisterType();
-int ID12 = TypeRegister<MessagePositionState<0> >::RegisterType();
-int ID13 = TypeRegister<MessagePositionState<1> >::RegisterType();
+int ID12 = TypeRegister<RequestPositionState<0> >::RegisterType();
+int ID13 = TypeRegister<RequestPositionState<1> >::RegisterType();
 int ID14 = TypeRegister<CommandCheckConnection  >::RegisterType();
 int ID15 = TypeRegister<CommandCloseConnection  >::RegisterType();
 
@@ -63,19 +62,19 @@ int ID17 = TypeRegister<ControlRX  >::RegisterType();
 
 void printRegisteredTypes()
 {
-  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<CommandSetPos<0>>::TYPE_ID).arg(TypeRegister<CommandSetPosScanator>::GetTypeSize());
-  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<CommandSetPos<1>>::TYPE_ID).arg(TypeRegister<CommandSetPosRotary>::GetTypeSize());
+  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<CommandSetPosScanator>::TYPE_ID).arg(TypeRegister<CommandSetPosScanator>::GetTypeSize());
+  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<CommandSetPosRotary>::TYPE_ID).arg(TypeRegister<CommandSetPosRotary>::GetTypeSize());
   qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<CommandDevice<0>>::TYPE_ID).arg(TypeRegister<CommandDevice<0>>::GetTypeSize());
   qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<CommandDevice<1>>::TYPE_ID).arg(TypeRegister<CommandDevice<1>>::GetTypeSize());
   qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<CommandDevice<2>>::TYPE_ID).arg(TypeRegister<CommandDevice<2>>::GetTypeSize());
   qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<CommandDevice<3>>::TYPE_ID).arg(TypeRegister<CommandDevice<3>>::GetTypeSize());
-  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<MessageDevice<0>>::TYPE_ID).arg(TypeRegister<MessageDevice<0>>::GetTypeSize());
-  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<MessageDevice<1>>::TYPE_ID).arg(TypeRegister<MessageDevice<1>>::GetTypeSize());
-  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<MessageDevice<2>>::TYPE_ID).arg(TypeRegister<MessageDevice<2>>::GetTypeSize());
-  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<MessageDevice<3>>::TYPE_ID).arg(TypeRegister<MessageDevice<3>>::GetTypeSize());
+  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<RequestDevice<0>>::TYPE_ID).arg(TypeRegister<RequestDevice<0>>::GetTypeSize());
+  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<RequestDevice<1>>::TYPE_ID).arg(TypeRegister<RequestDevice<1>>::GetTypeSize());
+  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<RequestDevice<2>>::TYPE_ID).arg(TypeRegister<RequestDevice<2>>::GetTypeSize());
+  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<RequestDevice<3>>::TYPE_ID).arg(TypeRegister<RequestDevice<3>>::GetTypeSize());
   qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<CommandCalibration>::TYPE_ID).arg(TypeRegister<CommandCalibration>::GetTypeSize());
-  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<MessagePositionState<0>>::TYPE_ID).arg(TypeRegister<MessagePositionState<0>>::GetTypeSize());
-  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<MessagePositionState<1>>::TYPE_ID).arg(TypeRegister<MessagePositionState<0>>::GetTypeSize());
+  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<RequestPositionState<0>>::TYPE_ID).arg(TypeRegister<RequestPositionState<0>>::GetTypeSize());
+  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<RequestPositionState<1>>::TYPE_ID).arg(TypeRegister<RequestPositionState<0>>::GetTypeSize());
   qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<CommandCheckConnection>::TYPE_ID).arg(TypeRegister<CommandCheckConnection>::GetTypeSize());
 }
 
@@ -188,7 +187,7 @@ int main(int argc, char* argv[])
   using MessageType2    = MessageGeneric<void*, MESSAGE_HEADER_ROTARY>;
   using MessageType3    = MessageGeneric<void*, MESSAGE_HEADER_ROTARY_JSON>;
   
-  using MessageTypeRotary1    = MessageGeneric<CommandSetPos<0>      , MESSAGE_HEADER_GENERIC    >;
+  using MessageTypeRotary1    = MessageGeneric<CommandSetPair<0>     , MESSAGE_HEADER_GENERIC    >;
   using MessageTypeRotary2    = MessageGenericExt<ControlRX          , MESSAGE_HEADER_ROTARY     >;
   using MessageTypeRotary3    = MessageGeneric<MessageRotaryStateJson, MESSAGE_HEADER_ROTARY_JSON>;
   //==========================================================================================
@@ -253,24 +252,24 @@ int main(int argc, char* argv[])
 
   //==========================================================================================
   //MESSAGE PROCESSING
-    Dispatcher1_1->AppendCallback<CommandSetPos<1>> ( [](MessageType1& Message)
+    Dispatcher1_1->AppendCallback<CommandSetPair<1>> ( [](MessageType1& Message)
     {
-     auto data = DispatcherType1::ExtractData<CommandSetPos<1>>(&Message);
+     auto data = DispatcherType1::ExtractData<CommandSetPair<1>>(&Message);
      qDebug() << "GET COMMAND: " << data->Param1 << data->Param2;
     });
 
     Dispatcher1_1->AppendCallback<CommandAiming> ( [WindowInterface](MessageType1& Message)
     {
      auto data = DispatcherType1::ExtractData<CommandAiming>(&Message);
-     qDebug() << "GET AIMING STATE: " << data->PosAimingRelativeX << data->PosAimingRelativeY << "[CHANNEL]" << 1;
-     WindowInterface->outputVideo1->setCoordPaint(std::pair<float,float>(data->PosAimingRelativeX, data->PosAimingRelativeY));
+     qDebug() << "GET AIMING STATE: " << data->Param1 << data->Param2 << "[CHANNEL]" << 1;
+     WindowInterface->outputVideo1->setCoordPaint(std::pair<float,float>(data->Param1, data->Param2));
     });
 
     Dispatcher1_2->AppendCallback<CommandAiming> ( [WindowInterface](MessageType1& Message)
     {
      auto data = DispatcherType1::ExtractData<CommandAiming>(&Message);
-     qDebug() << "GET AIMING STATE: " << data->PosAimingRelativeX << data->PosAimingRelativeY << "[CHANNEL]" << 2;
-     WindowInterface->outputVideo2->setCoordPaint(std::pair<float,float>(data->PosAimingRelativeX, data->PosAimingRelativeY));
+     qDebug() << "GET AIMING STATE: " << data->Param1 << data->Param2 << "[CHANNEL]" << 2;
+     WindowInterface->outputVideo2->setCoordPaint(std::pair<float,float>(data->Param1, data->Param2));
     });
     
            
@@ -289,13 +288,13 @@ int main(int argc, char* argv[])
   //=====================================================================================================
   //LASERS
   using CommandLaserPointer = MessageGenericExt<CommandDeviceLaserPointer,MESSAGE_HEADER_EXT>;
-  using RequestLaserPointer = MessageDevice<1>;
+  using RequestLaserPointer = RequestDevice<1>;
 
   using CommandLaserPower   = MessageGenericExt<CommandDeviceLaserPower,MESSAGE_HEADER_EXT>;
-  using RequestLaserPower   = MessageDevice<2>;
+  using RequestLaserPower   = RequestDevice<2>;
 
   using CommandFocusRanger   = MessageGenericExt<CommandDeviceFocusator,MESSAGE_HEADER_EXT>;
-  using RequestFocusRanger   = MessageDevice<3>;
+  using RequestFocusRanger   = RequestDevice<3>;
 
   DeviceLaserInterface<UDPConnectionEngine,CommandLaserPower,RequestLaserPower>     ControlLaserPower  
   {ConnectionInterface3 , "Силовой лазер"};
@@ -326,21 +325,18 @@ int main(int argc, char* argv[])
   //==================================================================================================================
   //ROTARY SCANATOR
   using CommandScanator = MessageGenericExt<CommandSetPosScanator,MESSAGE_HEADER_EXT   >;
-  using CommandRotary   = MessageGenericExt<ControlTX            ,MESSAGE_HEADER_ROTARY>;
+  using CommandRotary   = MessageGenericExt<ControlTX             ,MESSAGE_HEADER_ROTARY>;
 
   auto ControlScanator = std::make_shared<DeviceRotaryControl<UDPConnectionEngine,
-                                                                  CommandScanator, MessageStateScanator>>(ConnectionInterface1);
+                                                                  CommandScanator, RequestStateScanator>>(ConnectionInterface1);
 
   auto ControlRotary = std::make_shared<DeviceRotaryControl<UDPConnectionEngine,
                                                                   CommandRotary  ,ControlRX>>(ConnectionInterface4);
 
-  using CommandAimingControl = MessageGenericExt<CommandAiming   ,MESSAGE_HEADER_EXT>;
-  std::shared_ptr<DeviceGenericHandleControl> ControlAiming1 = std::make_shared<DeviceAimingControl<UDPConnectionEngine, CommandAimingControl, 
-                                                                                  CommandAimingControl>>(ConnectionInterface1);
-  std::shared_ptr<DeviceGenericHandleControl> ControlAiming2 = std::make_shared<DeviceAimingControl<UDPConnectionEngine, CommandAimingControl, 
-                                                                                  CommandAimingControl>>(ConnectionInterface2);
-       //WindowInterface->outputVideo1->linkToDevice(ControlAiming1);                                                              
-       //WindowInterface->outputVideo1->linkToDevice(ControlAiming2);                                                              
+  std::shared_ptr<DeviceGenericHandleControl> ControlAiming1 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine, 0>>(ConnectionInterface1);
+  std::shared_ptr<DeviceGenericHandleControl> ControlAiming2 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine, 1>>(ConnectionInterface2);
+       WindowInterface->outputVideo1->linkToDevice(ControlAiming1);                                                              
+       WindowInterface->outputVideo2->linkToDevice(ControlAiming2);                                                              
 
 
     ControlScanator->setLimits<CONTROL_PARAM::POS>(30000,30000);

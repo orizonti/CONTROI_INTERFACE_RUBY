@@ -2,6 +2,8 @@
 #include "ui_widget_rotary_platform_control.h"
 #include "debug_output_filter.h"
 #include "widget_rotary_control.h"
+#include "device_rotary_interface.h"
+
 WidgetRotaryPlatformControl::WidgetRotaryPlatformControl(QWidget* parent) : WidgetAdjustable(parent), ui(new Ui::WidgetRotaryPlatformControl)
 {
     qDebug() << " [ CREATE WIDGET CAMERA CONTROL ]";

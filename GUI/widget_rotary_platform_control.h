@@ -6,7 +6,7 @@
 #include <QPixmap>
 #include <QLine>
 #include "widget_adjustable.h"
-#include "device_generic_interface.h"
+class DeviceRotaryInterface;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class WidgetRotaryPlatformControl; }

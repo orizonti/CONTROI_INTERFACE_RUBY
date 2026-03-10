@@ -6,8 +6,7 @@
 
 
 template<typename T_CONNECTION>
-class DeviceLidControl : public DeviceGenericInterface<T_CONNECTION, CommandLidControlJson, CommandLidControlJson>,
-                         public DeviceGenericHandleControl
+class DeviceLidControl : public DeviceGenericInterface<T_CONNECTION, CommandLidControlJson, CommandLidControlJson>
 {
 public:
   DeviceLidControl(std::shared_ptr<T_CONNECTION> Connection, QString command1 , QString command2, QString name = "[LID]"
@@ -16,11 +15,9 @@ public:
                       DeviceGenericInterface<T_CONNECTION,CommandLidControlJson, CommandLidControlJson>(Connection, name) {};
 
 	QString TAG_NAME{"[ LID ]"};
-
-	void setParam  (uint8_t ID, uint16_t Value   ) { }; 
   void putMessage(CommandLidControlJson Message) { };
 
-  void setEnable(bool OnOff, int Number = 0) 
+  void setEnable(bool OnOff, uint16_t Number = 0) 
   { if (OnOff)  commandOpen.printCommand(); this->sendCommand(commandOpen);
 	  if(!OnOff) commandClose.printCommand(); this->sendCommand(commandClose); };
 

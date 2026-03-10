@@ -6,9 +6,9 @@ template<> constexpr int TypeRegister<CommandSetPosScanator    >::ID() { return 
 template<> constexpr int TypeRegister<CommandSetPosRotary      >::ID() { return 2;};
 template<> constexpr int TypeRegister<CommandCalibration       >::ID() { return 3;}; 
 template<> constexpr int TypeRegister<CommandDeviceController  >::ID() { return 4;};
-template<> constexpr int TypeRegister<MessagePositionState<0>  >::ID() { return 5;}; 
-template<> constexpr int TypeRegister<MessagePositionState<1>  >::ID() { return 6;}; 
-template<> constexpr int TypeRegister<MessageDeviceController  >::ID() { return 7;};
+template<> constexpr int TypeRegister<RequestPositionState<0>  >::ID() { return 5;}; 
+template<> constexpr int TypeRegister<RequestPositionState<1>  >::ID() { return 6;}; 
+template<> constexpr int TypeRegister<RequestDeviceController  >::ID() { return 7;};
 template<> constexpr int TypeRegister<CommandCheckConnection   >::ID() { return 8;}; 
 template<> constexpr int TypeRegister<CommandCloseConnection   >::ID() { return 9;}; 
 template<> constexpr int TypeRegister<CommandAiming            >::ID() { return 10;}; 
@@ -17,9 +17,9 @@ template<> constexpr int TypeRegister<CommandDeviceLaserPointer>::ID() { return 
 template<> constexpr int TypeRegister<CommandDeviceLaserPower  >::ID() { return 0x120; };
 template<> constexpr int TypeRegister<CommandDeviceFocusator   >::ID() { return 0x130; };
 
-template<> constexpr int TypeRegister<MessageDeviceLaserPointer>::ID() { return 0x210; };
-template<> constexpr int TypeRegister<MessageDeviceLaserPower  >::ID() { return 0x220; };
-template<> constexpr int TypeRegister<MessageDeviceFocusator   >::ID() { return 0x230; }; 
+template<> constexpr int TypeRegister<RequestDeviceLaserPointer>::ID() { return 0x210; };
+template<> constexpr int TypeRegister<RequestDeviceLaserPower  >::ID() { return 0x220; };
+template<> constexpr int TypeRegister<RequestDeviceFocusator   >::ID() { return 0x230; }; 
 
 template<> constexpr int TypeRegister<SystemState >::ID() { return 0xA001; }; 
 template<> constexpr int TypeRegister<ControlRX   >::ID() { return 0xA002; }; 

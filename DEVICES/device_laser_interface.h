@@ -17,8 +17,7 @@
 
 
 template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
-class DeviceLaserInterface : public DeviceGenericInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>, 
-                             public DeviceGenericHandleControl
+class DeviceLaserInterface : public DeviceGenericInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>
 {
 public:
     using DEVICE_INTERFACE = DeviceGenericInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>; 
@@ -29,7 +28,9 @@ public:
 
 	public:
     void loadSettings(){};
-	void setParam(uint8_t ID, uint32_t) override;
+
+	void setParam(uint16_t ID, uint32_t Param) override;
+
     void putMessage(T_MESSAGE Message) override; 
 	QString getName() { return DISPLAY_NAME; }
 
@@ -42,9 +43,9 @@ public:
 
     //========================================================
     //DEVICE_GENERIC_HANDLE_CONTROL
-	void setLevel(int Level) override { if(Level == 0) setPowerLow(); if(Level == 1) setPowerHigh(); };
+	void setLevel(uint32_t Level) override { if(Level == 0) setPowerLow(); if(Level == 1) setPowerHigh(); };
     void setValue(float Value) override { setPower(90*Value); }
-	void setEnable(bool OnOff, int Number = 0) override
+	void setEnable(bool OnOff, uint16_t Number = 0) override
     {
         if(Number == 0) setPowerEnable(OnOff); 
         if(Number == 1) setPilotEnable(OnOff); 
@@ -77,7 +78,7 @@ template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
 DeviceLaserInterface<T_CONNECTION,T_COMMAND,T_MESSAGE>::~DeviceLaserInterface() { qDebug() << TAG_NAME << "DELETE"; }
 
 template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
-void DeviceLaserInterface<T_CONNECTION,T_COMMAND,T_MESSAGE>::setParam(uint8_t ID, uint32_t Value)
+void DeviceLaserInterface<T_CONNECTION,T_COMMAND,T_MESSAGE>::setParam(uint16_t ID, uint32_t Value)
 {
 	uint8_t param = Value > 0 ? 1 : 0;  
 	Command.DATA.Command = ID_PARAM_KEY[ID][param];
