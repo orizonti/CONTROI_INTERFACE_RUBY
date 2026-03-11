@@ -13,13 +13,14 @@ class DeviceFocusRangerInterface : public DeviceGenericInterface<T_CONNECTION,
                                                                  RequestDeviceRedux<NUM_DEVICE>>
 {
 public:
+
     using COMMAND_TYPE = CommandDeviceRedux<NUM_DEVICE>; 
-    using MESSAGE_TYPE = MessageGenericExt<COMMAND_TYPE, MESSAGE_HEADER_EXT>
-    using REQUEST_TYPE = RequestDevice<NUM_DEVICE>; 
+    using MESSAGE_TYPE = MessageGenericExt<COMMAND_TYPE, MESSAGE_HEADER_EXT>;
+    using REQUEST_TYPE = RequestDeviceRedux<NUM_DEVICE>; 
     using DEVICE_INTERFACE = DeviceGenericInterface<T_CONNECTION, MESSAGE_TYPE, REQUEST_TYPE>; 
 
     explicit DeviceFocusRangerInterface(std::shared_ptr<T_CONNECTION> Connection, QString Name = "[ DEVICE ]") :
-             DeviceGenericInterface<T_CONNECTION, NUM_DEVICE>(Connection,Name) 
+             DEVICE_INTERFACE(Connection,Name) 
              {
               //commandArray = QByteArray((char*)(&DEVICE_INTERFACE::Message.DATA), 4);
              };
@@ -30,7 +31,7 @@ public:
                 QDataStream stream(&commandArray, QIODevice::WriteOnly);
                  stream << ID;
         qDebug() << "[ FOCUSATOR ] [ SEND COMMAND ]" << commandArray.toHex(); 
-        DEVICE_INTERFACE::sendCommand(commandArray);
+        //DEVICE_INTERFACE::sendCommand(commandArray);
     }
 
 	void setEnable(bool OnOff, uint16_t Number = 0)  override { if(OnOff) setParam(0,1); else setParam(0,0); }; 
@@ -43,7 +44,7 @@ public:
        // DEVICE_INTERFACE::sendCommand(this->Message);
     };
 
-	float getDistance() { return (float)messageState.Param1; };
+	float getDistance() { return (float)requestMessage.Param; };
 	float getValue() override { return getDistance(); };
     void putMessage(REQUEST_TYPE Message) { };
 

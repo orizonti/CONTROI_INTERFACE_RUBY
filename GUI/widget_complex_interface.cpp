@@ -8,6 +8,7 @@
 #include "label_active_image.h"
 
 #include "message_command_id.h"
+#include <QSizePolicy>
 
 WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
     : WidgetAdjustable(parent)
@@ -15,9 +16,15 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
 {
     ui->setupUi(this);
 
+    qDebug() << "CREATE COMPLEX INTERFACE";
     widgetControlBlock = new WidgetControlBlock;
-    widgetControlRotary  = new WidgetRotaryPlatformControl;
-    widgetControlRotary2 = new WidgetRotaryPlatformControl;
+    widgetControlRotary1 = new WidgetRotaryPlatformControl(0);
+    widgetControlRotary2 = new WidgetRotaryPlatformControl(1);
+    widgetControlRotary1->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+    widgetControlRotary2->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+    //auto button = new QPushButton(tr("Reset all shortcuts to default"), this);
+    //button->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed, QSizePolicy::ToolButton));
+
 
     widgetControlRanger    = new WidgetDeviceControl("Дальномер");
     widgetControlFocusator = new WidgetDeviceControl("Фокусатор");
@@ -45,27 +52,29 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
     widgetControlScanator->enableScheme(1,0,0,1); widgetControlScanator->setScheme(0,0,1); 
     widgetControlPlatform->enableScheme(1,0,0,1); widgetControlPlatform->setScheme(0,0,1);
 
-    ui->layoutControlListRight->addWidget(widgetControlRanger);
-    ui->layoutControlListRight->addWidget(widgetControlFocusator);
+      widgetLidControl = new WidgetDeviceControl("Крышки"); 
+      widgetLidControl->enableScheme(0,0,1,0); widgetLidControl->setScheme(0,0,2); 
 
-    ui->layoutControlListRight->addWidget(widgetControlScanator);
-    ui->layoutControlListRight->addWidget(widgetControlPlatform);
+    ui->layoutControlTable->addWidget(widgetControlRanger,1,1);
+    ui->layoutControlTable->addWidget(widgetControlFocusator,2,1);
+    ui->layoutControlTable->addWidget(widgetControlScanator,3,1);
+    ui->layoutControlTable->addWidget(widgetControlPlatform,4,1);
+    ui->layoutControlTable->addWidget(widgetLidControl,5,1);
 
-    ui->layoutControlListLeft->addWidget(widgetControlLaserPower);
-    ui->layoutControlListLeft->addWidget(widgetControlLaserIllum);
-    ui->layoutControlListLeft->addWidget(widgetControlCamera1);
-    ui->layoutControlListLeft->addWidget(widgetControlCamera2);
-    ui->layoutControlListLeft->addWidget(widgetControlCamera3);
-    ui->layoutControlListLeft->addWidget(widgetControlCamera4);
+    ui->layoutControlTable->addWidget(widgetControlLaserPower,1,2);
+    ui->layoutControlTable->addWidget(widgetControlLaserIllum,2,2);
+       ui->layoutControlTable->addWidget(widgetControlCamera1,3,2);
+       ui->layoutControlTable->addWidget(widgetControlCamera2,4,2);
+       ui->layoutControlTable->addWidget(widgetControlCamera3,5,2);
+       ui->layoutControlTable->addWidget(widgetControlCamera4,6,2);
 
     ui->layoutControlBlock->addWidget(widgetControlBlock);
-    ui->layoutControlBlock->addWidget(widgetControlRotary);
-
+    ui->layoutControlBlock->addWidget(widgetControlRotary1);
     ui->layoutControlBlockBigPanel->addWidget(widgetControlRotary2);
 
-    ui->widgetSwitcherFullMode->hideButton(1);
+    ui->layoutControlBlockBigPanel->addSpacerItem(new QSpacerItem(100,100,QSizePolicy::Fixed, QSizePolicy::Minimum));
 
-    //ControlBlock->LinkSignals(this);
+    ui->widgetSwitcherFullMode->hideButton(1);
 
     connect(ui->labelCameraFast, &LabelActiveImage::signalLabelPicked, this, &WidgetComplexInterface::slotSetBigImageMode);
     connect(ui->labelCameraZoom, &LabelActiveImage::signalLabelPicked, this, &WidgetComplexInterface::slotSetBigImageMode);
@@ -99,10 +108,75 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
     outputVideo2Mini->linkToSinkNode(outputVideoBig);
     outputVideo3Mini->linkToSinkNode(outputVideoBig);
 
-    //slotSetMainMode();
+    slotSetMainMode();
     //slotSetBigImageMode();
-    slotSetHandleMode();
+    //slotSetHandleMode();
     //slotSetControlPanelMode();
+    this->grabKeyboard();
+}
+
+void WidgetComplexInterface::keyPressEvent(QKeyEvent *event)
+{
+    if(event->key() == Qt::Key_F11)
+    {
+      if(!this->isFullScreen()) { this->showFullScreen(); return; } 
+      if( this->isFullScreen()) { this->showNormal(); return; }
+    }
+    if(event->isAutoRepeat()) return;
+
+    if(event->key() == Qt::Key_Up)   qDebug() << "KEY PRESS UP"; 
+    if(event->key() == Qt::Key_Down) qDebug() << "KEY PRESS DOWN"; 
+    if(event->key() == Qt::Key_Left) qDebug() << "KEY PRESS LEFT"; 
+    if(event->key() == Qt::Key_Right)qDebug() << "KEY PRESS RIGHT"; 
+
+
+    if(event->key() == Qt::Key_W) qDebug() << "KEY W UP"; 
+    if(event->key() == Qt::Key_S) qDebug() << "KEY S DOWN"; 
+    if(event->key() == Qt::Key_A) qDebug() << "KEY A LEFT"; 
+    if(event->key() == Qt::Key_D) qDebug() << "KEY D RIGHT"; 
+
+    switch(event->key())
+    {
+      case Qt::Key_Up:    widgetControlRotary1->widgetElevation->slotMoveStart(1);  break;
+      case Qt::Key_Down:  widgetControlRotary1->widgetElevation->slotMoveStart(-1); break;
+      case Qt::Key_Left:  widgetControlRotary1->widgetAzimuth->slotMoveStart(1);    break;
+      case Qt::Key_Right: widgetControlRotary1->widgetAzimuth->slotMoveStart(-1);   break;
+
+      case Qt::Key_W: widgetControlRotary1->widgetElevation->slotMoveStart(1);  break;
+      case Qt::Key_S: widgetControlRotary1->widgetElevation->slotMoveStart(-1); break;
+      case Qt::Key_A: widgetControlRotary1->widgetAzimuth->slotMoveStart(1);    break;
+      case Qt::Key_D: widgetControlRotary1->widgetAzimuth->slotMoveStart(-1);   break;
+    }
+
+    //QWidget::keyPressEvent(event);
+}
+
+void WidgetComplexInterface::keyReleaseEvent(QKeyEvent *event)
+{
+    if(event->isAutoRepeat()) return;
+
+    if(event->key() == Qt::Key_Up)   qDebug() << "KEY RELEASE UP"; 
+    if(event->key() == Qt::Key_Down) qDebug() << "KEY RELEASE DOWN"; 
+    if(event->key() == Qt::Key_Left) qDebug() << "KEY RELEASE LEFT"; 
+    if(event->key() == Qt::Key_Right)qDebug() << "KEY RELEASE RIGHT"; 
+    if(event->key() == Qt::Key_W) qDebug() << "KEY W RELEASE UP"; 
+    if(event->key() == Qt::Key_S) qDebug() << "KEY S RELEASE DOWN"; 
+    if(event->key() == Qt::Key_A) qDebug() << "KEY A RELEASE LEFT"; 
+    if(event->key() == Qt::Key_D) qDebug() << "KEY D RELEASE RIGHT"; 
+
+    switch(event->key())
+    {
+      case Qt::Key_Up:    widgetControlRotary1->widgetElevation->slotMoveStart(0); break;
+      case Qt::Key_Down:  widgetControlRotary1->widgetElevation->slotMoveStart(0); break;
+      case Qt::Key_Left:  widgetControlRotary1->widgetAzimuth->slotMoveStart(0);   break;
+      case Qt::Key_Right: widgetControlRotary1->widgetAzimuth->slotMoveStart(0);   break;
+
+      case Qt::Key_W: widgetControlRotary1->widgetElevation->slotMoveStart(0); break;
+      case Qt::Key_S: widgetControlRotary1->widgetElevation->slotMoveStart(0); break;
+      case Qt::Key_A: widgetControlRotary1->widgetAzimuth->slotMoveStart(0);   break;
+      case Qt::Key_D: widgetControlRotary1->widgetAzimuth->slotMoveStart(0);   break;
+    }
+
 }
 
 void WidgetComplexInterface::activateMainOutput(bool OnOff) 
@@ -148,20 +222,12 @@ void WidgetComplexInterface::closeEvent(QCloseEvent *event)
 }
 void WidgetComplexInterface::slotEndWork(QCloseEvent *event) { qDebug() << "[ END WORK ]"; QWidget::closeEvent(event); }
 
-void WidgetComplexInterface::keyPressEvent(QKeyEvent *event)
-{
-    if(event->key() == Qt::Key_F11)
-    {
-      if(!this->isFullScreen()) { this->showFullScreen(); return; } 
-      if( this->isFullScreen()) { this->showNormal(); return; }
-    }
-}
 
 void WidgetComplexInterface::slotSetMainMode()
 {
     ui->stackedWidget->setCurrentIndex(0);
     ui->widgetStackedMainControl->setCurrentIndex(0);
-           widgetControlRotary->hide(); widgetControlBlock->show();
+        widgetControlBlock->show();
     activateMainOutput(true);
 }
 void WidgetComplexInterface::slotSetHandleMode()

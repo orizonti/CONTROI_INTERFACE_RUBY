@@ -28,13 +28,13 @@ template<> constexpr int TypeRegister<RequestPositionState<0>  >::ID() { return 
 template<> constexpr int TypeRegister<RequestPositionState<1>  >::ID() { return 21;}; 
 template<> constexpr int TypeRegister<RequestPositionState<2>  >::ID() { return 22;}; 
 template<> constexpr int TypeRegister<RequestPositionState<3>  >::ID() { return 23;}; 
-template<> constexpr int TypeRegister<RequestPositionState<3>  >::ID() { return 24;}; 
+template<> constexpr int TypeRegister<RequestPositionState<4>  >::ID() { return 24;}; 
 
 template<> constexpr int TypeRegister<RequestMoveState<0>  >::ID() { return 30;}; 
 template<> constexpr int TypeRegister<RequestMoveState<1>  >::ID() { return 31;}; 
 template<> constexpr int TypeRegister<RequestMoveState<2>  >::ID() { return 32;}; 
 template<> constexpr int TypeRegister<RequestMoveState<3>  >::ID() { return 33;}; 
-template<> constexpr int TypeRegister<RequestMoveState<3>  >::ID() { return 34;}; 
+template<> constexpr int TypeRegister<RequestMoveState<4>  >::ID() { return 34;}; 
 
 template<> constexpr int TypeRegister<CommandDeviceRedux<0>>::ID() { return 0x110; };
 template<> constexpr int TypeRegister<CommandDeviceRedux<1>>::ID() { return 0x120; };

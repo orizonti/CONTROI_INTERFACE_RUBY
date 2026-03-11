@@ -32,7 +32,7 @@ public:
     ~WidgetComplexInterface();
 
     WidgetControlBlock* widgetControlBlock = nullptr;
-    WidgetRotaryPlatformControl* widgetControlRotary   = nullptr;
+    WidgetRotaryPlatformControl* widgetControlRotary1   = nullptr;
     WidgetRotaryPlatformControl* widgetControlRotary2   = nullptr;
 
     WidgetDeviceControl* widgetControlLaserPower = nullptr;
@@ -48,6 +48,8 @@ public:
     WidgetDeviceControl* widgetControlCamera2 = nullptr;
     WidgetDeviceControl* widgetControlCamera3 = nullptr;
     WidgetDeviceControl* widgetControlCamera4 = nullptr;
+
+    WidgetDeviceControl* widgetLidControl    = nullptr;
 
     SinkDisplayLabel* outputVideo1 = nullptr;
     SinkDisplayLabel* outputVideo2 = nullptr;
@@ -76,6 +78,7 @@ private:
     Ui::WidgetComplexInterface *ui;
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
 
     void activateMainOutput(bool OnOff);
     void activateControlOutput(bool OnOff);

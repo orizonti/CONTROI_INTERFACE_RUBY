@@ -3,15 +3,53 @@
 #include "debug_output_filter.h"
 #include "widget_rotary_control.h"
 #include "device_rotary_interface.h"
+#include "QSpacerItem"
 
-WidgetRotaryPlatformControl::WidgetRotaryPlatformControl(QWidget* parent) : WidgetAdjustable(parent), ui(new Ui::WidgetRotaryPlatformControl)
+WidgetRotaryPlatformControl::WidgetRotaryPlatformControl(int Scheme, QWidget* parent) : WidgetAdjustable(parent), ui(new Ui::WidgetRotaryPlatformControl)
 {
-    qDebug() << " [ CREATE WIDGET CAMERA CONTROL ]";
+    qDebug() << "!!!!!!!!!!!!!!!!!!! [ CREATE WIDGET ROTARY CONTROL ]";
     ui->setupUi(this);
- //   QObject::connect(ui->scrollRotaryAxisX, &QScrollBar::valueChanged, this, &WidgetRotaryPlatformControl::slotValue1Changed);
- //   QObject::connect(ui->scrollRotaryAxisY, &QScrollBar::valueChanged, this, &WidgetRotaryPlatformControl::slotValue2Changed);
     ui->groupBoxArrowButtons->hide();
-    ui->widgetRotaryAzimuth->setType(WidgetRotaryControl::TypeDraw::TypeCircle);
+
+    widgetElevation = new WidgetRotaryControl;
+    widgetAzimuth   = new WidgetRotaryControl;
+    widgetAzimuth->setType(WidgetRotaryControl::TypeDraw::TypeCircle);
+
+    if(Scheme == 0)
+    {
+    widgetElevation->setMaximumSize(100,100);
+    ui->leftLayout->addWidget(widgetAzimuth);
+    ui->rightLayout->addWidget(widgetElevation, Qt::AlignTop);
+    ui->rightLayout->addSpacerItem(new QSpacerItem(20,100,QSizePolicy::Fixed, QSizePolicy::MinimumExpanding));
+
+    widgetAzimuth->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+    widgetElevation->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+    }
+
+    if(Scheme == 1)
+    {
+
+    widgetElevation->setMinimumSize(80,80);
+    widgetElevation->setMaximumSize(150,150);
+    widgetAzimuth->setMaximumSize(340,340);
+    widgetAzimuth->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+    widgetElevation->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+
+    auto layout = new  QHBoxLayout;
+         layout->setSpacing(0);
+         layout->setContentsMargins(1,1,1,1);
+         ui->leftLayout->setContentsMargins(1,1,1,1);
+         ui->leftLayout->setSpacing(0);
+         layout->addSpacerItem(new QSpacerItem(50,10,QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
+         layout->addWidget(widgetElevation, Qt::AlignLeft);
+    ui->leftLayout->addLayout(layout);
+    ui->leftLayout->addWidget(widgetAzimuth);
+
+    widgetAzimuth->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+    widgetElevation->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
+    }
+
+
 }
 
 void WidgetRotaryPlatformControl::linkToDevice(std::shared_ptr<DeviceRotaryInterface> Device)

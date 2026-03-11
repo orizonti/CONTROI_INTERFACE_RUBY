@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>541</width>
+    <width>186</width>
     <height>234</height>
    </rect>
   </property>
@@ -1335,48 +1335,6 @@ QComboBox::item {
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0" rowspan="4">
-      <widget class="QPushButton" name="butOpenFire">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="MinimumExpanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>80</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QPushButton
-{
-	background-color: rgba(209, 142, 34, 60);
-    border: 2px solid line;
-    border-radius: 6px;
-   
-	border-color: rgb(214, 136, 41);
-}
-
-QPushButton:pressed
-{
-    background-color: rgba(209, 142, 34, 110);
-    border: 4px solid line;
-    border-radius: 6px;
-   
-	
-	border-color: rgb(171, 86, 38);
-}</string>
-       </property>
-       <property name="text">
-        <string>Огонь</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2" rowspan="4">
-      <widget class="WidgetRotaryPlatformControl" name="widget_2" native="true"/>
-     </item>
      <item row="0" column="1" rowspan="2">
       <widget class="QPushButton" name="butSetLaserReady">
        <property name="sizePolicy">
@@ -1434,6 +1392,45 @@ QPushButton:checked
        </property>
       </widget>
      </item>
+     <item row="0" column="0" rowspan="4">
+      <widget class="QPushButton" name="butOpenFire">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="MinimumExpanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>80</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton
+{
+	background-color: rgba(209, 142, 34, 60);
+    border: 2px solid line;
+    border-radius: 6px;
+   
+	border-color: rgb(214, 136, 41);
+}
+
+QPushButton:pressed
+{
+    background-color: rgba(209, 142, 34, 110);
+    border: 4px solid line;
+    border-radius: 6px;
+   
+	
+	border-color: rgb(171, 86, 38);
+}</string>
+       </property>
+       <property name="text">
+        <string>Огонь</string>
+       </property>
+      </widget>
+     </item>
      <item row="2" column="1" rowspan="2">
       <widget class="QPushButton" name="pushButton">
        <property name="sizePolicy">
@@ -1477,14 +1474,6 @@ QPushButton:checked
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>WidgetRotaryPlatformControl</class>
-   <extends>QWidget</extends>
-   <header location="global">widget_rotary_platform_control.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="Images.qrc"/>
  </resources>

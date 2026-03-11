@@ -7,6 +7,7 @@
 #include <QPen>
 #include <QColor>
 #include <cmath>
+#include <QTimer>
 
 class WidgetRotaryControl : public QWidget 
 {
@@ -20,6 +21,7 @@ public:
         setBaseSize(sizeWidget, sizeWidget);  // Set the size of the widget
         initWidget();
         this->setMouseTracking(true);
+        QObject::connect(&timerMove, SIGNAL(timeout()), this, SLOT(slotMove()));
     }
     void setType(TypeDraw Type)
     {
@@ -72,8 +74,8 @@ public:
     float pos_x_radial_future = 0;
     float pos_y_radial_future = 0;
 
-    float length_radial = 0;
-    float length_radial_future = 0;
+    float radius_cursor = 0;
+    float radius_cursor_future = 0;
     //==========================================
     //DRAWING AREA
        int TypeWidget = 1;
@@ -87,6 +89,10 @@ public:
     QPen pen2{QColor(30, 221, 78)  , 2, Qt::SolidLine };
     QPen pen3{QColor(215, 50, 28), 2, Qt::DashLine};
     QPen pen4{QColor(215, 50, 28), 2, Qt::SolidLine};
+
+      int directionMove = 1;
+    float stepMove      = 0.5;
+    QTimer timerMove;
 
     void drawObjects(QPainter* painter)
     {
@@ -136,13 +142,13 @@ public:
 public slots:
 void slotSetAngle(float angleDegree)
 {
-        qDebug() << "SET ANGLE: " << angleDegree;
               angleRotationDegree = angleDegree ; 
         angleRotationFutureDegree = angleDegree;
 
               angleRotation = angleDegree*M_PI/180;
         angleRotationFuture = angleDegree*M_PI/180;
 
+        qDebug() << "SET ANGLE ROTATION: " << angleRotationDegree;
         if(TypeWidget == 1)
         {
         if(angleRotation < angleRotationMin) angleRotation = angleRotationMin; 
@@ -151,8 +157,80 @@ void slotSetAngle(float angleDegree)
 
         update();  
 }
+
+void updateAngle()
+{
+        pos_x_radial = pointDirection.x();
+        pos_y_radial = pointDirection.y();
+           radius_cursor = std::hypot(pos_x_radial, pos_y_radial);
+        if(radius_cursor > sizeDrawing/2) return;
+
+        angleRotation = std::acos(pos_x_radial/radius_cursor); 
+
+        if(TypeWidget == 1)
+        {
+        if(angleRotation < angleRotationMin) angleRotation = angleRotationMin; 
+        if(angleRotation > angleRotationMax) angleRotation = angleRotationMax;
+        }
+
+                             angleRotationDegree = angleRotation*180/M_PI;
+        if(pos_y_radial > 0) angleRotationDegree = 360 - angleRotationDegree;
+        emit signalAngleChanged(angleRotationDegree);
+
+        update();  
+}
+
+void updateFutureAngle()
+{
+        pos_x_radial_future = pointDirectionFuture.x();
+        pos_y_radial_future = pointDirectionFuture.y();
+
+           radius_cursor_future = std::hypot(pos_x_radial_future, pos_y_radial_future);
+        if(radius_cursor_future > sizeDrawing/2) return;
+
+        angleRotationFuture = std::acos(pos_x_radial_future/radius_cursor_future); 
+        if(TypeWidget == 1)
+        {
+        if(angleRotationFuture < angleRotationMin) angleRotationFuture = angleRotationMin; 
+        if(angleRotationFuture > angleRotationMax) angleRotationFuture = angleRotationMax;
+        }
+
+        if(pos_y_radial_future > 0) angleRotationFuture = 2*M_PI - angleRotationFuture;
+                                    angleRotationFutureDegree = angleRotationFuture*180/M_PI;
+        update();  
+}
+public slots:
+void slotMoveStart(int Direction)
+{
+    if(Direction == 0) 
+    { 
+        timerMove.stop(); return;
+    }
+
+    directionMove = Direction;
+    timerMove.start(10);
+}
+
+private slots:
+void slotMove()
+{
+    angleRotationDegree += stepMove*directionMove;
+    angleRotationFutureDegree = angleRotationDegree;
+
+            angleRotation = angleRotationDegree*M_PI/180;
+    angleRotationFuture = angleRotationDegree*M_PI/180;
+
+    qDebug() << "SET ANGLE ROTATION: " << angleRotationDegree;
+    if(TypeWidget == 1)
+    {
+    if(angleRotation < angleRotationMin) angleRotation = angleRotationMin; 
+    if(angleRotation > angleRotationMax) angleRotation = angleRotationMax;
+    }
+    update();
+}
+
 signals:
-void signalCurrentAngle(float angleDegree);
+void signalAngleChanged(float angleDegree);
 
 protected:
     void paintEvent(QPaintEvent* event) override { drawRotation(); }
@@ -168,68 +246,19 @@ protected:
 
     void mousePressEvent(QMouseEvent* event) override 
     {
-
-        pointDirection = event->pos() - pointCenterDrawing;
-        pos_x_radial = pointDirection.x();
-        pos_y_radial = pointDirection.y();
-        length_radial = std::hypot(pos_x_radial, pos_y_radial);
-        angleRotation = std::acos(pos_x_radial/length_radial); 
-
-        if(TypeWidget == 1)
-        {
-        if(angleRotation < angleRotationMin) angleRotation = angleRotationMin; 
-        if(angleRotation > angleRotationMax) angleRotation = angleRotationMax;
-        }
-
-                             angleRotationDegree = angleRotation*180/M_PI;
-        if(pos_y_radial > 0) angleRotationDegree = 360 - angleRotationDegree;
-
-        update();  
+        qDebug() << "MOUSE PRESS";
+        pointDirection = event->pos() - pointCenterDrawing; updateAngle();
     }
 
     void mouseMoveEvent(QMouseEvent* event) override 
     {
-        pointDirectionFuture = event->pos() - pointCenterDrawing;
-        pos_x_radial_future = pointDirectionFuture.x();
-        pos_y_radial_future = pointDirectionFuture.y();
-        length_radial_future = std::hypot(pos_x_radial_future, pos_y_radial_future);
-        angleRotationFuture = std::acos(pos_x_radial_future/length_radial_future); 
-
-        if(TypeWidget == 1)
-        {
-        if(angleRotationFuture < angleRotationMin) angleRotationFuture = angleRotationMin; 
-        if(angleRotationFuture > angleRotationMax) angleRotationFuture = angleRotationMax;
-        }
-
-        if(pos_y_radial_future > 0) angleRotationFuture = 2*M_PI - angleRotationFuture;
-                                    angleRotationFutureDegree = angleRotationFuture*180/M_PI;
-
-        update();  
+        pointDirectionFuture = event->pos() - pointCenterDrawing; updateFutureAngle();
     }
 
     void leaveEvent(QEvent* event) override 
     {
-              angleRotationFuture = angleRotation; 
-        angleRotationFutureDegree = angleRotationFuture*180/M_PI;
-
-        update();  
+        pointDirectionFuture = pointDirection; updateFutureAngle();
     }
 
-    void keyPressEvent(QKeyEvent *event) override
-    {
-
-         if(TypeWidget == 1)
-         {
-            if(event->key() == Qt::Key_Up) angleRotationDegree++; 
-            if(event->key() == Qt::Key_Down) angleRotationDegree--; 
-         }
-         else 
-         {
-            if(event->key() == Qt::Key_Left) angleRotationDegree++; 
-            if(event->key() == Qt::Key_Right) angleRotationDegree--; 
-         }
-
-         slotSetAngle(angleRotationDegree);
-    }
 
 };

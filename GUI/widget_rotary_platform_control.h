@@ -6,6 +6,7 @@
 #include <QPixmap>
 #include <QLine>
 #include "widget_adjustable.h"
+#include "widget_rotary_control.h"
 class DeviceRotaryInterface;
 
 QT_BEGIN_NAMESPACE
@@ -17,11 +18,15 @@ class WidgetRotaryPlatformControl : public WidgetAdjustable
 {
     Q_OBJECT
 public:
-    explicit WidgetRotaryPlatformControl(QWidget* parent = 0);
+    explicit WidgetRotaryPlatformControl(int Scheme = 0, QWidget* parent = 0);
         void linkToDevice(std::shared_ptr<DeviceRotaryInterface> Device);
 
         QPair<int,int> Position{0,0};
 void setName(QString name);
+
+WidgetRotaryControl* widgetAzimuth = nullptr;
+WidgetRotaryControl* widgetElevation = nullptr;
+
 private:
 Ui::WidgetRotaryPlatformControl *ui;
 
