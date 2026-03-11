@@ -33,6 +33,20 @@ struct CommandDeviceRedux
 };
 
 template<int NUM_DEV>
+struct RequestDeviceRedux
+{
+  public:
+  uint8_t Command = 0;
+  uint8_t Param = 0;
+  uint8_t Reserv1 = 0;
+  uint8_t Reserv2 = 0;
+  uint8_t Reserv3 = 0;
+  uint8_t Reserv4 = 0;
+  uint8_t Reserv5 = 0;
+  uint8_t Reserv6 = 0;
+};
+
+template<int NUM_DEV>
 struct CommandDevice
 {
   public:
@@ -113,7 +127,6 @@ struct CommandCalibration
     uint16_t  Reserve3      = 1;
 };
 
-using CommandDeviceController   = CommandDevice<0>;
 using CommandDeviceLaserPointer = CommandDeviceRedux<0>;
 using CommandDeviceLaserPower   = CommandDeviceRedux<1>;
 using CommandDeviceFocusator    = CommandDeviceRedux<2>;
@@ -122,15 +135,6 @@ using RequestDeviceController   = RequestDevice<0>;
 using RequestDeviceLaserPower   = RequestDevice<1>;
 using RequestDeviceLaserPointer = RequestDevice<2>;
 using RequestDeviceFocusator    = RequestDevice<3>;
-
-using CommandAiming1           = CommandSetPair<0>;
-using CommandAiming2           = CommandSetPair<1>;
-
-using CommandSetPosRotary    = CommandSetPair<2>;
-using CommandSetPosScanator  = CommandSetPair<3>;
-using CommandSetSpeedRotary   = CommandSetPair<4>;
-using CommandSetSpeedScanator = CommandSetPair<5>;
-
 
 using RequestStateRotary      = RequestMoveState<0>;
 using RequestStateScanator    = RequestMoveState<1>;

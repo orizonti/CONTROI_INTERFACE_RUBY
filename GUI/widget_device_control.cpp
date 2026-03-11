@@ -105,7 +105,7 @@ void WidgetDeviceControl::linkSignals()
     std::vector<QPushButton*> buttonsArrow;
     std::vector<QPair<float,float>> Vels;
 
-    if(!ui->groupArrows->isVisible()) return;
+    //if(!ui->groupArrows->isVisible()) return;
 
         buttonsArrow.push_back(ui->butMoveLeft);  Vels.push_back(QPair<float,float>(-VelocityScale, 0));
         buttonsArrow.push_back(ui->butMoveRight); Vels.push_back(QPair<float,float>( VelocityScale, 0));
@@ -116,7 +116,10 @@ void WidgetDeviceControl::linkSignals()
         {
         auto Velocity = Vels[n];
         auto button = buttonsArrow[n];
-        QObject::connect(button, &QPushButton::pressed,  [this, Velocity]() { DeviceLinked->setPair(Velocity); timerCheckDevice.start(1);});
+        QObject::connect(button, &QPushButton::pressed,  [this, Velocity]() 
+        {   
+            DeviceLinked->setPair(Velocity); timerCheckDevice.start(1);
+        });
         QObject::connect(button, &QPushButton::released, [this     ]()      { DeviceLinked->setEnable(false);  timerCheckDevice.stop(); });
         }
 

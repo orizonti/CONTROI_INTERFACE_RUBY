@@ -286,68 +286,51 @@ int main(int argc, char* argv[])
     });
 
   //=====================================================================================================
+  //DEVICES
+  using DeviceAiming1 = DeviceGenericAiming<UDPConnectionEngine, 0>;
+  using DeviceAiming2 = DeviceGenericAiming<UDPConnectionEngine, 1>;
+
+  using DeviceLaserPower = DeviceLaserInterface<UDPConnectionEngine,1>; 
+  using DeviceLaserIllum = DeviceLaserInterface<UDPConnectionEngine,2>; 
+  using DeviceFocusator  = DeviceFocusRangerInterface<UDPConnectionEngine,3> ; 
+
+                           using CommandScanator = MessageGenericExt<CommandSetPair<0>, MESSAGE_HEADER_EXT   >;
+                           using CommandPlatform = MessageGenericExt<ControlTX        , MESSAGE_HEADER_ROTARY>;
+  using DeviceScanator = DeviceRotaryControl<UDPConnectionEngine, CommandScanator, RequestStateScanator>;
+  using DevicePlatform = DeviceRotaryControl<UDPConnectionEngine, CommandPlatform, ControlRX>;
+
+                           QString open1  {"id: 1, type: leftCapOpen"  };
+                           QString close1 {"id: 1, type: leftCapClose" };
+                           QString open2  {"id: 1, type: rightCapOpen" };
+                           QString close2 {"id: 1, type: rightCapClose"};
+  using DeviceLid        = DeviceLidControl<UDPConnectionEngine>;
+  //=====================================================================================================
+
   //LASERS
-  using CommandLaserPointer = MessageGenericExt<CommandDeviceLaserPointer,MESSAGE_HEADER_EXT>;
-  using RequestLaserPointer = RequestDevice<1>;
-
-  using CommandLaserPower   = MessageGenericExt<CommandDeviceLaserPower,MESSAGE_HEADER_EXT>;
-  using RequestLaserPower   = RequestDevice<2>;
-
-  using CommandFocusRanger   = MessageGenericExt<CommandDeviceFocusator,MESSAGE_HEADER_EXT>;
-  using RequestFocusRanger   = RequestDevice<3>;
-
-  using DeviceLaserPower = DeviceLaserInterface<UDPConnectionEngine,CommandLaserPower,RequestLaserPower  >; 
-  using DeviceLaserIllum = DeviceLaserInterface<UDPConnectionEngine,CommandLaserPower,RequestLaserPointer>; 
-  using DeviceFocusator  = DeviceFocusRangerInterface<UDPConnectionEngine,CommandFocusRanger,RequestFocusRanger> ; 
-
   std::shared_ptr<DeviceGenericHandleControl> ControlLaserPower = std::make_shared<DeviceLaserPower>(ConnectionInterface3 , "Силовой лазер");
   std::shared_ptr<DeviceGenericHandleControl> ControlLaserIllum = std::make_shared<DeviceLaserIllum>(ConnectionInterface3 , "Подсветчик");
+  //FOCUS CONTROL
   std::shared_ptr<DeviceGenericHandleControl> ControlFocusator  = std::make_shared<DeviceFocusator >(ConnectionInterface3 , "Фокусатор");
-
   //=====================================================================================================
   //LIDS
-  QString open1  {"id: 1, type: leftCapOpen"  };
-  QString close1 {"id: 1, type: leftCapClose" };
-  QString open2  {"id: 1, type: rightCapOpen" };
-  QString close2 {"id: 1, type: rightCapClose"};
-
-  std::shared_ptr<DeviceGenericHandleControl> LidControl 
-  = std::make_shared<DeviceLidControl<UDPConnectionEngine>>(ConnectionInterface5, open1, close1);
-
-  std::shared_ptr<DeviceGenericHandleControl> LidControl2
-  = std::make_shared<DeviceLidControl<UDPConnectionEngine>>(ConnectionInterface5, open2, close2);
-
-  //WindowInterface->ControlLid->linkTo(LidControl,LidControl2);
-
+  std::shared_ptr<DeviceGenericHandleControl> LidControl  = std::make_shared<DeviceLid>(ConnectionInterface5, open1, close1);
+  std::shared_ptr<DeviceGenericHandleControl> LidControl2 = std::make_shared<DeviceLid>(ConnectionInterface5, open2, close2);
   //==================================================================================================================
   //ROTARY SCANATOR
-  using CommandScanator = MessageGenericExt<CommandSetPosScanator,MESSAGE_HEADER_EXT   >;
-  using CommandRotary   = MessageGenericExt<ControlTX             ,MESSAGE_HEADER_ROTARY>;
-
-  auto ControlScanator = std::make_shared<DeviceRotaryControl<UDPConnectionEngine,
-                                                                  CommandScanator, RequestStateScanator>>(ConnectionInterface1);
-
-  auto ControlRotary = std::make_shared<DeviceRotaryControl<UDPConnectionEngine,
-                                                                  CommandRotary  ,ControlRX>>(ConnectionInterface4);
+  std::shared_ptr<DeviceScanator> ControlScanator = std::make_shared<DeviceScanator>(ConnectionInterface1);
+  std::shared_ptr<DevicePlatform> ControlPlatform = std::make_shared<DevicePlatform>(ConnectionInterface4);
 
   std::shared_ptr<DeviceGenericHandleControl> ControlAiming1 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine, 0>>(ConnectionInterface1);
   std::shared_ptr<DeviceGenericHandleControl> ControlAiming2 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine, 1>>(ConnectionInterface2);
-       WindowInterface->outputVideo1->linkToDevice(ControlAiming1);                                                              
-       WindowInterface->outputVideo2->linkToDevice(ControlAiming2);                                                              
-
 
     ControlScanator->setLimits<CONTROL_PARAM::POS>(30000,30000);
+    ControlPlatform->setLimits<CONTROL_PARAM::POS>(180,180); ControlPlatform->setMode(CONTROL_PARAM::POS);
+    ControlPlatform->setLimits<CONTROL_PARAM::VEL>(10,10 );
+    ControlPlatform->setToNull();
 
-    ControlRotary->setLimits<CONTROL_PARAM::POS>(180,180); ControlRotary->setMode(CONTROL_PARAM::POS);
-    ControlRotary->setLimits<CONTROL_PARAM::VEL>(10,10 );
-    ControlRotary->setToNull();
+  WindowInterface->widgetControlPlatform->linkToDevice(ControlPlatform);
+  WindowInterface->widgetControlScanator->linkToDevice(ControlScanator);
 
-    //ControlRotary->ModuleMoveSinus.setFreq(0.2);
-    //ControlRotary->ModuleMoveSinus.setAmplitude(40);
-    //ControlRotary->ModuleMoveSinus.enableMove(true);
-
-  WindowInterface->widgetControlRotary->linkToDevice(ControlRotary);
-  WindowInterface->widgetControlRotary->linkToDevice(ControlScanator);
   WindowInterface->widgetControlLaserPower->linkToDevice(ControlLaserPower);
   WindowInterface->widgetControlLaserIllum->linkToDevice(ControlLaserIllum);
 
@@ -462,7 +445,7 @@ return DevicesList;
 //  //==================================================================
 //  QByteArray outputArray;
 //  QByteArray outputArray2 = Command.castToByteArray();
-//  CommandRotary Command; Command.DATA.setMode(0xBB);
+//  CommandPlatform Command; Command.DATA.setMode(0xBB);
 //                Command >> outputArray;
 // outputArray2 = Command.castToByteArray();
 //  qDebug() << "COMMAND ROTARY DUMP: " << outputArray.toHex() << "SIZE: " << outputArray.size();
@@ -482,3 +465,7 @@ return DevicesList;
 //  std::shared_ptr<UARTConnectionEngine> ConnectionInterface4 = std::make_shared<UARTConnectionEngine>();
 //                                        ConnectionInterface4->connectTo("COM3",115200);
 
+
+    //ControlRotary->ModuleMoveSinus.setFreq(0.2);
+    //ControlRotary->ModuleMoveSinus.setAmplitude(40);
+    //ControlRotary->ModuleMoveSinus.enableMove(true);

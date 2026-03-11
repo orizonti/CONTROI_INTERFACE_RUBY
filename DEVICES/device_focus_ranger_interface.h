@@ -4,28 +4,26 @@
 #include "state_block_enum.h"
 #include <QSettings>
 #include "device_generic_interface.h"
+#include "message_command_structures.h"
 #include <typeinfo>
 
-//class DeviceFocusGenericInterface
-//{
-//	public:
-//	virtual void setEnable(bool OnOff) = 0;
-//	virtual void setValue(float Value) = 0;
-//	virtual uint32_t getDistance() = 0;
-//};
-
-template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
-class DeviceFocusRangerInterface : public DeviceGenericInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>
+template<typename T_CONNECTION, int NUM_DEVICE>
+class DeviceFocusRangerInterface : public DeviceGenericInterface<T_CONNECTION, 
+                                                                 MessageGenericExt<CommandDeviceRedux<NUM_DEVICE>, MESSAGE_HEADER_EXT>, 
+                                                                 RequestDeviceRedux<NUM_DEVICE>>
 {
 public:
+    using COMMAND_TYPE = CommandDeviceRedux<NUM_DEVICE>; 
+    using MESSAGE_TYPE = MessageGenericExt<COMMAND_TYPE, MESSAGE_HEADER_EXT>
+    using REQUEST_TYPE = RequestDevice<NUM_DEVICE>; 
+    using DEVICE_INTERFACE = DeviceGenericInterface<T_CONNECTION, MESSAGE_TYPE, REQUEST_TYPE>; 
+
     explicit DeviceFocusRangerInterface(std::shared_ptr<T_CONNECTION> Connection, QString Name = "[ DEVICE ]") :
-             DeviceGenericInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>(Connection,Name) 
+             DeviceGenericInterface<T_CONNECTION, NUM_DEVICE>(Connection,Name) 
              {
               //commandArray = QByteArray((char*)(&DEVICE_INTERFACE::Message.DATA), 4);
              };
         	~DeviceFocusRangerInterface() { };
-
-    using DEVICE_INTERFACE = DeviceGenericInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>; 
 
 	void setParam(uint16_t ID, uint32_t Param) 
     {
@@ -47,10 +45,9 @@ public:
 
 	float getDistance() { return (float)messageState.Param1; };
 	float getValue() override { return getDistance(); };
+    void putMessage(REQUEST_TYPE Message) { };
 
-
-        void putMessage(T_MESSAGE Message) { messageState = Message;};
-    T_MESSAGE messageState;
+    REQUEST_TYPE requestMessage;
     QByteArray commandArray;
 };
 

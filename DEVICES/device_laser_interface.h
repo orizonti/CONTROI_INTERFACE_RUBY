@@ -16,11 +16,17 @@
 #include <QTimer>
 
 
-template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
-class DeviceLaserInterface : public DeviceGenericInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>
+template<typename T_CONNECTION, int NUM_DEVICE>
+class DeviceLaserInterface : public DeviceGenericInterface<T_CONNECTION, 
+                                                           MessageGenericExt<CommandDeviceRedux<NUM_DEVICE>  ,MESSAGE_HEADER_EXT>, 
+                                                           RequestDevice<NUM_DEVICE>>
 {
 public:
-    using DEVICE_INTERFACE = DeviceGenericInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>; 
+    using COMMAND_TYPE = CommandDeviceRedux<NUM_DEVICE>; 
+    using MESSAGE_TYPE = MessageGenericExt<COMMAND_TYPE, MESSAGE_HEADER_EXT>
+    using REQUEST_TYPE = RequestDevice<NUM_DEVICE>; 
+    using DEVICE_INTERFACE = DeviceGenericInterface<T_CONNECTION, MESSAGE_TYPE, REQUEST_TYPE>; 
+
     explicit DeviceLaserInterface(std::shared_ptr<T_CONNECTION> Connection, QString Name = "[ DEVICE ]");
 	        ~DeviceLaserInterface();
 	QString TAG_NAME{"[ LASER ]"};
@@ -31,7 +37,7 @@ public:
 
 	void setParam(uint16_t ID, uint32_t Param) override;
 
-    void putMessage(T_MESSAGE Message) override; 
+    void putMessage(RequestDevice<NUM_DEVICE> message) override; 
 	QString getName() { return DISPLAY_NAME; }
 
 	public:
@@ -67,19 +73,19 @@ public:
 	void setPowerHigh()   { setPower(90); };
 	void setPowerLow()    { setPower(15);  };
 	bool getState() { return messageState.Param1 == 0 ? false : true; }
-    T_MESSAGE messageState;
 private:
     std::map<uint8_t, uint8_t> KEY_MODULE;       //GET NUMBER MODULE FROM COMMAND CODE
     std::map<uint8_t, uint8_t> KEY_MODULE_PARAM; //KEY PARAM VALUE FROM COMMAND CODE
 	std::map<uint8_t, std::map<uint8_t,uint8_t>> ID_PARAM_KEY; //GET COMMAND CODE FROM [COMMAND_ID PARAM]
-    T_COMMAND Command;
+    COMMAND_TYPE Command;
+    REQUEST_TYPE Request;
 };
 
-template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
-DeviceLaserInterface<T_CONNECTION,T_COMMAND,T_MESSAGE>::~DeviceLaserInterface() { qDebug() << TAG_NAME << "DELETE"; }
+template<typename T_CONNECTION, int NUM_DEVICE>
+DeviceLaserInterface<T_CONNECTION,NUM_DEVICE>::~DeviceLaserInterface() { qDebug() << TAG_NAME << "DELETE"; }
 
-template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
-void DeviceLaserInterface<T_CONNECTION,T_COMMAND,T_MESSAGE>::setParam(uint16_t ID, uint32_t Value)
+template<typename T_CONNECTION, int NUM_DEVICE>
+void DeviceLaserInterface<T_CONNECTION, NUM_DEVICE>::setParam(uint16_t ID, uint32_t Value)
 {
 	uint8_t param = Value > 0 ? 1 : 0;  
 	Command.DATA.Command = ID_PARAM_KEY[ID][param];
@@ -88,8 +94,8 @@ void DeviceLaserInterface<T_CONNECTION,T_COMMAND,T_MESSAGE>::setParam(uint16_t I
     this->sendCommand(Command);
 }
 
-template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
-void DeviceLaserInterface<T_CONNECTION,T_COMMAND,T_MESSAGE>::setCheckProcedure()
+template<typename T_CONNECTION, int NUM_DEVICE>
+void DeviceLaserInterface<T_CONNECTION, NUM_DEVICE>::setCheckProcedure()
 {
 	Command.DATA.Command  = 0x20;
 	Command.DATA.Param    = 0;
@@ -97,18 +103,15 @@ void DeviceLaserInterface<T_CONNECTION,T_COMMAND,T_MESSAGE>::setCheckProcedure()
 	this->sendCommand(Command);
 }
 
-template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
-void DeviceLaserInterface<T_CONNECTION,T_COMMAND,T_MESSAGE>::putMessage(T_MESSAGE message)
+template<typename T_CONNECTION, int NUM_DEVICE>
+void DeviceLaserInterface<T_CONNECTION, NUM_DEVICE>::putMessage(RequestDevice<NUM_DEVICE> message)
 {
-    //ControlWindow->setState(1);
-    //ControlWindow->setParam(0, 0);
-	messageState = message;
 	qDebug() << "[ LASER MODULE GET MESSAGE ]";
 }
 
-template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
-DeviceLaserInterface<T_CONNECTION, T_COMMAND, T_MESSAGE>::DeviceLaserInterface(std::shared_ptr<T_CONNECTION> Connection, QString Name): 
-DeviceGenericInterface<T_CONNECTION,T_COMMAND, T_MESSAGE>(Connection, Name)
+template<typename T_CONNECTION, int NUM_DEVICE>
+DeviceLaserInterface<T_CONNECTION, NUM_DEVICE>::DeviceLaserInterface(std::shared_ptr<T_CONNECTION> Connection, QString Name): 
+DeviceGenericInterface<T_CONNECTION, NUM_DEVICE>(Connection, Name)
 {
   QTimer::singleShot(100, [this]()  { this->setCheckProcedure(); qDebug() << "[ LASER ENABLE ]";        });
 
