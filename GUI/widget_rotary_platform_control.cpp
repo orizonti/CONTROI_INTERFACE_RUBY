@@ -4,6 +4,7 @@
 #include "widget_rotary_control.h"
 #include "device_rotary_interface.h"
 #include "QSpacerItem"
+#include <QPushButton>
 
 WidgetRotaryPlatformControl::WidgetRotaryPlatformControl(int Scheme, QWidget* parent) : WidgetAdjustable(parent), ui(new Ui::WidgetRotaryPlatformControl)
 {
@@ -13,17 +14,21 @@ WidgetRotaryPlatformControl::WidgetRotaryPlatformControl(int Scheme, QWidget* pa
 
     widgetElevation = new WidgetRotaryControl;
     widgetAzimuth   = new WidgetRotaryControl;
-    widgetAzimuth->setType(WidgetRotaryControl::TypeDraw::TypeCircle);
+    widgetElevation->setType(WidgetRotaryControl::TypeDraw::TypeArc);
 
     if(Scheme == 0)
     {
-    widgetElevation->setMaximumSize(100,100);
+    widgetElevation->setMaximumSize(110,110);
     ui->leftLayout->addWidget(widgetAzimuth);
     ui->rightLayout->addWidget(widgetElevation, Qt::AlignTop);
-    ui->rightLayout->addSpacerItem(new QSpacerItem(20,100,QSizePolicy::Fixed, QSizePolicy::MinimumExpanding));
 
     widgetAzimuth->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
     widgetElevation->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+
+    auto button = new QPushButton("button"); ui->rightLayout->addWidget(button, Qt::AlignTop); button->setMinimumHeight(40);
+         button = new QPushButton("button"); ui->rightLayout->addWidget(button, Qt::AlignTop); button->setMinimumHeight(40);
+         button = new QPushButton("button"); ui->rightLayout->addWidget(button, Qt::AlignTop); button->setMinimumHeight(40);
+    ui->rightLayout->addSpacerItem(new QSpacerItem(20,100,QSizePolicy::Fixed, QSizePolicy::MinimumExpanding));
     }
 
     if(Scheme == 1)
@@ -52,8 +57,21 @@ WidgetRotaryPlatformControl::WidgetRotaryPlatformControl(int Scheme, QWidget* pa
 
 }
 
-void WidgetRotaryPlatformControl::linkToDevice(std::shared_ptr<DeviceRotaryInterface> Device)
+void WidgetRotaryPlatformControl::linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device)
 {
+     widgetAzimuth->linkToDevice(Device);
+     widgetElevation->linkToDevice(Device);
+
+//    QObject::connect(&timerCheckState, &QTimer::timeout, [Device,RangeScale,this]()
+//    {
+//                                        Position = Device->getPos()*RangeScale; 
+//    });
+}
+
+
+void WidgetRotaryPlatformControl::setName(QString name) 
+{ 
+};
 
 //    float VelocityScale = 0.5;
 //    float VelocityScale = 2;
@@ -97,16 +115,3 @@ void WidgetRotaryPlatformControl::linkToDevice(std::shared_ptr<DeviceRotaryInter
 //        Device->moveToPos(this->Position); 
 //    });
 //    }
-//
-//    QObject::connect(&timerCheckState, &QTimer::timeout, [Device,RangeScale,this]()
-//    {
-//                                        Position = Device->getPos()*RangeScale; 
-//        ui->scrollRotaryAxisX->setValue(Position.first); 
-//        ui->scrollRotaryAxisY->setValue(Position.second);
-//    });
-}
-
-
-void WidgetRotaryPlatformControl::setName(QString name) 
-{ 
-};

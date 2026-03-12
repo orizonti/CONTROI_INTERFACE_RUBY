@@ -8,6 +8,7 @@
 #include <QColor>
 #include <cmath>
 #include <QTimer>
+#include "device_generic_interface.h"
 
 class WidgetRotaryControl : public QWidget 
 {
@@ -15,6 +16,11 @@ class WidgetRotaryControl : public QWidget
 
 public:
     enum class TypeDraw { TypeCircle = 0, TypeArc = 1 };
+
+    std::shared_ptr<DeviceGenericHandleControl> ControlRotary = nullptr;
+    void linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device) { ControlRotary = Device; };
+    int ControlChannel = 0;
+
     WidgetRotaryControl(QWidget* parent = nullptr) : QWidget(parent) 
     {
         setWindowTitle("Watch Widget");
@@ -22,12 +28,10 @@ public:
         initWidget();
         this->setMouseTracking(true);
         QObject::connect(&timerMove, SIGNAL(timeout()), this, SLOT(slotMove()));
+        ControlChannel = TypeWidget;
     }
-    void setType(TypeDraw Type)
-    {
-        TypeWidget = (int)Type;
-        initWidget();
-    }
+
+    void setType(TypeDraw Type) { TypeWidget = (int)Type; initWidget(); ControlChannel = TypeWidget; }
 
     void initWidget()
     {
@@ -45,7 +49,6 @@ public:
         radiusDirection = sizeDrawing/2;
         rectDrawing = QRect(pointCenterDrawing.x() - sizeDrawing/2, pointCenterDrawing.y() - sizeDrawing/2, sizeDrawing, sizeDrawing);
         update();
-
     }
 
     //==========================================
@@ -78,7 +81,7 @@ public:
     float radius_cursor_future = 0;
     //==========================================
     //DRAWING AREA
-       int TypeWidget = 1;
+       int TypeWidget = 0;
        int sizeWidget = 160;
        int sizeDrawing = sizeWidget*0.6;
      QRect rectDrawing;
@@ -148,7 +151,6 @@ void slotSetAngle(float angleDegree)
               angleRotation = angleDegree*M_PI/180;
         angleRotationFuture = angleDegree*M_PI/180;
 
-        qDebug() << "SET ANGLE ROTATION: " << angleRotationDegree;
         if(TypeWidget == 1)
         {
         if(angleRotation < angleRotationMin) angleRotation = angleRotationMin; 
@@ -175,7 +177,8 @@ void updateAngle()
 
                              angleRotationDegree = angleRotation*180/M_PI;
         if(pos_y_radial > 0) angleRotationDegree = 360 - angleRotationDegree;
-        emit signalAngleChanged(angleRotationDegree);
+
+        if(ControlRotary) ControlRotary->setParam(ControlChannel, angleRotationDegree);
 
         update();  
 }
@@ -202,31 +205,28 @@ void updateFutureAngle()
 public slots:
 void slotMoveStart(int Direction)
 {
-    if(Direction == 0) 
-    { 
-        timerMove.stop(); return;
-    }
-
     directionMove = Direction;
+                 if(Direction == 0) { timerMove.stop(); return; }
     timerMove.start(10);
 }
 
 private slots:
 void slotMove()
 {
-    angleRotationDegree += stepMove*directionMove;
+                                angleRotationDegree += stepMove*directionMove;
     angleRotationFutureDegree = angleRotationDegree;
 
             angleRotation = angleRotationDegree*M_PI/180;
-    angleRotationFuture = angleRotationDegree*M_PI/180;
+      angleRotationFuture = angleRotationDegree*M_PI/180;
 
-    qDebug() << "SET ANGLE ROTATION: " << angleRotationDegree;
     if(TypeWidget == 1)
     {
     if(angleRotation < angleRotationMin) angleRotation = angleRotationMin; 
     if(angleRotation > angleRotationMax) angleRotation = angleRotationMax;
     }
     update();
+
+    if(ControlRotary) ControlRotary->setParam(ControlChannel, angleRotationDegree);
 }
 
 signals:
@@ -235,30 +235,10 @@ void signalAngleChanged(float angleDegree);
 protected:
     void paintEvent(QPaintEvent* event) override { drawRotation(); }
 
-    void resizeEvent(QResizeEvent *event) override
-    {
-        sizeWidget = event->size().width();
-        qDebug() << "RESIZE EVENT: " << sizeWidget;
-        setBaseSize(sizeWidget, sizeWidget);
-
-        initWidget();
-    }
-
-    void mousePressEvent(QMouseEvent* event) override 
-    {
-        qDebug() << "MOUSE PRESS";
-        pointDirection = event->pos() - pointCenterDrawing; updateAngle();
-    }
-
-    void mouseMoveEvent(QMouseEvent* event) override 
-    {
-        pointDirectionFuture = event->pos() - pointCenterDrawing; updateFutureAngle();
-    }
-
-    void leaveEvent(QEvent* event) override 
-    {
-        pointDirectionFuture = pointDirection; updateFutureAngle();
-    }
+    void resizeEvent(QResizeEvent *event) override    { sizeWidget = event->size().width(); setBaseSize(sizeWidget, sizeWidget); initWidget(); }
+    void mousePressEvent(QMouseEvent* event) override { pointDirection = event->pos() - pointCenterDrawing; updateAngle(); }
+    void mouseMoveEvent(QMouseEvent* event)  override { pointDirectionFuture = event->pos() - pointCenterDrawing; updateFutureAngle(); }
+    void leaveEvent(QEvent* event)           override { pointDirectionFuture = pointDirection; updateFutureAngle(); }
 
 
 };

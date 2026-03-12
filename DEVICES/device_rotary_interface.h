@@ -118,9 +118,10 @@ public:
     { InputFunction = SetFunction; OutputFunction = GetFunction; DeviceLink = Device; };
 
     T* DeviceLink =  nullptr;
+    std::pair<float,float> PosRotary{0,0};
 
-    std::function<void(T&,QPair<float,float>)> InputFunction = nullptr;
-    std::function<QPair<float,float>(T&)> OutputFunction = nullptr;
+    std::function<void(T&,QPair<float,float>)>  InputFunction = nullptr;
+         std::function<QPair<float,float>(T&)> OutputFunction = nullptr;
 
     void setInput(const QPair<float,float>& coord) { if(InputFunction != nullptr) InputFunction(*DeviceLink,coord);};
     const QPair<float,float>& getOutput() { if(OutputFunction != nullptr) PassCoordClass<float>::OutputCoord = OutputFunction(*DeviceLink); 
@@ -128,11 +129,18 @@ public:
 
                       //HANDLE CONTROL INTERFACE
 	                    void setEnable(bool OnOff, uint16_t Number = 0) { DeviceLink->setEnable(OnOff,Number); };
-	                    void setPair(std::pair<float,float> Coord) { setInput(Coord); };
+	                    void setPair(std::pair<float,float> Coord) { PosRotary = Coord; setInput(PosRotary); };
 	  std::pair<float,float> getPair() { return getOutput(); };
-
-	  void setParam (uint16_t CommandID, uint32_t CommandParam) {};
-	  void setParam (uint16_t CommandID, float    CommandParam) {};
+    void setParam (uint16_t CommandID, uint32_t CommandParam) {};
+    void setParam (uint16_t CommandID, float    CommandParam) 
+    {
+      if(CommandID == 1) 
+      {
+        if(CommandParam > 180) CommandParam = CommandParam - 360;
+            PosRotary.second = CommandParam; 
+      }
+      else PosRotary.first  = CommandParam;   setInput(PosRotary);
+    };
 };
 
 enum class CONTROL_PARAM { NONE = 0, POS = 1, VEL = 2, ACCEL = 3};
@@ -200,6 +208,15 @@ public:
 	                  void setPair(std::pair<float,float> Coord) override { moveWithVelocity(Coord);};
 	std::pair<float,float> getPair()       override { return getPosDevice(); };
 	void setEnable(bool OnOff, uint16_t Number = 0) { if(!OnOff) stopMove(); };
+    void setParam (uint16_t CommandID, uint32_t CommandParam) {};
+    void setParam (uint16_t CommandID, float    CommandParam) 
+    {
+      if(CommandID == 0) PositionTarget.first  = CommandParam;
+      if(CommandID == 1) PositionTarget.second = CommandParam; checkPositionOffset();
+
+                    PositionTargetDevice = PositionTarget + PositionNullDevice; 
+  this->sendCommand(PositionTargetDevice);                  PositionRelativeAnchor = PositionTarget;
+    };
   //===============================================================================================
 
 	const QPair<float,float>& getPos()            { return PositionTarget;} //       POS SET TO DEVICE

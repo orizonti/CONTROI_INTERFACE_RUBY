@@ -329,6 +329,9 @@ int main(int argc, char* argv[])
   WindowInterface->widgetControlPlatform->linkToDevice(ControlPlatform->ControlRotaryVel);
   WindowInterface->widgetControlScanator->linkToDevice(ControlScanator->ControlRotaryVel);
 
+  WindowInterface->widgetControlRotary1->linkToDevice(ControlPlatform->ControlRotaryPos);
+  WindowInterface->widgetControlRotary2->linkToDevice(ControlScanator->ControlRotaryPos);
+
   WindowInterface->widgetControlLaserPower->linkToDevice(ControlLaserPower);
   WindowInterface->widgetControlLaserIllum->linkToDevice(ControlLaserIllum);
 

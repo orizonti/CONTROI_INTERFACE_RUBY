@@ -19,7 +19,7 @@ class WidgetRotaryPlatformControl : public WidgetAdjustable
     Q_OBJECT
 public:
     explicit WidgetRotaryPlatformControl(int Scheme = 0, QWidget* parent = 0);
-        void linkToDevice(std::shared_ptr<DeviceRotaryInterface> Device);
+        void linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device);
 
         QPair<int,int> Position{0,0};
 void setName(QString name);
