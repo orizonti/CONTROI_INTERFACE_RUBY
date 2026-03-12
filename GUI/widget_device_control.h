@@ -7,11 +7,11 @@
 #include <QTimer>
 
 #include "device_generic_interface.h"
-
-
-QT_BEGIN_NAMESPACE
-namespace Ui { class WidgetDeviceControl; }
-QT_END_NAMESPACE
+#include <QLabel>
+#include <QSpinBox>
+#include <QDoubleSpinBox>
+#include <QGroupBox>
+#include <QPushButton>
 
 
 class WidgetDeviceControl : public WidgetAdjustable
@@ -21,8 +21,8 @@ public:
     WidgetDeviceControl(QString name = "Устройство", QWidget* parent = nullptr);
     ~WidgetDeviceControl();
 
-    void enableScheme(bool blockParam, bool blockLevel, bool blockButtons, bool blockArrows);
-    void setScheme(int schemeParam, int schemeLevel, int schemeButtons);
+    void enableScheme(bool enableState, bool enableParam, bool enableLevels, bool enableOnOff, bool enableArrows);
+    void setScheme(int schemeParam, int numberLevels, int numberDevice, int schemeArrows = 0);
     void setButtonsName(QVector<QString> names);
     void setLevelsName(QVector<QString> names);
     void setName(QString name);
@@ -33,6 +33,22 @@ public:
     void linkSignals();
     QTimer timerCheckDevice;
 
-private:
-    Ui::WidgetDeviceControl *ui;
+      QLabel* labelName  = nullptr;
+      QLabel* labelState = nullptr;
+    QSpinBox* spinParam  = nullptr;
+
+    QPushButton* buttonLeft  = nullptr;
+    QPushButton* buttonRight = nullptr;
+    QPushButton* buttonUp    = nullptr;
+    QPushButton* buttonDown  = nullptr;
+
+    QVector<QPushButton*> buttonsLevel;
+    QVector<QPushButton*> buttonsOnOff;
+    QVector<QPushButton*> buttonsArrow;
+
+    QGroupBox* groupButtonsLevel = nullptr;
+    QGroupBox* groupButtonsOnOff = nullptr;
+    QGroupBox* groupArrows = nullptr;
+
+    int schemeArrowsControl = 0;
 };

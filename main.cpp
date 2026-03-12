@@ -171,8 +171,12 @@ int main(int argc, char* argv[])
 {
   QApplication app(argc,argv);
 
-  //app.exec();
-  //return 0;
+  WidgetDeviceControl wid;
+
+  wid.enableScheme(1,1,1,1,1); wid.setScheme(2,5,2,4);
+  wid.show();
+  app.exec();
+  return 0;
 
   //printRegisteredTypes();
   //testArduinoJson();
