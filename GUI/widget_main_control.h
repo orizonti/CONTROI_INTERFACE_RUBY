@@ -17,20 +17,25 @@ class WidgetMainControl : public WidgetAdjustable
     Q_OBJECT
 public:
     explicit WidgetMainControl(int Scheme = 0, QWidget* parent = 0);
-        void linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device);
+        void linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device, int Number);
+        void linkToDeviceRotary(std::shared_ptr<DeviceGenericHandleControl> Device);
+        void synchronizePeer(WidgetMainControl* widget);
 
         QPair<int,int> Position{0,0};
 void setName(QString name);
 
+WidgetMainControl* widgetPeer = nullptr;
+
 WidgetRotaryControl* widgetAzimuth = nullptr;
 WidgetRotaryControl* widgetElevation = nullptr;
 
+QPushButton butRegimIllum{"Подсвет"};
 QPushButton butRegimReady{"Готовность"};
 QPushButton butRegimWork {"Работа"} ;
 QPushButton butRegimLaser{"Огонь"};
-QPushButton butRegimIllum{"Подсвет"};
-QPushButton butToHandle  {"Панель"};
-QPushButton butToBigControl{"Большой"};
+
+QPushButton butControl1 {"Ручной"};
+QPushButton butControl2 {"Окно"};
 
 QHBoxLayout mainLayout;
 QVBoxLayout rightLayout;
@@ -42,9 +47,8 @@ private:
 
 QTimer timerCheckState;
 
-private slots:
-void slotValue1Changed(int value) { Position.first  = value; };
-void slotValue2Changed(int value) { Position.second = value; };
+public slots:
+void slotPeerChanged();
 
 signals:
 };

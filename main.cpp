@@ -332,14 +332,27 @@ int main(int argc, char* argv[])
   WindowInterface->widgetControlPlatform->linkToDevice(ControlPlatform->ControlRotaryVel);
   WindowInterface->widgetControlScanator->linkToDevice(ControlScanator->ControlRotaryVel);
 
-  WindowInterface->widgetControlRotary1->linkToDevice(ControlPlatform->ControlRotaryPos);
-  WindowInterface->widgetControlRotary2->linkToDevice(ControlScanator->ControlRotaryPos);
-
   WindowInterface->widgetControlLaserPower->linkToDevice(ControlLaserPower);
   WindowInterface->widgetControlLaserIllum->linkToDevice(ControlLaserIllum);
 
   WindowInterface->outputVideo1->linkToDevice(ControlAiming1);
   WindowInterface->outputVideo2->linkToDevice(ControlAiming2);
+
+  WindowInterface->widgetMainControl1->linkToDeviceRotary(ControlPlatform->ControlRotaryPos);
+  WindowInterface->widgetMainControl1->linkToDevice(ControlLid,0);
+  WindowInterface->widgetMainControl1->linkToDevice(ControlLaserIllum,1);
+  WindowInterface->widgetMainControl1->linkToDevice(ControlLaserPower,2);
+  WindowInterface->widgetMainControl1->linkToDevice(ControlAiming1,3);
+  WindowInterface->widgetMainControl1->linkToDevice(ControlAiming2,4);
+
+  WindowInterface->widgetMainControl2->linkToDeviceRotary(ControlPlatform->ControlRotaryPos);
+  WindowInterface->widgetMainControl2->linkToDevice(ControlLid,0);
+  WindowInterface->widgetMainControl2->linkToDevice(ControlLaserIllum,1);
+  WindowInterface->widgetMainControl2->linkToDevice(ControlLaserPower,2);
+  WindowInterface->widgetMainControl2->linkToDevice(ControlAiming1,3);
+  WindowInterface->widgetMainControl2->linkToDevice(ControlAiming2,4);
+
+  WindowInterface->widgetMainControl2->linkToDeviceRotary(ControlScanator->ControlRotaryPos);
   //==================================================================================================================
 
   //==================================================================================================================

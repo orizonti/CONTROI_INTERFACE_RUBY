@@ -44,8 +44,8 @@ QString StyleTest{
 WidgetMainControl::WidgetMainControl(int Scheme, QWidget* parent) : WidgetAdjustable(parent)
 {
     this->setStyleSheet(styleButtonsToggled);
-        butToHandle.setStyleSheet(styleButtons);
-    butToBigControl.setStyleSheet(styleButtons);
+     butControl1.setStyleSheet(styleButtons);
+     butControl2.setStyleSheet(styleButtons);
 
 
     //widgetAzimuth->setStyleSheet(StyleTest);
@@ -76,8 +76,9 @@ WidgetMainControl::WidgetMainControl(int Scheme, QWidget* parent) : WidgetAdjust
     if(Scheme == 0)
     {
 
-        butToHandle.setMinimumHeight(40);
-    butToBigControl.setMinimumHeight(40);
+        butControl1.setMinimumHeight(40);
+        butControl2.setMinimumHeight(40);
+
                      mainLayout.addLayout(&gridLayout);
                      mainLayout.addLayout(&rightLayout);
     this->setLayout(&mainLayout);
@@ -93,8 +94,8 @@ WidgetMainControl::WidgetMainControl(int Scheme, QWidget* parent) : WidgetAdjust
 
     rightLayout.addWidget(widgetElevation );
     rightLayout.addSpacerItem(new QSpacerItem(20,100,QSizePolicy::Fixed, QSizePolicy::MinimumExpanding));
-    rightLayout.addWidget(&butToHandle    );
-    rightLayout.addWidget(&butToBigControl);
+    rightLayout.addWidget(&butControl1    );
+    rightLayout.addWidget(&butControl2);
 
       butRegimLaser.setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::MinimumExpanding));
       butRegimIllum.setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::MinimumExpanding));
@@ -116,13 +117,12 @@ WidgetMainControl::WidgetMainControl(int Scheme, QWidget* parent) : WidgetAdjust
     butRegimLaser.setMinimumHeight(40);
     butRegimIllum.setMinimumHeight(40);
 
-    butToBigControl.setMinimumHeight(40);
-        butToHandle.setMinimumHeight(40);
+    butControl1.setMinimumHeight(40);
+    butControl2.setMinimumHeight(40);
 
     widgetElevation->setMaximumSize(100,90);
       widgetAzimuth->setMinimumSize(240,240);
       widgetAzimuth->setMaximumSize(330,330);
-
 
     gridLayout.setRowMinimumHeight(2,90);
     gridLayout.setRowMinimumHeight(3,280);
@@ -138,8 +138,8 @@ WidgetMainControl::WidgetMainControl(int Scheme, QWidget* parent) : WidgetAdjust
     //mainLayout2.addWidget(widgetAzimuth  );
     gridLayout.addWidget(widgetAzimuth   ,3,1,-1,-1,Qt::AlignTop);
 
-    gridLayout.addWidget(&butToHandle    ,4,1);
-    gridLayout.addWidget(&butToBigControl,4,2);
+    gridLayout.addWidget(&butControl1    ,4,1);
+    gridLayout.addWidget(&butControl2,4,2);
 
 
       butRegimLaser.setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
@@ -157,15 +157,22 @@ WidgetMainControl::WidgetMainControl(int Scheme, QWidget* parent) : WidgetAdjust
 
 }
 
-void WidgetMainControl::linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device)
+void WidgetMainControl::linkToDeviceRotary(std::shared_ptr<DeviceGenericHandleControl> Device)
 {
      widgetAzimuth->linkToDevice(Device);
      widgetElevation->linkToDevice(Device);
+}
 
-//    QObject::connect(&timerCheckState, &QTimer::timeout, [Device,RangeScale,this]()
-//    {
-//                                        Position = Device->getPos()*RangeScale; 
-//    });
+void WidgetMainControl::linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device, int Number)
+{
+     QVector<QPushButton*> buttons;
+     buttons.push_back(&butRegimReady);
+     buttons.push_back(&butRegimIllum);
+     buttons.push_back(&butRegimLaser);
+     buttons.push_back(&butRegimWork);
+     buttons.push_back(&butRegimWork);
+
+    QObject::connect(buttons[Number], &QPushButton::toggled, [Device,this](bool OnOff) { Device->setEnable(OnOff); });
 }
 
 
@@ -173,45 +180,29 @@ void WidgetMainControl::setName(QString name)
 { 
 };
 
-//    float VelocityScale = 0.5;
-//    float VelocityScale = 2;
-//
-//    std::vector<QPushButton*> ArrowButtons;
-//    std::vector<QPair<float,float>> Vels;
-//    ArrowButtons.push_back(ui->butRotaryX_Left);  Vels.push_back(QPair<float,float>(-VelocityScale, 0));
-//    ArrowButtons.push_back(ui->butRotaryX_Right); Vels.push_back(QPair<float,float>( VelocityScale, 0));
-//    ArrowButtons.push_back(ui->butRotaryY_Up);    Vels.push_back(QPair<float,float>( 0, VelocityScale));
-//    ArrowButtons.push_back(ui->butRotaryY_Down);  Vels.push_back(QPair<float,float>( 0,-VelocityScale));
-//
-//    for(int n = 0; n < 4; n++)
-//    {
-//    auto Velocity = Vels[n];
-//    auto button = ArrowButtons[n];
-//    QObject::connect(button, &QPushButton::pressed,  [this, Device, Velocity]() { Device->moveWithVelocityManual(Velocity); timerCheckState.start(1);});
-//    //QObject::connect(button, &QPushButton::pressed,  [this, Device, Velocity]() { Device->moveWithVelocity(QPair<float,float>(0.5,0.5)); timerCheckState.start(1);});
-//    QObject::connect(button, &QPushButton::released, [this, Device     ]()      { Device->stopMove(); timerCheckState.stop();});
-//    }
-//
-//    auto  MoveLimits = Device->getLimits();
-//    qDebug() << "GET LIMITS : " << MoveLimits.first << MoveLimits.second;
-//    float RangeScale = 2000;
-//
-//    ui->scrollRotaryAxisX->setRange(-MoveLimits.first*RangeScale, MoveLimits.first*RangeScale);
-//    ui->scrollRotaryAxisX->setValue(0);
-//    ui->scrollRotaryAxisX->setPageStep(50);
-//
-//    ui->scrollRotaryAxisY->setRange(-MoveLimits.second*RangeScale, MoveLimits.second*RangeScale);
-//    ui->scrollRotaryAxisY->setValue(0);
-//    ui->scrollRotaryAxisY->setPageStep(50);
-//
-//    std::vector<QScrollBar*> scrollWidgets;
-//                             scrollWidgets.push_back(ui->scrollRotaryAxisX);
-//                             scrollWidgets.push_back(ui->scrollRotaryAxisY);
-//
-//    for(auto scroll_axis: scrollWidgets)
-//    {
-//    QObject::connect(scroll_axis, &QScrollBar::sliderReleased, [Device, this]() 
-//    { 
-//        Device->moveToPos(this->Position); 
-//    });
-//    }
+void WidgetMainControl::synchronizePeer(WidgetMainControl* widget)
+{
+     widgetPeer = widget;
+     widget->widgetPeer = this;
+
+     widgetAzimuth->synchronizePeer(widgetPeer->widgetAzimuth);
+   widgetElevation->synchronizePeer(widgetPeer->widgetElevation);
+
+   connect(&widgetPeer->butRegimIllum, SIGNAL(toggled(bool)), this, SLOT(slotPeerChanged()));
+   connect(&widgetPeer->butRegimLaser, SIGNAL(toggled(bool)), this, SLOT(slotPeerChanged()));
+   connect(&widgetPeer->butRegimReady, SIGNAL(toggled(bool)), this, SLOT(slotPeerChanged()));
+   connect(&widgetPeer->butRegimWork, SIGNAL(toggled(bool)), this, SLOT(slotPeerChanged()));
+
+   connect(&this->butRegimIllum, SIGNAL(toggled(bool)), widgetPeer, SLOT(slotPeerChanged()));
+   connect(&this->butRegimLaser, SIGNAL(toggled(bool)), widgetPeer, SLOT(slotPeerChanged()));
+   connect(&this->butRegimReady, SIGNAL(toggled(bool)), widgetPeer, SLOT(slotPeerChanged()));
+   connect(&this->butRegimWork, SIGNAL(toggled(bool)) , widgetPeer, SLOT(slotPeerChanged()));
+}
+
+void WidgetMainControl::slotPeerChanged()
+{
+     widgetPeer->butRegimIllum.blockSignals(true); butRegimIllum.setChecked(widgetPeer->butRegimIllum.isChecked()); widgetPeer->butRegimIllum.blockSignals(false);
+     widgetPeer->butRegimLaser.blockSignals(true); butRegimLaser.setChecked(widgetPeer->butRegimLaser.isChecked()); widgetPeer->butRegimLaser.blockSignals(false);
+     widgetPeer->butRegimReady.blockSignals(true); butRegimReady.setChecked(widgetPeer->butRegimReady.isChecked()); widgetPeer->butRegimReady.blockSignals(false);
+      widgetPeer->butRegimWork.blockSignals(true);  butRegimWork.setChecked(widgetPeer->butRegimWork.isChecked() );  widgetPeer->butRegimWork.blockSignals(false);
+}

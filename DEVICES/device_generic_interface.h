@@ -122,11 +122,14 @@ public:
 
 	void setPair(std::pair<float,float> Coord) override
     { 
-    qDebug() << TAG_NAME << "SET COORD: " << Coord.first << Coord.second; 
+    qDebug() << TAG_NAME << "[ SET COORD ]" << Coord.first << Coord.second; 
     this->sendCommand(Coord);
     };
 
-	void setEnable(bool OnOff, uint16_t Number = 0) {qDebug() << "[ DEVICE AIMING ENABLE NOT IMPLEMENTED ]";};
+	void setEnable(bool OnOff, uint16_t Number = 0) 
+	{
+		qDebug() << TAG_NAME << "[ ENABLE ] [ NOT IMPLEMENTED ]";
+	};
 };
 //=========================================================
 

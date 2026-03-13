@@ -29,8 +29,8 @@ public:
     WidgetComplexInterface(QWidget* parent = nullptr);
     ~WidgetComplexInterface();
 
-    WidgetMainControl* widgetControlRotary1   = nullptr;
-    WidgetMainControl* widgetControlRotary2   = nullptr;
+    WidgetMainControl* widgetMainControl1   = nullptr;
+    WidgetMainControl* widgetMainControl2   = nullptr;
 
     WidgetDeviceControl* widgetControlLaserPower = nullptr;
     WidgetDeviceControl* widgetControlLaserIllum = nullptr;
@@ -70,8 +70,6 @@ public slots:
     void slotSetMainMode();
     void slotSetHandleMode();
     void slotSetBigImageMode();
-    void slotSetControlPanelMode();
-
     void slotShowMalfunctionList();
 signals:
 void signalEndWork();

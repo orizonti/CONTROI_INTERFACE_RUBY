@@ -17,12 +17,20 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
     ui->setupUi(this);
 
     qDebug() << "CREATE COMPLEX INTERFACE";
-    widgetControlRotary1 = new WidgetMainControl(0);
-    widgetControlRotary2 = new WidgetMainControl(1);
-    widgetControlRotary1->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
-    widgetControlRotary2->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+    widgetMainControl1 = new WidgetMainControl(0);
+    widgetMainControl2 = new WidgetMainControl(1);
+    widgetMainControl1->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+    widgetMainControl2->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+
+    widgetMainControl1->synchronizePeer(widgetMainControl2);
     //auto button = new QPushButton(tr("Reset all shortcuts to default"), this);
     //button->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed, QSizePolicy::ToolButton));
+    QObject::connect(&widgetMainControl1->butControl1, SIGNAL(clicked()), this, SLOT(slotSetHandleMode()));
+    QObject::connect(&widgetMainControl1->butControl2, SIGNAL(clicked()), this, SLOT(slotSetBigImageMode()));
+
+    QObject::connect(&widgetMainControl2->butControl1, SIGNAL(clicked()), this, SLOT(slotSetHandleMode()));
+    QObject::connect(&widgetMainControl2->butControl2, SIGNAL(clicked()), this, SLOT(slotSetMainMode()));
+    QObject::connect(ui->butToMainControl, SIGNAL(clicked()), this, SLOT(slotSetMainMode()));
 
     widgetControlRanger    = new WidgetDeviceControl("Дальномер");
     widgetControlFocusator = new WidgetDeviceControl("Фокусатор");
@@ -89,8 +97,8 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
     ui->layoutControlTable->addWidget(widgetControlCamera3   ,5,2);
     ui->layoutControlTable->addWidget(widgetControlCamera4   ,6,2);
 
-    ui->layoutControlBlock->addWidget(widgetControlRotary1);
-    ui->layoutControlBlockBigPanel->addWidget(widgetControlRotary2);
+    ui->layoutControlBlock->addWidget(widgetMainControl1);
+    ui->layoutControlBlockBigPanel->addWidget(widgetMainControl2);
 
     ui->layoutControlBlockBigPanel->addSpacerItem(new QSpacerItem(100,100,QSizePolicy::Fixed, QSizePolicy::Minimum));
 
@@ -156,15 +164,15 @@ void WidgetComplexInterface::keyPressEvent(QKeyEvent *event)
 
     switch(event->key())
     {
-      case Qt::Key_Up:    widgetControlRotary1->widgetElevation->slotMoveStart(1);  break;
-      case Qt::Key_Down:  widgetControlRotary1->widgetElevation->slotMoveStart(-1); break;
-      case Qt::Key_Left:  widgetControlRotary1->widgetAzimuth->slotMoveStart(1);    break;
-      case Qt::Key_Right: widgetControlRotary1->widgetAzimuth->slotMoveStart(-1);   break;
+      case Qt::Key_Up:    widgetMainControl1->widgetElevation->slotMoveStart(1);  break;
+      case Qt::Key_Down:  widgetMainControl1->widgetElevation->slotMoveStart(-1); break;
+      case Qt::Key_Left:  widgetMainControl1->widgetAzimuth->slotMoveStart(1);    break;
+      case Qt::Key_Right: widgetMainControl1->widgetAzimuth->slotMoveStart(-1);   break;
 
-      case Qt::Key_W: widgetControlRotary1->widgetElevation->slotMoveStart(1);  break;
-      case Qt::Key_S: widgetControlRotary1->widgetElevation->slotMoveStart(-1); break;
-      case Qt::Key_A: widgetControlRotary1->widgetAzimuth->slotMoveStart(1);    break;
-      case Qt::Key_D: widgetControlRotary1->widgetAzimuth->slotMoveStart(-1);   break;
+      case Qt::Key_W: widgetMainControl1->widgetElevation->slotMoveStart(1);  break;
+      case Qt::Key_S: widgetMainControl1->widgetElevation->slotMoveStart(-1); break;
+      case Qt::Key_A: widgetMainControl1->widgetAzimuth->slotMoveStart(1);    break;
+      case Qt::Key_D: widgetMainControl1->widgetAzimuth->slotMoveStart(-1);   break;
     }
 
     //QWidget::keyPressEvent(event);
@@ -185,15 +193,15 @@ void WidgetComplexInterface::keyReleaseEvent(QKeyEvent *event)
 
     switch(event->key())
     {
-      case Qt::Key_Up:    widgetControlRotary1->widgetElevation->slotMoveStart(0); break;
-      case Qt::Key_Down:  widgetControlRotary1->widgetElevation->slotMoveStart(0); break;
-      case Qt::Key_Left:  widgetControlRotary1->widgetAzimuth->slotMoveStart(0);   break;
-      case Qt::Key_Right: widgetControlRotary1->widgetAzimuth->slotMoveStart(0);   break;
+      case Qt::Key_Up:    widgetMainControl1->widgetElevation->slotMoveStart(0); break;
+      case Qt::Key_Down:  widgetMainControl1->widgetElevation->slotMoveStart(0); break;
+      case Qt::Key_Left:  widgetMainControl1->widgetAzimuth->slotMoveStart(0);   break;
+      case Qt::Key_Right: widgetMainControl1->widgetAzimuth->slotMoveStart(0);   break;
 
-      case Qt::Key_W: widgetControlRotary1->widgetElevation->slotMoveStart(0); break;
-      case Qt::Key_S: widgetControlRotary1->widgetElevation->slotMoveStart(0); break;
-      case Qt::Key_A: widgetControlRotary1->widgetAzimuth->slotMoveStart(0);   break;
-      case Qt::Key_D: widgetControlRotary1->widgetAzimuth->slotMoveStart(0);   break;
+      case Qt::Key_W: widgetMainControl1->widgetElevation->slotMoveStart(0); break;
+      case Qt::Key_S: widgetMainControl1->widgetElevation->slotMoveStart(0); break;
+      case Qt::Key_A: widgetMainControl1->widgetAzimuth->slotMoveStart(0);   break;
+      case Qt::Key_D: widgetMainControl1->widgetAzimuth->slotMoveStart(0);   break;
     }
 
 }
@@ -252,21 +260,11 @@ void WidgetComplexInterface::slotSetHandleMode()
 {
     ui->stackedWidget->setCurrentIndex(0);
     ui->widgetStackedMainControl->setCurrentIndex(1);
-
-  //ControlPanelSwitcher->show();
-  //       ControlRotary->show(); ControlBlock->hide();
-  //   activateMainOutput(true);
 }
 void WidgetComplexInterface::slotSetBigImageMode()
 {
-   qDebug() << "[ SLOT FULL IMAGE MODE ]";
    ui->stackedWidget->setCurrentIndex(1);
-    activateBigOutput(true);
-}
-void WidgetComplexInterface::slotSetControlPanelMode()
-{
-   ui->stackedWidget->setCurrentIndex(1);
-    activateControlOutput(true);
+   activateBigOutput(true);
 }
 
 void WidgetComplexInterface::slotShowMalfunctionList()
