@@ -7,18 +7,16 @@
 #include <QLine>
 #include "widget_adjustable.h"
 #include "widget_rotary_control.h"
+#include <QBoxLayout>
+#include <QPushButton>
+
 class DeviceRotaryInterface;
 
-QT_BEGIN_NAMESPACE
-namespace Ui { class WidgetRotaryPlatformControl; }
-QT_END_NAMESPACE
-
-
-class WidgetRotaryPlatformControl : public WidgetAdjustable
+class WidgetMainControl : public WidgetAdjustable
 {
     Q_OBJECT
 public:
-    explicit WidgetRotaryPlatformControl(int Scheme = 0, QWidget* parent = 0);
+    explicit WidgetMainControl(int Scheme = 0, QWidget* parent = 0);
         void linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device);
 
         QPair<int,int> Position{0,0};
@@ -27,8 +25,20 @@ void setName(QString name);
 WidgetRotaryControl* widgetAzimuth = nullptr;
 WidgetRotaryControl* widgetElevation = nullptr;
 
+QPushButton butRegimReady{"Готовность"};
+QPushButton butRegimWork {"Работа"} ;
+QPushButton butRegimLaser{"Огонь"};
+QPushButton butRegimIllum{"Подсвет"};
+QPushButton butToHandle  {"Панель"};
+QPushButton butToBigControl{"Большой"};
+
+QHBoxLayout mainLayout;
+QVBoxLayout rightLayout;
+QGridLayout gridLayout;
+
+QVBoxLayout mainLayout2;
+
 private:
-Ui::WidgetRotaryPlatformControl *ui;
 
 QTimer timerCheckState;
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>WidgetRotaryPlatformControl</class>
- <widget class="QWidget" name="WidgetRotaryPlatformControl">
+ <class>WidgetMainControl</class>
+ <widget class="QWidget" name="WidgetMainControl">
   <property name="geometry">
    <rect>
     <x>0</x>

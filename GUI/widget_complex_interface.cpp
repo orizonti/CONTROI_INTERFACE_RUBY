@@ -17,18 +17,15 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
     ui->setupUi(this);
 
     qDebug() << "CREATE COMPLEX INTERFACE";
-    widgetControlBlock = new WidgetControlBlock;
-    widgetControlRotary1 = new WidgetRotaryPlatformControl(0);
-    widgetControlRotary2 = new WidgetRotaryPlatformControl(1);
+    widgetControlRotary1 = new WidgetMainControl(0);
+    widgetControlRotary2 = new WidgetMainControl(1);
     widgetControlRotary1->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
     widgetControlRotary2->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
     //auto button = new QPushButton(tr("Reset all shortcuts to default"), this);
     //button->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed, QSizePolicy::ToolButton));
 
-
     widgetControlRanger    = new WidgetDeviceControl("Дальномер");
     widgetControlFocusator = new WidgetDeviceControl("Фокусатор");
-
 
 //void WidgetDeviceControl::setScheme(int schemeParam, int numberLevels, int numberDevice, int schemeArrows) {
 
@@ -44,6 +41,19 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
        widgetControlCamera2 = new WidgetDeviceControl("КамераТК "); 
        widgetControlCamera3 = new WidgetDeviceControl("КамераГК "); 
        widgetControlCamera4 = new WidgetDeviceControl("Тепловиз "); 
+
+       widgetControlCamera1Float = new WidgetDeviceControl("КамераТК ", Qt::Vertical, this); 
+       widgetControlCamera2Float = new WidgetDeviceControl("КамераГК ", Qt::Vertical, this); 
+       widgetControlCamera3Float = new WidgetDeviceControl("Тепловиз ", Qt::Vertical, this); 
+
+       widgetControlCamera1Float->enableScheme(0,1,1,0,0,0); widgetControlCamera1Float->setScheme(5,0,0);
+       widgetControlCamera2Float->enableScheme(0,1,1,0,0,0); widgetControlCamera2Float->setScheme(5,0,0);
+       widgetControlCamera3Float->enableScheme(0,1,1,0,0,0); widgetControlCamera3Float->setScheme(5,0,0);
+
+       //widgetControlCamera1Float->move(18,170); widgetControlCamera1Float->show();
+       //widgetControlCamera2Float->move(18,510); widgetControlCamera2Float->show();
+       //widgetControlCamera3Float->move(640,170); widgetControlCamera3Float->show();
+       
 
 //void WidgetDeviceControl::enableScheme(bool enableState, 
 //                                       bool enableParam, 
@@ -74,18 +84,16 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
 
     ui->layoutControlTable->addWidget(widgetControlLaserPower,1,2);
     ui->layoutControlTable->addWidget(widgetControlLaserIllum,2,2);
-       ui->layoutControlTable->addWidget(widgetControlCamera1,3,2);
-       ui->layoutControlTable->addWidget(widgetControlCamera2,4,2);
-       ui->layoutControlTable->addWidget(widgetControlCamera3,5,2);
-       ui->layoutControlTable->addWidget(widgetControlCamera4,6,2);
+    ui->layoutControlTable->addWidget(widgetControlCamera1   ,3,2);
+    ui->layoutControlTable->addWidget(widgetControlCamera2   ,4,2);
+    ui->layoutControlTable->addWidget(widgetControlCamera3   ,5,2);
+    ui->layoutControlTable->addWidget(widgetControlCamera4   ,6,2);
 
-    ui->layoutControlBlock->addWidget(widgetControlBlock);
     ui->layoutControlBlock->addWidget(widgetControlRotary1);
     ui->layoutControlBlockBigPanel->addWidget(widgetControlRotary2);
 
     ui->layoutControlBlockBigPanel->addSpacerItem(new QSpacerItem(100,100,QSizePolicy::Fixed, QSizePolicy::Minimum));
 
-    ui->widgetSwitcherFullMode->hideButton(1);
 
     connect(ui->labelCameraFast, &LabelActiveImage::signalLabelPicked, this, &WidgetComplexInterface::slotSetBigImageMode);
     connect(ui->labelCameraZoom, &LabelActiveImage::signalLabelPicked, this, &WidgetComplexInterface::slotSetBigImageMode);
@@ -119,9 +127,9 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
     outputVideo2Mini->linkToSinkNode(outputVideoBig);
     outputVideo3Mini->linkToSinkNode(outputVideoBig);
 
-    //slotSetMainMode();
+    slotSetMainMode();
     //slotSetBigImageMode();
-    slotSetHandleMode();
+    //slotSetHandleMode();
     //slotSetControlPanelMode();
     this->grabKeyboard();
 }
@@ -238,7 +246,6 @@ void WidgetComplexInterface::slotSetMainMode()
 {
     ui->stackedWidget->setCurrentIndex(0);
     ui->widgetStackedMainControl->setCurrentIndex(0);
-        widgetControlBlock->show();
     activateMainOutput(true);
 }
 void WidgetComplexInterface::slotSetHandleMode()

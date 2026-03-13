@@ -14,7 +14,7 @@
 
 #include "device_generic_interface.h"
 #include "debug_output_filter.h"
-#include "widget_rotary_platform_control.h"
+#include "widget_main_control.h"
 #include "transform_coord_class.h"
 #include "sinus_generator_class.h"
 #include <QThread>
@@ -283,7 +283,7 @@ public:
 	SinusMoveModule ModuleMoveSinus{this};
 private:
 	RotateVectorClass<int>   RotAxis;
-  std::vector<WidgetRotaryPlatformControl*> ControlWindows;
+  std::vector<WidgetMainControl*> ControlWindows;
 };
 
 template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>

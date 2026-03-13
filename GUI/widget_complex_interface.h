@@ -11,9 +11,7 @@
 #include "widget_adjustable.h"
 #include <QGraphicsEffect>
 #include <QPainter>
-#include "widget_control_block.h"
-#include "widget_rotary_platform_control.h"
-#include "widget_panel_switcher.h"
+#include "widget_main_control.h"
 #include "label_active_image.h"
 #include "widget_device_control.h"
 
@@ -31,9 +29,8 @@ public:
     WidgetComplexInterface(QWidget* parent = nullptr);
     ~WidgetComplexInterface();
 
-    WidgetControlBlock* widgetControlBlock = nullptr;
-    WidgetRotaryPlatformControl* widgetControlRotary1   = nullptr;
-    WidgetRotaryPlatformControl* widgetControlRotary2   = nullptr;
+    WidgetMainControl* widgetControlRotary1   = nullptr;
+    WidgetMainControl* widgetControlRotary2   = nullptr;
 
     WidgetDeviceControl* widgetControlLaserPower = nullptr;
     WidgetDeviceControl* widgetControlLaserIllum = nullptr;
@@ -50,6 +47,10 @@ public:
     WidgetDeviceControl* widgetControlCamera4 = nullptr;
 
     WidgetDeviceControl* widgetLidControl    = nullptr;
+
+    WidgetDeviceControl* widgetControlCamera1Float    = nullptr;
+    WidgetDeviceControl* widgetControlCamera2Float    = nullptr;
+    WidgetDeviceControl* widgetControlCamera3Float    = nullptr;
 
     SinkDisplayLabel* outputVideo1 = nullptr;
     SinkDisplayLabel* outputVideo2 = nullptr;

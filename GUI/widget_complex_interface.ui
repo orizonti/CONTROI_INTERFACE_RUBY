@@ -61,7 +61,7 @@ border: 0px solid line black;
       <string notr="true"/>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="page">
       <layout class="QGridLayout" name="gridLayout_6">
@@ -180,21 +180,21 @@ QPushButton:pressed
          <item row="1" column="0">
           <widget class="LabelActiveImage" name="labelCameraZoom">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
            <property name="minimumSize">
             <size>
-             <width>200</width>
-             <height>201</height>
+             <width>400</width>
+             <height>200</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>624</width>
-             <height>344</height>
+             <width>800</width>
+             <height>400</height>
             </size>
            </property>
            <property name="styleSheet">
@@ -225,7 +225,7 @@ border-radius: 8px;
          <item row="0" column="1">
           <widget class="LabelActiveImage" name="labelCameraThermal">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
@@ -238,8 +238,8 @@ border-radius: 8px;
            </property>
            <property name="maximumSize">
             <size>
-             <width>624</width>
-             <height>344</height>
+             <width>800</width>
+             <height>400</height>
             </size>
            </property>
            <property name="styleSheet">
@@ -270,7 +270,7 @@ border-radius: 8px;
          <item row="0" column="0">
           <widget class="LabelActiveImage" name="labelCameraFast">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
@@ -283,8 +283,8 @@ border-radius: 8px;
            </property>
            <property name="maximumSize">
             <size>
-             <width>624</width>
-             <height>344</height>
+             <width>800</width>
+             <height>400</height>
             </size>
            </property>
            <property name="styleSheet">
@@ -321,8 +321,8 @@ border-radius: 8px;
      </widget>
      <widget class="QWidget" name="page_3">
       <layout class="QGridLayout" name="gridLayout_4">
-       <item row="1" column="0">
-        <widget class="LabelActiveImage" name="labelMiniCameraFast">
+       <item row="1" column="1">
+        <widget class="LabelActiveImage" name="labelMiniCameraZoom">
          <property name="sizePolicy">
           <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
            <horstretch>0</horstretch>
@@ -331,74 +331,8 @@ border-radius: 8px;
          </property>
          <property name="maximumSize">
           <size>
-           <width>120</width>
-           <height>120</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QLabel
-{
-  border: 2px solid line;
-	border-color: rgb(231, 164, 60);
-  
-border-radius: 8px;
-
-	background-color: rgba(173, 164, 123, 37);
-}</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0" colspan="6">
-        <widget class="LabelActiveImage" name="labelCameraBig">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>900</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>1100</width>
-           <height>700</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QLabel
-{
-  border: 2px solid line;
-	border-color: rgb(231, 164, 60);
-  
-border-radius: 8px;
-
-	background-color: rgba(173, 164, 123, 37);
-}</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <widget class="LabelActiveImage" name="labelMiniCameraThermal">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>120</width>
-           <height>120</height>
+           <width>100</width>
+           <height>100</height>
           </size>
          </property>
          <property name="styleSheet">
@@ -427,8 +361,8 @@ border-radius: 8px;
          </property>
          <property name="maximumSize">
           <size>
-           <width>120</width>
-           <height>120</height>
+           <width>100</width>
+           <height>100</height>
           </size>
          </property>
          <property name="styleSheet">
@@ -441,8 +375,8 @@ border-radius: 6px;
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="LabelActiveImage" name="labelMiniCameraZoom">
+       <item row="1" column="2">
+        <widget class="LabelActiveImage" name="labelMiniCameraThermal">
          <property name="sizePolicy">
           <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
            <horstretch>0</horstretch>
@@ -451,8 +385,8 @@ border-radius: 6px;
          </property>
          <property name="maximumSize">
           <size>
-           <width>120</width>
-           <height>120</height>
+           <width>100</width>
+           <height>100</height>
           </size>
          </property>
          <property name="styleSheet">
@@ -471,17 +405,73 @@ border-radius: 8px;
          </property>
         </widget>
        </item>
-       <item row="1" column="4">
-        <widget class="WidgetPanelSwitcher" name="widgetSwitcherFullMode" native="true">
+       <item row="0" column="0" colspan="5">
+        <widget class="LabelActiveImage" name="labelCameraBig">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>1000</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="maximumSize">
           <size>
-           <width>80</width>
-           <height>16777215</height>
+           <width>1200</width>
+           <height>800</height>
           </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QLabel
+{
+  border: 2px solid line;
+	border-color: rgb(231, 164, 60);
+  
+border-radius: 8px;
+
+	background-color: rgba(173, 164, 123, 37);
+}</string>
+         </property>
+         <property name="text">
+          <string/>
          </property>
         </widget>
        </item>
-       <item row="0" column="6">
+       <item row="1" column="0">
+        <widget class="LabelActiveImage" name="labelMiniCameraFast">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>100</width>
+           <height>100</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QLabel
+{
+  border: 2px solid line;
+	border-color: rgb(231, 164, 60);
+  
+border-radius: 8px;
+
+	background-color: rgba(173, 164, 123, 37);
+}</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="5" rowspan="2">
         <layout class="QVBoxLayout" name="layoutControlBlockBigPanel"/>
        </item>
       </layout>
@@ -491,12 +481,6 @@ border-radius: 8px;
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>WidgetPanelSwitcher</class>
-   <extends>QWidget</extends>
-   <header location="global">widget_panel_switcher.h</header>
-   <container>1</container>
-  </customwidget>
   <customwidget>
    <class>LabelActiveImage</class>
    <extends>QLabel</extends>

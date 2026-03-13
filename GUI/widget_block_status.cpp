@@ -1,6 +1,5 @@
 ﻿#include <QSpinBox>
 #include "./ui_widget_block_status.h"
-#include "widget_control_block.h"
 #include <QTimer>
 #include "widget_block_status.h"
 
