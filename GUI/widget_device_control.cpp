@@ -2,6 +2,7 @@
 #include "./ui_widget_device_control.h"
 #include "widget_device_control.h"
 #include <QTimer>
+#include <QSpacerItem>
 
 QString styleToggledButtons{
 "QPushButton{"
@@ -30,7 +31,7 @@ QString styleArrowButtons{
 "background-color: rgba(209, 142, 34, 110);"
 "border: 4px solid line;"
 "border-radius: 6px;"
-"order-color: rgb(171, 86, 38); }"
+"border-color: rgb(171, 86, 38); }"
 };
 
 
@@ -58,7 +59,7 @@ QString styleBaseWidget
 "border-radius: 6px;"
 "border-color: rgb(214, 136, 41); }"
 
-"QGroupBox { border: 0px solid line black; }"
+"QGroupBox { border: 0px solid line; border-color: green; border-radius: 6px; }"
 
 "QLabel { background-color: rgba(209, 142, 34, 60);"
 "border: 2px solid line;"
@@ -102,38 +103,39 @@ QString styleBaseWidget
 
 
 
-WidgetDeviceControl::WidgetDeviceControl(QString name, QWidget *parent) : WidgetAdjustable(parent)
+WidgetDeviceControl::WidgetDeviceControl(QString name, Qt::Orientation orientation, QWidget* parent) : WidgetAdjustable(parent)
 {
     this->setStyleSheet(styleBaseWidget);
-    this->setMinimumWidth(400);
+    orientationWidget = orientation;
+
+    qDebug() << "=====";
+    QVector<QBoxLayout*> layouts;
+    if(orientation == Qt::Horizontal) for(int n = 0; n < 5; n++) layouts.push_back(new QHBoxLayout());
+    if(orientation == Qt::Vertical)   for(int n = 0; n < 5; n++) layouts.push_back(new QVBoxLayout());
+                                                    mainLayout = layouts[0];
+    qDebug() << "=====";
 
     labelName  = new QLabel(name); 
     labelState = new QLabel("0000.00\n0000.00"); 
     spinParam = new QSpinBox();
-    labelName->setMaximumSize(100,50);
-    labelState->setMaximumSize(100,50);
-    spinParam->setMaximumSize(100,50);
 
     groupButtonsLevel = new QGroupBox;
     groupButtonsOnOff = new QGroupBox;
           groupArrows = new QGroupBox;
 
-    labelName->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
-    labelState->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
-    spinParam->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
-    
-    groupButtonsLevel->setLayout(new QHBoxLayout); groupButtonsLevel->setStyleSheet(styleToggledButtons); 
-    groupButtonsOnOff->setLayout(new QHBoxLayout); groupButtonsOnOff->setStyleSheet(styleToggledButtons);
-          groupArrows->setLayout(new QHBoxLayout);       groupArrows->setStyleSheet(styleArrowButtons);
-    groupButtonsLevel->layout()->setSpacing(3); groupButtonsLevel->layout()->setContentsMargins(1,1,1,1);
-    groupButtonsOnOff->layout()->setSpacing(3); groupButtonsOnOff->layout()->setContentsMargins(1,1,1,1);
-          groupArrows->layout()->setSpacing(3);       groupArrows->layout()->setContentsMargins(1,1,1,1);
+    groupButtonsLevel->setLayout(layouts[1]); groupButtonsLevel->setStyleSheet(styleToggledButtons); 
+    groupButtonsOnOff->setLayout(layouts[2]); groupButtonsOnOff->setStyleSheet(styleToggledButtons);
+          groupArrows->setLayout(layouts[3]);       groupArrows->setStyleSheet(styleArrowButtons);
+    groupButtonsLevel->layout()->setSpacing(2); groupButtonsLevel->layout()->setContentsMargins(1,1,1,1);
+    groupButtonsOnOff->layout()->setSpacing(2); groupButtonsOnOff->layout()->setContentsMargins(1,1,1,1);
+          groupArrows->layout()->setSpacing(2);       groupArrows->layout()->setContentsMargins(1,1,1,1);
 
-    groupButtonsLevel->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
-    groupButtonsOnOff->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
-    groupArrows->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+    buttonLeft  = new QPushButton(QIcon(":/buttonImages/arrow_left_hollow.png"),"");
+    buttonRight = new QPushButton(QIcon(":/buttonImages/arrow_right_hollow.png"),"");
+    buttonUp    = new QPushButton(QIcon(":/buttonImages/arrow_up_hollow.png"),"");
+    buttonDown  = new QPushButton(QIcon(":/buttonImages/arrow_down_hollow.png"),"");
 
-    this->setLayout(new QHBoxLayout);
+    this->setLayout(mainLayout);
     this->layout()->addWidget(labelName);
     this->layout()->addWidget(labelState);
     this->layout()->addWidget(spinParam);
@@ -141,7 +143,76 @@ WidgetDeviceControl::WidgetDeviceControl(QString name, QWidget *parent) : Widget
     this->layout()->addWidget(groupButtonsOnOff);
     this->layout()->addWidget(groupArrows);
 
-    this->layout()->setSpacing(3); this->layout()->setContentsMargins(1,1,1,1);
+    this->layout()->setSpacing(2); this->layout()->setContentsMargins(1,1,1,1);
+
+    this->setSizes();
+
+    setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+}
+
+void WidgetDeviceControl::setSizes()
+{
+    if(orientationWidget == Qt::Horizontal)
+
+    {
+                                                          this->setMinimumWidth(2*minLabelsSize.width());
+     this->labelName->setMaximumSize(maxLabelsSize); this->labelName->setMinimumWidth(minLabelsSize.width());
+    this->labelState->setMaximumSize(maxLabelsSize); this->labelState->setMinimumWidth(minLabelsSize.width());
+     this->spinParam->setMaximumSize(maxLabelsSize); this->spinParam->setMinimumWidth(minLabelsSize.width());
+
+     buttonLeft->setMinimumWidth(minButtonsSize.width());  buttonLeft->setMaximumSize(maxButtonsSize);
+    buttonRight->setMinimumWidth(minButtonsSize.width()); buttonRight->setMaximumSize(maxButtonsSize);
+       buttonUp->setMinimumWidth(minButtonsSize.width());    buttonUp->setMaximumSize(maxButtonsSize);
+     buttonDown->setMinimumWidth(minButtonsSize.width());  buttonDown->setMaximumSize(maxButtonsSize);
+
+    groupButtonsLevel->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+    groupButtonsOnOff->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+          groupArrows->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+            labelName->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+           labelState->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+            spinParam->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+           buttonLeft->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+          buttonRight->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+             buttonUp->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+           buttonDown->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+
+    this->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum));
+
+    mainLayout->addSpacerItem(new QSpacerItem(10,20,QSizePolicy::Minimum, QSizePolicy::Fixed));
+    }
+
+    if(orientationWidget == Qt::Vertical)
+    {
+      maxButtonsSize = QSize(60,60);
+      minButtonsSize = QSize(30,30);
+     this->labelName->setMaximumSize(maxButtonsSize);
+    this->labelState->setMaximumSize(maxButtonsSize); this->labelState->setMinimumHeight(minLabelsSize.height());
+     this->spinParam->setMaximumSize(maxButtonsSize);  this->spinParam->setMinimumHeight(minLabelsSize.height());
+
+     buttonLeft->setMinimumHeight(minButtonsSize.height());  buttonLeft->setMaximumSize(maxButtonsSize);
+    buttonRight->setMinimumHeight(minButtonsSize.height()); buttonRight->setMaximumSize(maxButtonsSize);
+       buttonUp->setMinimumHeight(minButtonsSize.height());    buttonUp->setMaximumSize(maxButtonsSize);
+     buttonDown->setMinimumHeight(minButtonsSize.height());  buttonDown->setMaximumSize(maxButtonsSize);
+
+    groupButtonsLevel->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumExpanding));
+    groupButtonsOnOff->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumExpanding));
+          groupArrows->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumExpanding));
+            labelName->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumExpanding));
+           labelState->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumExpanding));
+            spinParam->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumExpanding));
+           buttonLeft->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumExpanding));
+          buttonRight->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumExpanding));
+             buttonUp->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumExpanding));
+           buttonDown->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumExpanding));
+
+           groupButtonsLevel->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding));
+
+
+    this->setMinimumSize(minLabelsSize.width()+1, minLabelsSize.height()*2);
+    this->setMaximumSize(maxLabelsSize.width()+1, maxLabelsSize.height()*10);
+    this->setFixedWidth(55);
+    this->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Maximum));
+    }
 }
 
 
@@ -149,8 +220,10 @@ void WidgetDeviceControl::enableScheme(bool enableState,
                                        bool enableParam, 
                                        bool enableLevels, 
                                        bool enableOnOff, 
-                                       bool enableArrows)
+                                       bool enableArrows,
+                                       bool enableLabel)
 {
+    if(!enableLabel)  labelName->hide();
     if(!enableState)  labelState->hide();
     if(!enableParam)  spinParam->hide();
     if(!enableLevels) groupButtonsLevel->hide();
@@ -158,44 +231,26 @@ void WidgetDeviceControl::enableScheme(bool enableState,
     if(!enableArrows) groupArrows->hide();
 
 }
-void WidgetDeviceControl::setScheme(int schemeParam, int numberLevels, int numberDevice, int schemeArrows) {
-                           labelState->show(); spinParam->hide();
-    if(schemeParam == 1) { labelState->hide(); spinParam->show(); }
-    if(schemeParam == 2) { labelState->show(); spinParam->show(); }
+void WidgetDeviceControl::setScheme(int numberLevels, int numberDevice, int schemeArrows) {
 
     for(int n = 0; n < numberLevels; n++)
     {
       buttonsLevel.push_back(new QPushButton(QString("X%1").arg(n))); groupButtonsLevel->layout()->addWidget(buttonsLevel.last());
-      buttonsLevel.last()->setMinimumWidth(30); buttonsLevel.last()->setMaximumSize(50,50);
+      buttonsLevel.last()->setMinimumSize(minButtonsSize); buttonsLevel.last()->setMaximumSize(maxButtonsSize);
       buttonsLevel.last()->setAutoExclusive(true);
       buttonsLevel.last()->setCheckable(true); 
     }
-      buttonsLevel.first()->setChecked(true);
+      if( !buttonsLevel.isEmpty()) buttonsLevel.first()->setChecked(true);
 
     for(int n = 0; n < numberDevice; n++)
     {
       buttonsOnOff.push_back(new QPushButton(QString("DEV_%1").arg(n))); groupButtonsOnOff->layout()->addWidget(buttonsOnOff.last());
-      buttonsOnOff.last()->setMinimumWidth(30); buttonsOnOff.last()->setMaximumSize(50,50);
+      buttonsOnOff.last()->setMinimumSize(minButtonsSize); buttonsOnOff.last()->setMaximumSize(maxButtonsSize);
       buttonsOnOff.last()->setCheckable(true); 
     }
 
     if(schemeArrows == 4)
     {
-    buttonLeft  = new QPushButton;
-    buttonRight = new QPushButton;
-    buttonUp    = new QPushButton;
-    buttonDown  = new QPushButton;
-
-     buttonLeft->setMinimumWidth(30);  buttonLeft->setMaximumSize(50,50);
-    buttonRight->setMinimumWidth(30); buttonRight->setMaximumSize(50,50);
-       buttonUp->setMinimumWidth(30);    buttonUp->setMaximumSize(50,50);
-     buttonDown->setMinimumWidth(30);  buttonDown->setMaximumSize(50,50);
-
-    buttonLeft->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
-    buttonRight->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
-    buttonUp->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
-    buttonDown->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
-
     groupArrows->layout()->addWidget(buttonLeft);
     groupArrows->layout()->addWidget(buttonRight);
     groupArrows->layout()->addWidget(buttonUp);
@@ -261,7 +316,7 @@ void WidgetDeviceControl::linkSignals()
       connect(spinParam, &QSpinBox::valueChanged, [this](int Value) { DeviceLinked->setValue(Value); } ); 
 
 
-    if(!groupArrows->isVisible()) return;
+    //if(!groupArrows->isVisible()) return;
 
     std::vector<QPair<float,float>> VelsVector;
     float VelocityScale = 0.5;
@@ -278,6 +333,7 @@ void WidgetDeviceControl::linkSignals()
         auto button = buttonsArrow[n];
         QObject::connect(button, &QPushButton::pressed,  [this, Velocity]() 
         {   
+            qDebug() << "MOVE VELOCITY: " << Velocity; 
             DeviceLinked->setPair(Velocity); timerCheckDevice.start(1);
         });
         QObject::connect(button, &QPushButton::released, [this     ]()      { DeviceLinked->setEnable(false);  timerCheckDevice.stop(); });

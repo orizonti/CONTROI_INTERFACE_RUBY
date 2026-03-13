@@ -8,7 +8,6 @@
 
 WidgetRotaryPlatformControl::WidgetRotaryPlatformControl(int Scheme, QWidget* parent) : WidgetAdjustable(parent), ui(new Ui::WidgetRotaryPlatformControl)
 {
-    qDebug() << "!!!!!!!!!!!!!!!!!!! [ CREATE WIDGET ROTARY CONTROL ]";
     ui->setupUi(this);
     ui->groupBoxArrowButtons->hide();
 

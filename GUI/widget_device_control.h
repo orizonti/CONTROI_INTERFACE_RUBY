@@ -12,20 +12,24 @@
 #include <QDoubleSpinBox>
 #include <QGroupBox>
 #include <QPushButton>
+#include <QBoxLayout>
 
 
 class WidgetDeviceControl : public WidgetAdjustable
 {
     Q_OBJECT
 public:
-    WidgetDeviceControl(QString name = "Устройство", QWidget* parent = nullptr);
+    WidgetDeviceControl(QString name = "Устройство", Qt::Orientation orientation = Qt::Horizontal, QWidget* parent = nullptr);
     ~WidgetDeviceControl();
 
-    void enableScheme(bool enableState, bool enableParam, bool enableLevels, bool enableOnOff, bool enableArrows);
-    void setScheme(int schemeParam, int numberLevels, int numberDevice, int schemeArrows = 0);
+    Qt::Orientation orientationWidget = Qt::Horizontal;
+
+    void enableScheme(bool enableState, bool enableParam, bool enableLevels, bool enableOnOff, bool enableArrows, bool enableLabel = true);
+    void setScheme(int numberLevels, int numberDevice, int schemeArrows = 0);
     void setButtonsName(QVector<QString> names);
     void setLevelsName(QVector<QString> names);
     void setName(QString name);
+    void setSizes();
 
     void linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device);
 
@@ -51,4 +55,11 @@ public:
     QGroupBox* groupArrows = nullptr;
 
     int schemeArrowsControl = 0;
+    QSize maxButtonsSize{50,50};
+    QSize minButtonsSize{30,30};
+
+    QSize maxLabelsSize{70,50};
+    QSize minLabelsSize{70,30};
+
+    QBoxLayout* mainLayout = nullptr;
 };

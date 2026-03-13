@@ -29,40 +29,43 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
     widgetControlRanger    = new WidgetDeviceControl("Дальномер");
     widgetControlFocusator = new WidgetDeviceControl("Фокусатор");
 
-//void WidgetDeviceControl::enableScheme(bool enableState, 
-//                                       bool enableParam, 
-//                                       bool enableLevels, 
-//                                       bool enableOnOff, 
-//                                       bool enableArrows)
 
 //void WidgetDeviceControl::setScheme(int schemeParam, int numberLevels, int numberDevice, int schemeArrows) {
 
-    widgetControlRanger->enableScheme(1,0,0,1,0);    widgetControlRanger->setScheme(0,0,1); 
-    widgetControlFocusator->enableScheme(1,0,0,1,0); widgetControlFocusator->setScheme(0,0,1);
+    widgetControlRanger->enableScheme(1,0,0,1,0);    widgetControlRanger->setScheme(0,1); 
+    widgetControlFocusator->enableScheme(1,0,0,1,0); widgetControlFocusator->setScheme(0,1);
 
     widgetControlLaserPower = new WidgetDeviceControl("Лазер    "); 
     widgetControlLaserIllum = new WidgetDeviceControl("Подсвет  "); 
-    widgetControlLaserPower->enableScheme(1,0,1,0,0); widgetControlLaserPower->setScheme(0,2,2); 
-    widgetControlLaserIllum->enableScheme(1,0,1,0,0); widgetControlLaserIllum->setScheme(0,2,1);
+    widgetControlLaserPower->enableScheme(1,0,1,0,0); widgetControlLaserPower->setScheme(2,2); 
+    widgetControlLaserIllum->enableScheme(1,0,1,0,0); widgetControlLaserIllum->setScheme(2,1);
 
        widgetControlCamera1 = new WidgetDeviceControl("КамераТК "); 
        widgetControlCamera2 = new WidgetDeviceControl("КамераТК "); 
        widgetControlCamera3 = new WidgetDeviceControl("КамераГК "); 
        widgetControlCamera4 = new WidgetDeviceControl("Тепловиз "); 
-    widgetControlCamera1->enableScheme(1,1,0,0,0); widgetControlCamera1->setScheme(1,5,0); widgetControlCamera1->setLevelsName(QStringList({"X1", "X2", "X3", "X4", "X5"}));
-    widgetControlCamera2->enableScheme(1,1,0,0,0); widgetControlCamera2->setScheme(1,5,0); widgetControlCamera2->setLevelsName(QStringList({"X1", "X2", "X3", "X4", "X5"})); 
-    widgetControlCamera3->enableScheme(1,1,0,0,0); widgetControlCamera3->setScheme(1,5,0); widgetControlCamera3->setLevelsName(QStringList({"X1", "X2", "X3", "X4", "X5"}));
-    widgetControlCamera4->enableScheme(1,1,0,0,0); widgetControlCamera4->setScheme(1,5,0); widgetControlCamera4->setLevelsName(QStringList({"X1", "X2", "X3", "X4", "X5"}));
+
+//void WidgetDeviceControl::enableScheme(bool enableState, 
+//                                       bool enableParam, 
+//                                       bool enableLevels, 
+//                                       bool enableOnOff, 
+//                                       bool enableArrows)
+    widgetControlCamera1->enableScheme(0,1,1,0,0); widgetControlCamera1->setScheme(5,0); widgetControlCamera1->setLevelsName(QStringList({"X1", "X2", "X3", "X4", "X5"}));
+    widgetControlCamera2->enableScheme(0,1,1,0,0); widgetControlCamera2->setScheme(5,0); widgetControlCamera2->setLevelsName(QStringList({"X1", "X2", "X3", "X4", "X5"})); 
+    widgetControlCamera3->enableScheme(0,1,1,0,0); widgetControlCamera3->setScheme(5,0); widgetControlCamera3->setLevelsName(QStringList({"X1", "X2", "X3", "X4", "X5"}));
+    widgetControlCamera4->enableScheme(0,1,1,0,0); widgetControlCamera4->setScheme(5,0); widgetControlCamera4->setLevelsName(QStringList({"X1", "X2", "X3", "X4", "X5"}));
 
 
       widgetControlScanator = new WidgetDeviceControl("Сканатор "); 
       widgetControlPlatform = new WidgetDeviceControl("Платформа"); 
-    widgetControlScanator->enableScheme(1,0,0,1,1); widgetControlScanator->setScheme(0,0,1,4); 
-    widgetControlPlatform->enableScheme(1,0,0,1,1); widgetControlPlatform->setScheme(0,0,1,4);
+    widgetControlScanator->enableScheme(1,0,0,0,1); widgetControlScanator->setScheme(0,0,4); 
+    widgetControlPlatform->enableScheme(1,0,0,0,1); widgetControlPlatform->setScheme(0,0,4);
 
       widgetLidControl = new WidgetDeviceControl("Крышки"); 
-      widgetLidControl->enableScheme(0,0,1,0,0); widgetLidControl->setScheme(0,0,2,0); 
+      widgetLidControl->enableScheme(0,0,0,1,0); widgetLidControl->setScheme(0,2,0); 
 
+    ui->layoutControlTable->setSpacing(1);
+    ui->layoutControlTable->setContentsMargins(1,1,1,1);
     ui->layoutControlTable->addWidget(widgetControlRanger,1,1);
     ui->layoutControlTable->addWidget(widgetControlFocusator,2,1);
     ui->layoutControlTable->addWidget(widgetControlScanator,3,1);
@@ -116,9 +119,9 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
     outputVideo2Mini->linkToSinkNode(outputVideoBig);
     outputVideo3Mini->linkToSinkNode(outputVideoBig);
 
-    slotSetMainMode();
+    //slotSetMainMode();
     //slotSetBigImageMode();
-    //slotSetHandleMode();
+    slotSetHandleMode();
     //slotSetControlPanelMode();
     this->grabKeyboard();
 }
