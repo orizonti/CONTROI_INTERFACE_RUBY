@@ -10,14 +10,6 @@
 #include "message_command_structures_intermediate.h"
 
 
-template<int NUM_DEV>
-struct CommandDevice
-{
-  public:
-  uint16_t DeviceID = 0;
-  uint16_t Command = 0;
-  uint16_t Param = 0;
-};
 
 
 template<int NUM_DEV>
@@ -40,61 +32,64 @@ struct CommandDeviceRedux
   };
 };
 
+template<int NUM_DEV>
+struct RequestDeviceRedux
+{
+  public:
+  uint8_t Command = 0;
+  uint8_t Param = 0;
+  uint8_t Reserv1 = 0;
+  uint8_t Reserv2 = 0;
+  uint8_t Reserv3 = 0;
+  uint8_t Reserv4 = 0;
+  uint8_t Reserv5 = 0;
+  uint8_t Reserv6 = 0;
+};
 
+template<int NUM_DEV>
+struct CommandDevice
+{
+  public:
+  uint16_t ModuleID = 0;
+  uint16_t Command = 0;
+
+  union Param
+  {
+  uint32_t ParamInt = 0;
+     float ParamFloat;
+  };
+};
 
 
 template<int N_CHAN>
-struct CommandSetPos
+class CommandSetPair
 {
    public:
    float Param1 = 0;
    float Param2 = 0;
 
-   template<typename T>
-   void operator=(const QPair<T,T>& Pos) { Param1 = Pos.first; Param2 = Pos.second; };
-   void operator=(StateRotaryControl setting) {Param1 = setting.Engine1.Position; Param2 = setting.Engine2.Position; };
-   void setData(StateRotaryControl setting)   {Param1 = setting.Engine1.Position; Param2 = setting.Engine2.Position; }
-   friend void operator<<(QDataStream& stream, CommandSetPos& command) { stream << command.Param1 << command.Param2; };
-};
-
-
-template<int N_CHAN>
-struct CommandSetSpeed
-{
    public:
-   float Velocity1 = 0;
-   float Velocity2 = 0;
-};
+   template<typename T> void operator=(const QPair<T,T>& Pos)      {Param1 = Pos.first;                Param2 = Pos.second; };
+                        void operator=(StateRotaryControl setting) {Param1 = setting.Engine1.Position; Param2 = setting.Engine2.Position; };
 
-struct CommandAiming
-{
-   public:
-   float PosAimingRelativeX = 0.5;
-   float PosAimingRelativeY = 0.5;
-   void setData(QPair<float,float> Data) { PosAimingRelativeX = Data.first; 
-                                           PosAimingRelativeY = Data.second; };
-   void operator=(std::pair<float,float> Data) { setData(Data);};
-   friend void operator<<(QDataStream& stream, CommandAiming& command)
-   {
-         stream << command.PosAimingRelativeX;
-         stream << command.PosAimingRelativeY;
-   }
-};
+   template<typename T> void setData(const QPair<T,T>& Pos)      {Param1 = Pos.first; Param2 = Pos.second; };
+                      void   setData(StateRotaryControl setting) {Param1 = setting.Engine1.Position; Param2 = setting.Engine2.Position; }
 
-using MessageAiming = CommandAiming;
+   friend void operator<<(QDataStream& stream, CommandSetPair& command) { stream << command.Param1 << command.Param2; };
+};
 
 template<int NUM_DEV>
-struct MessageDevice
+struct RequestDevice
 {
-   uint8_t DeviceID = 0;
-   uint8_t Module = 0;
+    uint8_t DeviceID = 0;
+    uint8_t Module = 0;
    uint16_t Param1 = 0;
    uint16_t Param2 = 0;
    uint16_t Param3 = 0;
 };
 
 template<int N_CHAN>
-struct MessageMoveState
+struct RequestMoveState
 {
    public:
    float Position1 = 0;
@@ -102,19 +97,11 @@ struct MessageMoveState
    float Velocity1 = 1;
    float Velocity2 = 1;
 
-template<int N_CHAN>
-friend void operator<<(StateRotaryControl& Receiver, MessageMoveState<N_CHAN>& state)
-{
-  Receiver.Engine1.Position = state.Position1;
-  Receiver.Engine2.Position = state.Position2;
-  Receiver.Engine1.Velocity = state.Velocity1;
-  Receiver.Engine2.Velocity = state.Velocity2;
-};
-
+template<int N_CHAN> friend void operator<<(StateRotaryControl& Receiver, RequestMoveState<N_CHAN>& state);
 };
 
 template<int N_CHAN>
-struct MessagePositionState
+struct RequestPositionState
 {
     public:
     uint16_t Position1;
@@ -140,27 +127,19 @@ struct CommandCalibration
     uint16_t  Reserve3      = 1;
 };
 
-using CommandDeviceController   = CommandDevice<0>;
 using CommandDeviceLaserPointer = CommandDeviceRedux<0>;
 using CommandDeviceLaserPower   = CommandDeviceRedux<1>;
 using CommandDeviceFocusator    = CommandDeviceRedux<2>;
 
-using MessageDeviceController   = MessageDevice<0>;
-using MessageDeviceLaserPower   = MessageDevice<1>;
-using MessageDeviceLaserPointer = MessageDevice<2>;
-using MessageDeviceFocusator    = MessageDevice<3>;
+using RequestDeviceController   = RequestDevice<0>;
+using RequestDeviceLaserPower   = RequestDevice<1>;
+using RequestDeviceLaserPointer = RequestDevice<2>;
+using RequestDeviceFocusator    = RequestDevice<3>;
 
-using CommandSetPosRotary     = CommandSetPos<0>;
-using CommandSetPosScanator   = CommandSetPos<1>;
-
-using CommandSetSpeedRotary   = CommandSetSpeed<0>;
-using CommandSetSpeedScanator = CommandSetSpeed<1>;
-
-using MessageStateRotary      = MessageMoveState<0>;
-using MessageStateScanator    = MessageMoveState<1>;
-
-using MessagePosStateRotary   = MessagePositionState<0>;
-using MessagePosStateScanator = MessagePositionState<1>;
+using RequestStateRotary      = RequestMoveState<0>;
+using RequestStateScanator    = RequestMoveState<1>;
+using RequestPosStateRotary   = RequestPositionState<0>;
+using RequestPosStateScanator = RequestPositionState<1>;
 
 
 #define LASER_CHECK 0x20
@@ -181,3 +160,12 @@ using MessagePosStateScanator = MessagePositionState<1>;
 #define LASER_MODULE_POWER 3
 
 template<typename T> bool isAligned() { return sizeof(T) == T::getSize(); }
+
+template<int N_CHAN>
+void operator<<(StateRotaryControl& Receiver, RequestMoveState<N_CHAN>& state)
+{
+  Receiver.Engine1.Position = state.Position1;
+  Receiver.Engine2.Position = state.Position2;
+  Receiver.Engine1.Velocity = state.Velocity1;
+  Receiver.Engine2.Velocity = state.Velocity2;
+};

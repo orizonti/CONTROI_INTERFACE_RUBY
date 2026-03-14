@@ -14,6 +14,5 @@ struct StateRotaryControl
 {
   StateEngineControl Engine1;
   StateEngineControl Engine2;
-
 };
 

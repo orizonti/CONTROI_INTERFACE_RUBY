@@ -11,9 +11,7 @@
 #include "widget_adjustable.h"
 #include <QGraphicsEffect>
 #include <QPainter>
-#include "widget_control_block.h"
-#include "widget_rotary_platform_control.h"
-#include "widget_panel_switcher.h"
+#include "widget_main_control.h"
 #include "label_active_image.h"
 #include "widget_device_control.h"
 
@@ -31,23 +29,28 @@ public:
     WidgetComplexInterface(QWidget* parent = nullptr);
     ~WidgetComplexInterface();
 
-    WidgetControlBlock* ControlBlock = nullptr;
-    WidgetRotaryPlatformControl* ControlRotary   = nullptr;
-    WidgetRotaryPlatformControl* ControlRotary2   = nullptr;
+    WidgetMainControl* widgetMainControl1   = nullptr;
+    WidgetMainControl* widgetMainControl2   = nullptr;
 
-    WidgetDeviceControl* ControlLaserPower = nullptr;
-    WidgetDeviceControl* ControlLaserIllum = nullptr;
+    WidgetDeviceControl* widgetControlLaserPower = nullptr;
+    WidgetDeviceControl* widgetControlLaserIllum = nullptr;
 
-    WidgetDeviceControl* ControlScanator = nullptr;
-    WidgetDeviceControl* ControlPlatform = nullptr;
+    WidgetDeviceControl* widgetControlScanator = nullptr;
+    WidgetDeviceControl* widgetControlPlatform = nullptr;
 
-    WidgetDeviceControl* ControlRanger    = nullptr;
-    WidgetDeviceControl* ControlFocusator = nullptr;
+    WidgetDeviceControl* widgetControlRanger    = nullptr;
+    WidgetDeviceControl* widgetControlFocusator = nullptr;
 
-    WidgetDeviceControl* ControlCamera1 = nullptr;
-    WidgetDeviceControl* ControlCamera2 = nullptr;
-    WidgetDeviceControl* ControlCamera3 = nullptr;
-    WidgetDeviceControl* ControlCamera4 = nullptr;
+    WidgetDeviceControl* widgetControlCamera1 = nullptr;
+    WidgetDeviceControl* widgetControlCamera2 = nullptr;
+    WidgetDeviceControl* widgetControlCamera3 = nullptr;
+    WidgetDeviceControl* widgetControlCamera4 = nullptr;
+
+    WidgetDeviceControl* widgetLidControl    = nullptr;
+
+    WidgetDeviceControl* widgetControlCamera1Float    = nullptr;
+    WidgetDeviceControl* widgetControlCamera2Float    = nullptr;
+    WidgetDeviceControl* widgetControlCamera3Float    = nullptr;
 
     SinkDisplayLabel* outputVideo1 = nullptr;
     SinkDisplayLabel* outputVideo2 = nullptr;
@@ -67,8 +70,6 @@ public slots:
     void slotSetMainMode();
     void slotSetHandleMode();
     void slotSetBigImageMode();
-    void slotSetControlPanelMode();
-
     void slotShowMalfunctionList();
 signals:
 void signalEndWork();
@@ -76,6 +77,7 @@ private:
     Ui::WidgetComplexInterface *ui;
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
 
     void activateMainOutput(bool OnOff);
     void activateControlOutput(bool OnOff);

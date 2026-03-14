@@ -91,17 +91,10 @@ add_executable (testCameraRTSP
         "./GUI/widget_complex_interface.cpp"
         "./GUI/widget_complex_interface.ui"
 
-        "./GUI/widget_control_block.cpp"
-        "./GUI/widget_control_block.ui"
-
         "./GUI/widget_device_control.cpp"
         "./GUI/widget_device_control.ui"
 
-        "./GUI/widget_panel_switcher.cpp"
-        "./GUI/widget_panel_switcher.ui"
-
-        "./GUI/widget_rotary_platform_control.cpp"
-        "./GUI/widget_rotary_platform_control.ui"
+        "./GUI/widget_main_control.cpp"
 
         "./GUI/widget_rotary_control.cpp"
 

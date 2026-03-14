@@ -6,26 +6,31 @@
 
 
 template<typename T_CONNECTION>
-class DeviceLidControl : public DeviceGenericInterface<T_CONNECTION, CommandLidControlJson, CommandLidControlJson>,
-                         public DeviceGenericHandleControl
+class DeviceLidControl : public DeviceGenericInterface<T_CONNECTION, CommandLidControlJson, CommandLidControlJson>
 {
 public:
-  DeviceLidControl(std::shared_ptr<T_CONNECTION> Connection, QString command1 , QString command2, QString name = "[LID]"
-                   ): commandOpen (command1), 
-                      commandClose(command2), 
-                      DeviceGenericInterface<T_CONNECTION,CommandLidControlJson, CommandLidControlJson>(Connection, name) {};
+  DeviceLidControl(std::shared_ptr<T_CONNECTION> Connection, QString name = "[LID]"): 
+  DeviceGenericInterface<T_CONNECTION,CommandLidControlJson, CommandLidControlJson>(Connection, name) {};
+
 
 	QString TAG_NAME{"[ LID ]"};
-
-	void setParam  (uint8_t ID, uint16_t Value   ) { }; 
   void putMessage(CommandLidControlJson Message) { };
 
-  void setEnable(bool OnOff, int Number = 0) 
-  { if (OnOff)  commandOpen.printCommand(); this->sendCommand(commandOpen);
-	  if(!OnOff) commandClose.printCommand(); this->sendCommand(commandClose); };
+  void setEnable(bool OnOff, uint16_t Number = 0) override
+  { 
+    if(Number == 1) { if (OnOff) this->sendCommand(commandOpenRight); else this->sendCommand(commandCloseRight); }
+    if(Number == 2) { if (OnOff) this->sendCommand(commandOpenLeft);  else this->sendCommand(commandCloseLeft); }
 
-  CommandLidControlJson commandOpen;
-  CommandLidControlJson commandClose;
+    //if(Number == 1) { if (OnOff) commandOpenRight.printCommand(); else commandCloseRight.printCommand(); }
+    //if(Number == 2) { if (OnOff) commandOpenLeft.printCommand(); else commandCloseLeft.printCommand(); }
+  };
+
+  CommandLidControlJson commandOpenRight {"id: 1, type: rightCapOpen" };
+  CommandLidControlJson commandCloseRight{"id: 1, type: rightCapClose"};
+
+  CommandLidControlJson commandOpenLeft {"id: 1, type: leftCapOpen"  };
+  CommandLidControlJson commandCloseLeft{"id: 1, type: leftCapClose" };
+
 };
 
 #endif 

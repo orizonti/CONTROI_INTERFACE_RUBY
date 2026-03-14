@@ -1,5 +1,5 @@
 <RCC>
-  <qresource prefix="newPrefix">
+  <qresource prefix="buttonImages">
     <file>Background.png</file>
     <file>beam_focus_pict_red.png</file>
     <file>ButtonOff2.png</file>

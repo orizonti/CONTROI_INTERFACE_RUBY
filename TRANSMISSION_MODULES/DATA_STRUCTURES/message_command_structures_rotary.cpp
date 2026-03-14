@@ -75,7 +75,7 @@ void operator<<(QDataStream& stream, ControlTX& src)
 //=========================================================
 //ROTARY CONTROL JSON
 
-CommandSetPosJson::CommandSetPosJson()
+CommandSetPairJson::CommandSetPairJson()
 {
   command["id"] = 123;
   command["dtg"] = 1111;
@@ -89,7 +89,7 @@ CommandSetPosJson::CommandSetPosJson()
   size_t size = serializeJson(command,command_string); 
 }
 
-void CommandSetPosJson::setData(StateRotaryControl setting) 
+void CommandSetPairJson::setData(StateRotaryControl setting) 
 {
   slave1["target"] = setting.Engine1.Position; 
   slave2["target"] = setting.Engine2.Position;

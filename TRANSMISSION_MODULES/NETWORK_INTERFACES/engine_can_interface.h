@@ -75,8 +75,8 @@ class CANTestMessage: public QObject
   CANConnectionEngine* deviceCAN = nullptr;
 
   QTimer timerSendTest;
-  CommandSetPosScanator Command;
-  QByteArray message{(const char*)&Command, sizeof(Command)};
+ // CommandSetPosScanator Command;
+ // QByteArray message{(const char*)&Command, sizeof(Command)};
 
 public slots:
   //virtual void slotSendTest(){ deviceCAN->slotSendMessage(message, TypeRegister<CommandSetPosScanator>::GetTypeID()); }

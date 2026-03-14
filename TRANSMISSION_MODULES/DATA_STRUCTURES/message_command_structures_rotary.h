@@ -111,8 +111,8 @@ struct DriveTX
 class ControlTX
 {
   public:
-  DriveTX value0; // массив данных, кол-во элементов равно количеству приводов
-  DriveTX value1; // массив данных, кол-во элементов равно количеству приводов
+  DriveTX value0; 
+  DriveTX value1; 
 
   QByteArray toByteArray() { return QByteArray((char*)this, sizeof(ControlTX));}
 
@@ -164,13 +164,13 @@ class CommandJson
     QByteArray toByteArray() { return QByteArray(command_string.data(), command_string.size());};
 };
 
-class CommandSetPosJson : public CommandJson
+class CommandSetPairJson : public CommandJson
 {
   public:
   JsonDocument slave1;
   JsonDocument slave2;
 
-  CommandSetPosJson();
+  CommandSetPairJson();
   template<typename T> void setData(const QPair<T,T>& Pos);
   void setData(StateRotaryControl setting) ;
 
@@ -247,7 +247,7 @@ struct MESSAGE_HEADER_ROTARY_JSON
 };
 
 template<typename T> 
-void CommandSetPosJson::setData(const QPair<T,T>& Pos)
+void CommandSetPairJson::setData(const QPair<T,T>& Pos)
 {
   slave1["target"] = Pos.first; 
   slave2["target"] = Pos.second;
