@@ -66,5 +66,6 @@ public:
 	void signalEndWork();
 	void signalStartGenerate();
 	void signalStopGenerate();
+    void signalNewCoord(QPair<float,float>);
 };
 

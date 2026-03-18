@@ -111,12 +111,13 @@ void SinusGeneratorClass::slotCalculateValue()
     if(!FlagEnableOutput1) CurrentOutput.first  = 0;
     if(!FlagEnableOutput2) CurrentOutput.second = 0;
 
+    emit signalNewCoord(CurrentOutput);
     //CurrentOutput >> ScaleOutput >> CurrentOutput;
 
     //PassCoordClass<float>::passCoord();
 
-    std::cout << "SINUS  : " << CurrentOutput.first << " "
-              << "COUNTER: " << CounterStep.first<< "PERIOD: " << PeriodMeasure2 << std::endl;
+//    std::cout << "SINUS  : " << CurrentOutput.first << " "
+//              << "COUNTER: " << CounterStep.first<< "PERIOD: " << PeriodMeasure2 << std::endl;
     
 }
 

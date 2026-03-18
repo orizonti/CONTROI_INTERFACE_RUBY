@@ -5,6 +5,12 @@
 #include "widget_rotary_control.h"
 
 #include <QThread>
+#include <tuple>
+
+#include <iostream>
+#include <vector>
+#include <utility>
+#include <cmath>
 
 #include <opencv2/videoio.hpp>
 #include <qnamespace.h>
@@ -14,6 +20,7 @@
 
 #include <QDebug>
 #include "interface_camera_rtsp.h"
+#include "module_period_measure.h"
 
 #include <QThread>
 #include "control_ptz_camera.h"
@@ -36,6 +43,7 @@
 #include "engine_uart_interface.h"
 #include "engine_can_interface.h"
 #include <QPainter>
+#include "widget_line_graph.h"
 
 QStringList LoadCameraLinks();
 
@@ -93,89 +101,214 @@ template<> void CommandDispatcherGeneric<TypeRegister<CommandSetPair<0>>::ID()>:
 #define MESSAGE_TYPE_2 1
 char DataArray[10];
 
-void testArduinoJson()
+
+class TrackLinearRegression: public PassCoordClass<float>
 {
-//  JsonDocument doc;
-//  const char* input = "{\"sensor\":\"gps\",\"time\":1351824120,\"data\":[48.756080,2.302038]}";
-//
-//  QString str_input{"{\"sensor\":\"gps\",\"time\":1351824120,\"data\":[48.756080,2.302038]}"};
-//  qDebug() << "TEST1: "<< str_input.toUtf8().toHex();
-//
-//  QByteArray array((char*)input,str_input.toUtf8().size()); qDebug() << "TEST2: " << array.toHex();
+  public:
+    TrackLinearRegression(int Size) 
+    { 
+      track.resize(Size);
+      pos_track = track.begin();
+      SizeWindow = Size;
+    };
 
- //QString str = QString::fromUtf8(array);
-//  // This MessagePack document contains:
-//  // {
-//  //   "sensor": "gps",
-//  //   "time": 1351824120,
-//  //   "data": [48.75608, 2.302038]
-//  // }
-//
-//  DeserializationError error = deserializeJson(doc, str_input.toStdString());
-//
-//  if (error) { qDebug() << "deserializeMsgPack() failed: " << error.c_str(); }
-//
-//  const char* sensor = doc["sensor"];
-//  long time = doc["time"];
-//  double latitude = doc["data"][0];
-//  double longitude = doc["data"][1];
-//
-//  qDebug() << "MSG SIZE: " << doc.size();
-//  qDebug() << "SENSOR: " << sensor << "TIME: " << time << "LATITUDE: " << latitude << "LONGITUDE: " << longitude;
-//
-//  qDebug() << "================================================" << Qt::endl;
-//  qDebug() << "================================================" << Qt::endl;
+    int SizeWindow = 10;
+    std::vector<std::pair<float,float>> track;
+    std::vector<std::pair<float,float>>::iterator pos_track;
 
-MessageRotaryStateJson MessageRotary;
-MessageRotaryStateJson MessageRotary2;
-MessageRotaryStateJson MessageRotary3;
+    float slope  =  1;
+    float offset =  1;
 
-QString str1("state:OPERATIONAL, class:TDrive, name:Motor1, status:0, position:799, velocity:23, torque:0, voltage:24590, analogIn:130, digitalIn:4128768");
-QString str2("state:OPERATIONAL, class:TDrive, name:Motor2, status:0, position:899, velocity:222, torque:0, voltage:24590, analogIn:130, digitalIn:4128768");
-MessageRotary.setParams(str1,str2);
+    const QPair<float,float>& getOutput() override { return OutputCoord;};
+    void setInput(const QPair<float,float>& Coord) override  
+    {
+      *pos_track = Coord; pos_track++; if(pos_track == track.end()) { pos_track = track.begin(); 
+                                                                      getApproximation(); } 
+    };
 
-str1 = QString("state:WORK, class:TDrive, name:Motor1, status:1, position:9246, velocity:223, torque:0, voltage:290, analogIn:13, digitalIn:4128");
-str2 = QString("state:WORK, class:TDrive, name:Motor2, status:0, position:46, velocity:123, torque:0, voltage:245, analogIn:13, digitalIn:1128768");
-MessageRotary2.setParams(str1,str2);
+    float sumX  = 0.0f; 
+    float sumY  = 0.0f; 
+    float sumXY = 0.0f; 
+    float sumXX = 0.0f;
 
-qDebug() << "MESSAGE ROTARY1 SIZE: " << MessageRotary.toByteArray().size();
-qDebug() << "MESSAGE ROTARY2 SIZE: " << MessageRotary2.toByteArray().size();
+    void getApproximation() 
+    {
+        for (const auto& point : track) 
+        {
+            sumX  += point.first;
+            sumY  += point.second;
+            sumXY += point.first * point.second;
+            sumXX += point.first * point.first;
+        }
+      qDebug() << "GET LINEAR APPROXIMATION" << sumX << sumY << sumXY << sumXX << slope << offset;
+        slope = (SizeWindow * sumXY - sumX * sumY) / (SizeWindow * sumXX - sumX * sumX);
+        offset = (sumY - slope * sumX) / SizeWindow;
+    }
+};
 
-QByteArray array = MessageRotary.toByteArray() + MessageRotary2.toByteArray();
-qDebug() << "MESSAGE : " << MessageRotary.toByteArray().toHex();
-qDebug() << "MESSAGES: " << array.toHex();
 
-qDebug() << "======================================================" ;
-qDebug() << "MESSAGE ROTARY JSON MAX SIZE: " << MessageRotaryStateJson::getMaxSize();
-qDebug() << "======================================================" ;
+class CoordTrackApproximation: public PassCoordClass<float>
+{
+  public:
+    CoordTrackApproximation(int Size = 100) 
+    { 
+      track.resize(Size); pos_track = track.begin();
+      SizeWindow = Size;
 
-JsonDocument doc_test;
+      A_MAT = Eigen::MatrixXd(static_cast<Eigen::Index>(SizeWindow), 3);
+      Y_VEC = Eigen::VectorXd(static_cast<Eigen::Index>(SizeWindow));
+    };
+    void operator=(const CoordTrackApproximation& copy)
+    {
+        track.resize(copy.SizeWindow);
+        pos_track = track.begin();
+        SizeWindow = copy.SizeWindow;
+        A_MAT = Eigen::MatrixXd(static_cast<Eigen::Index>(SizeWindow), 3);
+        Y_VEC = Eigen::VectorXd(static_cast<Eigen::Index>(SizeWindow));
+    };
 
-  //DeserializationError error = deserializeJson(doc_test, (uint8_t*)MessageRotary.toByteArray().data());
-  DeserializationError error = deserializeJson(doc_test, array.data());
 
-  if (error) { qDebug() << "deserializeMsgPack() failed: " << error.c_str(); }
+    int SizeWindow = 10;
+    std::vector<std::pair<float,float>> track;
+    std::vector<std::pair<float,float>>::iterator pos_track;
 
-  const char* pos = doc_test["slaves"][0]["position"];
-  long vel        = doc_test["slaves"][1]["velocity"];
-  long volt        = doc_test["slaves"][1]["voltage"];
+    double RMSE = std::numeric_limits<double>::quiet_NaN();
+    bool isResultValid = false;
 
-  qDebug() << "MSG SIZE: " << doc_test["slaves"].size();
-  qDebug() << "POS     : " << pos << "VEL: " << vel << "VOLT: " << volt;
+    Eigen::MatrixXd A_MAT;
+    Eigen::VectorXd Y_VEC;
+    Eigen::Vector3d PARAMS_FUNC;
 
+void getApproximation()  
+{
+    qDebug() << "GET APPROXIMATION SIZE: " << track.size();
+    for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(SizeWindow); ++i) 
+    {
+        const double x = static_cast<double> (track[static_cast<std::size_t>(i)].first);
+
+        A_MAT(i, 0) = x * x;
+        A_MAT(i, 1) = x;
+        A_MAT(i, 2) = 1.0;
+        Y_VEC(i) = static_cast<double>(track[static_cast<std::size_t>(i)].second);
+    }
+
+         PARAMS_FUNC = A_MAT.colPivHouseholderQr().solve(Y_VEC);
+    if (!PARAMS_FUNC.allFinite()) { isResultValid = false; return; } // Check for numerical issues (optional but good practice)
+                                    isResultValid = true;
+
+    //Eigen::VectorXd residual = A_MAT * PARAMS_FUNC - Y_VEC;
+    //const double mse = residual.squaredNorm() / static_cast<double>(SizeWindow);
+    //RMSE = std::sqrt(mse);
 
 }
+
+
+std::tuple<float,float,float> getApproximation(std::vector<std::pair<float,float>> track)  
+{
+    qDebug() << "GET APPROXIMATION";
+
+    A_MAT = Eigen::MatrixXd(static_cast<Eigen::Index>(track.size()), 3);
+    Y_VEC = Eigen::VectorXd(static_cast<Eigen::Index>(track.size()));
+
+    for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(track.size()); ++i) 
+    {
+        const double x = static_cast<double> (track[static_cast<std::size_t>(i)].first);
+        A_MAT(i, 0) = x * x;
+        A_MAT(i, 1) = x;
+        A_MAT(i, 2) = 1.0;
+        Y_VEC(i) = static_cast<double>(track[static_cast<std::size_t>(i)].second);
+    }
+
+         PARAMS_FUNC = A_MAT.colPivHouseholderQr().solve(Y_VEC);
+    if (!PARAMS_FUNC.allFinite()) { isResultValid = false; return std::make_tuple(0,0,0); } // Check for numerical issues (optional but good practice)
+                                    isResultValid = true;
+
+    return std::make_tuple(PARAMS_FUNC(0),PARAMS_FUNC(1),PARAMS_FUNC(2));
+}
+
+std::tuple<float,float,float> getResult()  { return std::make_tuple(PARAMS_FUNC(0),PARAMS_FUNC(1),PARAMS_FUNC(2)); }
+
+	const QPair<float,float>& getOutput() override { return OutputCoord;};
+	void setInput(const QPair<float,float>& Coord) override  
+  {
+     *pos_track = Coord; 
+     pos_track++; if(pos_track == track.end()) { pos_track = track.begin(); getApproximation(); } 
+  };
+
+};
+
+template<typename T_NODE>
+class TrackRegresstionTest
+{
+  public:
+  int NumberPoints = 300;
+  float Range = 15;
+  float Step = Range/NumberPoints;
+  CoordTrackApproximation trackApprox{NumberPoints};
+
+  ValueRandomization<float> Randomize{14};
+  std::pair<float,float> Coord;
+  std::pair<float,float> CoordNoize;
+
+  float C1 = 0;
+  float C2 = 0;
+  float C3 = 0;
+  float C4 = 0;
+
+  QList<QPointF> Track;
+  QList<QPointF> TrackNoize;
+  QList<QPointF> TrackApprox;
+
+  TrackQuadraticRegresstionTest(float C1, float C2, float C3, float C4 = 0, int Size)
+  {
+    NumberPoints = Size;
+    Step = Range/Size;
+    trackApprox = CoordTrackApproximation(Size);
+
+    std::pair<float,float> Coord;
+    std::pair<float,float> CoordNoize;
+
+    for(float n = 0; n < NumberPoints; n++)
+    {
+      Coord.first  = n*Step;
+      CoordNoize.first = Coord.first;
+      Coord.second = std::pow(Coord.first,2)*C1 + Coord.first*C2 + C3;
+      Coord.second >> Randomize(20) >> CoordNoize.second;
+
+            Track.append(QPointF(Coord.first,Coord.second));
+       TrackNoize.append(QPointF(CoordNoize.first,CoordNoize.second));
+      TrackApprox.append(QPointF(Coord.first,Coord.second));
+
+      CoordNoize >> trackApprox;
+    }
+
+      auto [A_RES,B_RES,C_RES] = trackApprox.getResult(); 
+
+      for(auto& point: TrackApprox) point.setY(std::pow(point.x(),2)*A_APPROX + point.x()*B_APPROX + C_APPROX);
+
+      //qDebug() << "[ INPUT PARAM ]" << A_PARAM << B_PARAM << C_PARAM 
+      //         << "[ APPROX ]" << A_APPROX << B_APPROX << C_APPROX
+      //         << "[ DIFF   ]" << abs(A_PARAM - A_APPROX) << abs(B_PARAM - B_APPROX)  << abs(C_PARAM - C_APPROX) 
+      //         << "[ REUSLT ]" << isResultValid();
+
+  }
+
+//  bool isResultValid() { return abs(A_PARAM - A_APPROX) < A_PARAM/10 && 
+//                                abs(B_PARAM - B_APPROX) < B_PARAM/10 && 
+//                                abs(C_PARAM - C_APPROX) < C_PARAM/10; }
+};
+
+
 
 
 int main(int argc, char* argv[])
 {
   QApplication app(argc,argv);
 
+
 //  WidgetDeviceControl wid{"Device", Qt::Vertical};
 //  wid.enableScheme(0,1,1,0,0,0); wid.setScheme(5,0,0);
 //  wid.show();
-//  app.exec();
-//  return 0;
 
   //printRegisteredTypes();
   //testArduinoJson();
@@ -421,6 +554,36 @@ int main(int argc, char* argv[])
 
   WindowInterface->show();
 
+  TrackLinearRegression  trackApproxLinear(200);
+  std::pair<float,float> Coord;
+  std::pair<float,float> CoordNoize;
+  ValueRandomization<float> Randomize{14};
+  for(int n = 0; n < 200; n++)
+  {
+     Coord.first  = n;
+     Coord.second = (float)n*0.35 + 22;
+     CoordNoize.first = Coord.first;
+     Coord.second >> Randomize >> CoordNoize.second;
+     CoordNoize >> trackApproxLinear;
+  }
+
+  qDebug() << "GET LINEAR PARAM: " << trackApproxLinear.slope << trackApproxLinear.offset;
+
+  MeasurePeriodNode periodMeasure;
+
+                                               
+  periodMeasure++;
+  TrackQuadraticRegresstionTest Test1(2,22,8,200);
+  periodMeasure++; qDebug() << "PROC PERIOD: " << periodMeasure.getMicroseconds();
+
+  TrackQuadraticRegresstionTest Test2(5,22,8,200);
+  TrackQuadraticRegresstionTest Test3(2,22,8,200);
+
+  WidgetLineGraph graphWidget;
+                  graphWidget.GraphPointsStorage->setPoints(Test1.TrackNoize);
+                  graphWidget.GraphPointsStorage2->setPoints(Test1.TrackApprox);
+                  graphWidget.show();
+
   app.exec();
 }
 
@@ -486,3 +649,27 @@ return DevicesList;
     //ControlRotary->ModuleMoveSinus.setFreq(0.2);
     //ControlRotary->ModuleMoveSinus.setAmplitude(40);
     //ControlRotary->ModuleMoveSinus.enableMove(true);
+
+  //std::chrono::time_point<std::chrono::high_resolution_clock> StartTime = std::chrono::high_resolution_clock::now();
+  //std::chrono::time_point<std::chrono::high_resolution_clock> EndTime = std::chrono::high_resolution_clock::now();
+  //std::chrono::milliseconds Period = std::chrono::duration_cast<std::chrono::milliseconds>(EndTime - StartTime);
+                                               //StartTime = std::chrono::high_resolution_clock::now();
+                                               //EndTime = std::chrono::high_resolution_clock::now();
+                                               //Period = std::chrono::duration_cast<std::chrono::milliseconds>(EndTime - StartTime);
+//std::pair<float, float> linearRegression(const std::vector<std::pair<float, float>>& data) 
+//{
+//    float sumX = 0.0f, sumY = 0.0f, sumXY = 0.0f, sumXX = 0.0f;
+//    for (const auto& point : data) 
+//    {
+//        sumX += point.first;
+//        sumY += point.second;
+//        sumXY += point.first * point.second;
+//        sumXX += point.first * point.first;
+//    }
+//
+//    float n = static_cast<float>(data.size());
+//    float slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+//    float intercept = (sumY - slope * sumX) / n;
+//
+//    return std::make_pair(slope, intercept);
+//}

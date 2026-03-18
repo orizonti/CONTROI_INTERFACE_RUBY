@@ -1,5 +1,4 @@
 ﻿#include <QSpinBox>
-#include "./ui_widget_device_control.h"
 #include "widget_device_control.h"
 #include <QTimer>
 #include <QSpacerItem>

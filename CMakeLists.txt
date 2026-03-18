@@ -51,7 +51,7 @@ message("SET OPENCV LIBRARY - ${LIBRARY_DIR}/IMAGE_PROCESSING/OPENCV/${CV_VERSIO
 list(APPEND CMAKE_PREFIX_PATH ${QT_LIB_DIR})
 list(APPEND CMAKE_PREFIX_PATH ${OPENCV_LIB_DIR})
 
-find_package(Qt6 COMPONENTS Widgets Network Core Xml PrintSupport SerialPort SerialBus REQUIRED)
+find_package(Qt6 COMPONENTS Widgets Network Core Xml PrintSupport SerialPort SerialBus Graphs Quick QuickWidgets Network REQUIRED)
 
 find_package(OpenCV REQUIRED )
 
@@ -77,9 +77,12 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION_MODULES/DATA_STRUC
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION_MODULES/RING_BUFFER")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION_MODULES/GENERIC_MESSAGES")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION_MODULES/RING_BUFFER_ADAPTERS")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/GRAPHICS_WINDOW_GRAPH")
+
 include_directories("D:/LIBRARY/IMAGE_PROCESSING/GSTREAMER/1.0/msvc_x86_64/lib/gstreamer-1.0/include")
 include_directories("D:/PROGRAMS/IDE/VisualStudio2022/VC/Tools/MSVC/14.44.35207/include")
 include_directories("D:/LIBRARY/Qt683/6.8.3/msvc2022_64/include")
+
 
 
 
@@ -92,7 +95,6 @@ add_executable (testCameraRTSP
         "./GUI/widget_complex_interface.ui"
 
         "./GUI/widget_device_control.cpp"
-        "./GUI/widget_device_control.ui"
 
         "./GUI/widget_main_control.cpp"
 
@@ -105,6 +107,8 @@ add_executable (testCameraRTSP
         "./GUI/label_active_image.cpp"
         "./GUI/Images.qrc"
         "./DEVICES/device_rotary_interface.cpp"
+        "./GRAPHICS_WINDOW_GRAPH/linegraph.cpp"
+        "./GRAPHICS_WINDOW_GRAPH/widget_line_graph.cpp"
 
         "./UTILITIES/debug_output_filter.cpp"
         "./UTILITIES/sinus_generator_class.cpp"
@@ -134,6 +138,10 @@ target_link_libraries(testCameraRTSP Qt6::Network)
 target_link_libraries(testCameraRTSP Qt6::PrintSupport)
 target_link_libraries(testCameraRTSP Qt6::SerialPort)
 target_link_libraries(testCameraRTSP Qt6::SerialBus)
+target_link_libraries(testCameraRTSP Qt6::Graphs)
+target_link_libraries(testCameraRTSP Qt6::Quick)
+target_link_libraries(testCameraRTSP Qt6::QuickWidgets)
+target_link_libraries(testCameraRTSP Qt6::Network)
 target_link_libraries(testCameraRTSP "${CMAKE_SOURCE_DIR}/DEVICE_ZOOM_LIB_WIN/controlPTZCamera.lib")
 
 

@@ -525,8 +525,9 @@ template<typename T = float>
 class ValueRandomization : public PassValueClass<T>
 {
   public:
+  ValueRandomization(double Value) { Amplitude = Value; }
+  void SetValue(T NewValue) { PassValueClass<T>::Value = NewValue + Amplitude*std::rand()/RAND_MAX - Amplitude/2; }
   double Amplitude = 2;
-  void SetValue(T NewValue) override;
   ValueRandomization<T>& operator()(double NewAmplitude){ Amplitude = NewAmplitude; return *this;};
 };
 
@@ -764,8 +765,6 @@ class ValueAbsolutization : public PassValueClass<T>
   void SetValue(T InputValue) override { PassValueClass<T>::Value = std::abs(InputValue);}
 };
 
-template<typename T>
-void ValueRandomization<T>::SetValue(T NewValue) { PassValueClass<T>::Value = NewValue + Amplitude*std::rand()/RAND_MAX; }
 template<typename T>
 void ValueSaturation<T>::SetValue(T NewValue) { if(NewValue < Threshold) PassValueClass<T>::Value = 0; else PassValueClass<T>::Value =1; }
 
