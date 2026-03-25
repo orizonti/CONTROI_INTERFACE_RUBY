@@ -153,8 +153,8 @@ public:
   using DEVICE_TYPE = DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>; 
   DeviceRotaryControl(std::shared_ptr<T_CONNECTION> Connection, CONTROL_PARAM ControlType, QString Name = "[ DEVICE ]");
 
-  GainNode<float>   Gain{1,1};
-  OffsetNode<float> Offset{1,1};
+  NodeCoordGain<float>   Gain{1,1};
+  NodeCoordOffset<float> Offset{1,1};
   RotateVectorClass<float> Rotation;
 
 	QString TAG_NAME{"[ ROTARY ]"};

@@ -32,8 +32,8 @@ Rectangle{
         axisX.labelTextColor: c1
         axisY.labelTextColor: c1
     }
-    axisX: ValueAxis { max: 12; min: 0 }
-    axisY: ValueAxis { max: 300; min: 0 }
+    axisX: ValueAxis { max: 600;  min: 0 }
+    axisY: ValueAxis { max: 600; min: 0 }
 
      seriesList: [ GraphPointsStorage.SeriesPoints,
                    GraphPointsStorage2.SeriesPoints ]

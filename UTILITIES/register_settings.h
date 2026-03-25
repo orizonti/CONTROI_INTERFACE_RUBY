@@ -37,7 +37,7 @@ class SettingsRegister
 
     };
 
-    static float GetValue(const QString& setting_name)
+    static float getValue(const QString& setting_name)
     {
         if(!FLAG_SETTINGS_LOADED) loadSettings();
 

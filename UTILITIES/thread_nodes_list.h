@@ -14,7 +14,7 @@
 // CoordPassWaitNode     //PASS COORD IF INPUT NEAR TO WAIT COORD
 // CoordStorage
 //
-// PassValueNop
+// passValueNop
 // ValueDifference
 // ValueSaturation
 // ValueInversion

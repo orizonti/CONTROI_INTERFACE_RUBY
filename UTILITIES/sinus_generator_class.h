@@ -18,7 +18,7 @@ public:
 	void linkToDevice(PassCoordClass<float>& Receiver) { LinkedReceiver = &Receiver;}
 	bool isActive() { return TimerGenerateSinus->isActive(); }
 
-	int TimerPeriod = 100;
+	int TimerPeriod = 10;
 	QChronoTimer* TimerGenerateSinus;
 	     QThread* TimerThread;
 

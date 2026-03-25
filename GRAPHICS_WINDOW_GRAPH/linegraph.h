@@ -1,33 +1,36 @@
-// Copyright (C) 2024 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
-
-#ifndef LineGraph_H
-#define LineGraph_H
+#ifndef LINE_GRAPH_H
+#define LINE_GRAPH_H
 
 #include <QObject>
 #include <QLineSeries>
 #include <QSplineSeries>
+#include "graph_display_interface.h"
 
-class GraphPointsLineInterface : public QObject
+class GraphPointsLineInterface : public GraphDisplayInterface
 {
     Q_OBJECT
-    Q_PROPERTY(QLineSeries *SeriesPoints READ GetSeries WRITE SetSeries NOTIFY SignalSeriesChanged FINAL)
+    Q_PROPERTY(QLineSeries *SeriesPoints READ getSeries WRITE setSeries NOTIFY signalSeriesChanged FINAL)
 public:
-    explicit GraphPointsLineInterface(QObject *parent = nullptr);
-    ~GraphPointsLineInterface();
-
-    QLineSeries *GetSeries(); 
-            void SetSeries(QLineSeries *series);
+    explicit GraphPointsLineInterface(int Size = 300, QObject *parent = nullptr);
+            ~GraphPointsLineInterface();
     QLineSeries* ListPoints;
-    double Scale = 1;
-    int counter = 0;
-    void setPoints(const QList<QPointF> points);
-public Q_SLOTS:
-    void SlotClearSeries();
-    void SlotAddNewPoint(QPair<float,float> Coord);
+             int counter = 0;
+             int SizeStore = 300;
 
-Q_SIGNALS:
-    void SignalSeriesChanged();
+    QLineSeries *getSeries(); 
+            void setSeries(QLineSeries* series);
+            void setSize(int Size) override { SizeStore = Size; }
+
+    void setPoints(const QList<QPointF>& points) override;
+    void setPoints(std::span<QPair<float,float> > points) override;
+    void setPoints(NodeCoordStorage<float>& point) override;
+public slots:
+    void slotClear() override;
+    void slotAddPoint(QPair<float,float> Coord) override;
+    void slotAddPoint(float Value) override;
+
+signals:
+    void signalSeriesChanged();
 
 };
 

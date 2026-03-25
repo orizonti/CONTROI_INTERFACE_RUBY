@@ -78,6 +78,7 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION_MODULES/RING_BUFFE
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION_MODULES/GENERIC_MESSAGES")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/TRANSMISSION_MODULES/RING_BUFFER_ADAPTERS")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/GRAPHICS_WINDOW_GRAPH")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/IMAGE_PROCESSING")
 
 include_directories("D:/LIBRARY/IMAGE_PROCESSING/GSTREAMER/1.0/msvc_x86_64/lib/gstreamer-1.0/include")
 include_directories("D:/PROGRAMS/IDE/VisualStudio2022/VC/Tools/MSVC/14.44.35207/include")
@@ -109,6 +110,8 @@ add_executable (testCameraRTSP
         "./DEVICES/device_rotary_interface.cpp"
         "./GRAPHICS_WINDOW_GRAPH/linegraph.cpp"
         "./GRAPHICS_WINDOW_GRAPH/widget_line_graph.cpp"
+
+        "./AIMING_MODULES/nodes_track_approximation.cpp"
 
         "./UTILITIES/debug_output_filter.cpp"
         "./UTILITIES/sinus_generator_class.cpp"

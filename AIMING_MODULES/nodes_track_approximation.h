@@ -8,216 +8,135 @@
 #include <interface_pass_coord.h>
 #include <initializer_list>
 #include <iomanip>
+#include "thread_operation_nodes.h"
+#include "module_period_measure.h"
 
-template<typename T_NODE>
-class TrackRegresstionTest
+class GenericApproximation: public PassCoordClass<float>
 {
   public:
-  int NumberPoints = 300;
-  float Range = 15;
-  float Step = Range/NumberPoints;
-  CoordTrackApproximation trackApprox{NumberPoints};
-
-  ValueRandomization<float> Randomize{14};
-  std::pair<float,float> Coord;
-  std::pair<float,float> CoordNoize;
-
-  float C1 = 0;
-  float C2 = 0;
-  float C3 = 0;
-  float C4 = 0;
-
-  QList<QPointF> Track;
-  QList<QPointF> TrackNoize;
-  QList<QPointF> TrackApprox;
-
-  TrackQuadraticRegresstionTest(float C1, float C2, float C3, float C4 = 0, int Size)
+  GenericApproximation(int Size = 100) 
   {
-    NumberPoints = Size;
-    Step = Range/Size;
-    trackApprox = CoordTrackApproximation(Size);
-
-    std::pair<float,float> Coord;
-    std::pair<float,float> CoordNoize;
-
-    for(float n = 0; n < NumberPoints; n++)
-    {
-      Coord.first  = n*Step;
-      CoordNoize.first = Coord.first;
-      Coord.second = std::pow(Coord.first,2)*C1 + Coord.first*C2 + C3;
-      Coord.second >> Randomize(20) >> CoordNoize.second;
-
-            Track.append(QPointF(Coord.first,Coord.second));
-       TrackNoize.append(QPointF(CoordNoize.first,CoordNoize.second));
-      TrackApprox.append(QPointF(Coord.first,Coord.second));
-
-      CoordNoize >> trackApprox;
-    }
-
-      auto [A_RES,B_RES,C_RES] = trackApprox.getResult(); 
-
-      for(auto& point: TrackApprox) point.setY(std::pow(point.x(),2)*A_APPROX + point.x()*B_APPROX + C_APPROX);
-
-      //qDebug() << "[ INPUT PARAM ]" << A_PARAM << B_PARAM << C_PARAM 
-      //         << "[ APPROX ]" << A_APPROX << B_APPROX << C_APPROX
-      //         << "[ DIFF   ]" << abs(A_PARAM - A_APPROX) << abs(B_PARAM - B_APPROX)  << abs(C_PARAM - C_APPROX) 
-      //         << "[ REUSLT ]" << isResultValid();
-
-  }
-
-//  bool isResultValid() { return abs(A_PARAM - A_APPROX) < A_PARAM/10 && 
-//                                abs(B_PARAM - B_APPROX) < B_PARAM/10 && 
-//                                abs(C_PARAM - C_APPROX) < C_PARAM/10; }
-
-};
-
-
-class TrackLinearRegression: public PassCoordClass<float>
-{
-  public:
-    TrackLinearRegression(int Size) 
-    { 
-      track.resize(Size);
-      pos_track = track.begin();
+      Track.setSize(Size); 
+      TrackFuture.setSize(Size); 
       SizeWindow = Size;
-    };
+  }
+  int SizeWindow = 10;
 
-    std::vector<std::pair<float,float>> track;
-    std::vector<std::pair<float,float>>::iterator pos_track;
 
-    int SizeWindow = 10;
+  NodeCoordStorage<float> Track;
+  NodeCoordStorage<float> TrackFuture;
 
-    float slope  =  1;
-    float offset =  1;
+  double RMSE = std::numeric_limits<double>::quiet_NaN();
+  bool isResultValid = false;
 
-    float sumX  = 0.0f; 
-    float sumY  = 0.0f; 
-    float sumXY = 0.0f; 
-    float sumXX = 0.0f;
-
-    const QPair<float,float>& getOutput() override { return OutputCoord;};
+    MeasurePeriodNode MeasurePeriod;
     void setInput(const QPair<float,float>& Coord) override  
-    {
-      *pos_track = Coord; pos_track++; if(pos_track == track.end()) { pos_track = track.begin(); 
-                                                                      getApproximation(); } 
+    {   
+           
+          Coord >> Track;
+          if(Track.getAvailable() >= SizeWindow ) getApproximation();  
     };
 
+	  const QPair<float, float>& getOutput() override { return getFuture();};
 
-    void getApproximation() 
-    {
-        for (const auto& point : track) 
-        {
-            sumX  += point.first;
-            sumY  += point.second;
-            sumXY += point.first * point.second;
-            sumXX += point.first * point.first;
-        }
-      qDebug() << "GET LINEAR APPROXIMATION" << sumX << sumY << sumXY << sumXX << slope << offset;
-        slope = (SizeWindow * sumXY - sumX * sumY) / (SizeWindow * sumXX - sumX * sumX);
-        offset = (sumY - slope * sumX) / SizeWindow;
-    }
+    bool isLoaded() {
+        //qDebug() << "COORD AVAILABLE: " << Track.getAvailable(); 
+        return Track.getAvailable() >= SizeWindow;}
+    virtual std::vector<float> getApproximation(std::vector<std::pair<float,float>>) = 0;  
+    virtual std::tuple<float,float,float,float,bool> getResult() = 0;
+    friend void operator>>(const std::vector<std::pair<float,float>>& coords, GenericApproximation& receiver) { for(auto& coord: coords) coord >> receiver;}
+
+    virtual std::pair<float,float> getFuture() = 0;
+    virtual std::span<QPair<float,float>> getFuture(std::span<QPair<float,float>> track) = 0;
+    protected:
+                  virtual void getApproximation() = 0;  
 };
 
-
 template<int NUM_PARAM>
-class CoordTrackApproximation: public PassCoordClass<float>
+class PolynomApproximation: public GenericApproximation
 {
   public:
+    PolynomApproximation(int Size = 100) : GenericApproximation(Size)
+    { 
+      A_MAT1 = Eigen::MatrixXd(static_cast<Eigen::Index>(Size), 1);
+      A_MAT3 = Eigen::MatrixXd(static_cast<Eigen::Index>(Size), 3);
+       Y_VEC = Eigen::VectorXd(static_cast<Eigen::Index>(Size));
+    };
 
+    void operator=(const PolynomApproximation<NUM_PARAM>& copy);
+    int CounterForward = 0;
 
-    int SizeWindow = 10;
-    std::vector<std::pair<float,float>> track;
-    std::vector<std::pair<float,float>>::iterator pos_track;
+    NodeCoordVelocity<float> NodeVelocity;
 
-    double RMSE = std::numeric_limits<double>::quiet_NaN();
-    bool isResultValid = false;
-
-    Eigen::MatrixXd A_MAT;
+    Eigen::MatrixXd A_MAT1;
+    Eigen::MatrixXd A_MAT3;
     Eigen::VectorXd Y_VEC;
-    Eigen::Vector3d PARAMS_FUNC;
+    std::vector<float> trackPolynom{0,0,0,0};
+    std::pair<float,float> posFuture;
 
-    const QPair<float,float>& getOutput() override { return OutputCoord;};
+    std::vector<float> getApproximation(std::vector<std::pair<float,float>>) override;  
+    std::tuple<float,float,float,float,bool> getResult() override { return { trackPolynom[3], trackPolynom[2], trackPolynom[1], trackPolynom[0],true};};
+
+    std::pair<float,float> getFuture() override;
+    std::span<QPair<float,float>> getFuture(std::span<QPair<float,float>>) override;
+    protected:
+                  void getApproximation() override;  
 };
 
-template<int NUM_PARAM>
-CoordTrackApproximation(int Size = 100) 
-{ 
-	track.resize(Size); pos_track = track.begin();
-	SizeWindow = Size;
-
-	A_MAT = Eigen::MatrixXd(static_cast<Eigen::Index>(SizeWindow), 3);
-	Y_VEC = Eigen::VectorXd(static_cast<Eigen::Index>(SizeWindow));
-};
 
 template<int NUM_PARAM>
-void operator=(const CoordTrackApproximation& copy)
+void PolynomApproximation<NUM_PARAM>::operator=(const PolynomApproximation<NUM_PARAM>& copy)
 {
-	track.resize(copy.SizeWindow);
-	pos_track = track.begin();
 	SizeWindow = copy.SizeWindow;
-	A_MAT = Eigen::MatrixXd(static_cast<Eigen::Index>(SizeWindow), 3);
-	Y_VEC = Eigen::VectorXd(static_cast<Eigen::Index>(SizeWindow));
+
+	A_MAT1 = Eigen::MatrixXd(static_cast<Eigen::Index>(SizeWindow), 1);
+	A_MAT3 = Eigen::MatrixXd(static_cast<Eigen::Index>(SizeWindow), 3);
+	 Y_VEC = Eigen::VectorXd(static_cast<Eigen::Index>(SizeWindow));
 };
 
 template<int NUM_PARAM>
-void getApproximation()  
+std::pair<float,float> PolynomApproximation<NUM_PARAM>::getFuture()
 {
-    qDebug() << "GET APPROXIMATION SIZE: " << track.size();
-    for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(SizeWindow); ++i) 
-    {
-        const double x = static_cast<double> (track[static_cast<std::size_t>(i)].first);
+    //float step = 0.5;
+    //posFuture.first = posLast.first + SizeWindow*step;  
+    //posFuture.second = trackPolynom[2]*std::pow(posFuture.first,2) +
+    //                   trackPolynom[1]*posFuture.first +
+    //                   trackPolynom[0];
+    //qDebug() << "POS LAST  : " << posLast.first   << posLast.second
+    //         << "FUTURE_ONE: " << posFuture.first << posFuture.second << "PARAM: " << trackPolynom[2] << trackPolynom[1] << trackPolynom[0];
+    return TrackFuture.getOutput();
+}
 
-        A_MAT(i, 0) = x * x;
-        A_MAT(i, 1) = x;
-        A_MAT(i, 2) = 1.0;
-        Y_VEC(i) = static_cast<double>(track[static_cast<std::size_t>(i)].second);
-    }
+template<int NUM_PARAM>
+std::span<QPair<float,float>> PolynomApproximation<NUM_PARAM>::getFuture(std::span<QPair<float,float>> track)
+{
+    //float step = track[SizeWindow-1].first - track[SizeWindow-2].first; 
+//    float step = track[1].first - track[0].first;
+//    //if(track_future.size() != Number) track_future.resize(Number);
+//
+//    TrackFuture[0].first = track[0].first + 20*step;  
+//    TrackFuture[0].second = trackPolynom[2]*std::pow(TrackFuture[0].first,2) +
+//                            trackPolynom[1]*TrackFuture[0].first +
+//                            trackPolynom[0];
+//
+//    //qDebug() << "===================================";
+//    for(int n = 1; n < TrackFuture.size(); n++)
+//    {
+//    TrackFuture[n].first = TrackFuture[n-1].first + step;  
+//    TrackFuture[n].second = trackPolynom[2]*std::pow(TrackFuture[n].first,2) +
+//                             trackPolynom[1]*TrackFuture[n].first +
+//                             trackPolynom[0];
+//    //qDebug() << "POS LAST  : " << posLast.first   << posLast.second
+//    //         << "FUTURE_SER: " << posFuture.first << posFuture.second << "PARAM: " << trackPolynom[2] << trackPolynom[1] << trackPolynom[0];
+//    }
+//    TrackFuture = TrackFuture.begin();
 
-         PARAMS_FUNC = A_MAT.colPivHouseholderQr().solve(Y_VEC);
-    if (!PARAMS_FUNC.allFinite()) { isResultValid = false; return; } // Check for numerical issues (optional but good practice)
-                                    isResultValid = true;
+    return track;
+}
+
+
+#endif 
 
     //Eigen::VectorXd residual = A_MAT * PARAMS_FUNC - Y_VEC;
     //const double mse = residual.squaredNorm() / static_cast<double>(SizeWindow);
     //RMSE = std::sqrt(mse);
-
-}
-
-
-template<int NUM_PARAM>
-std::tuple<float,float,float> getApproximation(std::vector<std::pair<float,float>> track)  
-{
-    qDebug() << "GET APPROXIMATION";
-
-    A_MAT = Eigen::MatrixXd(static_cast<Eigen::Index>(track.size()), 3);
-    Y_VEC = Eigen::VectorXd(static_cast<Eigen::Index>(track.size()));
-
-    for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(track.size()); ++i) 
-    {
-        const double x = static_cast<double> (track[static_cast<std::size_t>(i)].first);
-        A_MAT(i, 0) = x * x;
-        A_MAT(i, 1) = x;
-        A_MAT(i, 2) = 1.0;
-        Y_VEC(i) = static_cast<double>(track[static_cast<std::size_t>(i)].second);
-    }
-
-         PARAMS_FUNC = A_MAT.colPivHouseholderQr().solve(Y_VEC);
-    if (!PARAMS_FUNC.allFinite()) { isResultValid = false; return std::make_tuple(0,0,0); } // Check for numerical issues (optional but good practice)
-                                    isResultValid = true;
-
-    return std::make_tuple(PARAMS_FUNC(0),PARAMS_FUNC(1),PARAMS_FUNC(2));
-}
-
-template<int NUM_PARAM>
-std::tuple<float,float,float> getResult()  { return std::make_tuple(PARAMS_FUNC(0),PARAMS_FUNC(1),PARAMS_FUNC(2)); }
-
-
-template<int NUM_PARAM>
-void setInput(const QPair<float,float>& Coord) override  
-{
-	*pos_track = Coord; 
-	pos_track++; if(pos_track == track.end()) { pos_track = track.begin(); getApproximation(); } 
-};
-
-
-#endif 

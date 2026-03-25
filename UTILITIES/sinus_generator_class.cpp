@@ -19,7 +19,7 @@ SinusGeneratorClass::SinusGeneratorClass(QObject* Obj) : QObject(Obj)
 	 QObject::connect(this, SIGNAL(signalStartGenerate()), TimerGenerateSinus, SLOT(start()));
 	 QObject::connect(this, SIGNAL(signalStopGenerate()) , TimerGenerateSinus, SLOT(stop() ));
 
-    auto OutputGain = SettingsRegister::GetValue("GAIN_ANGLE_DAC");
+    auto OutputGain = SettingsRegister::getValue("GAIN_ANGLE_DAC");
          ScaleOutput = TransformCoordClass(1,0);
 }
 
@@ -100,7 +100,7 @@ void SinusGeneratorClass::slotCalculateValue()
     CounterStep.second++; if(CounterStep.second > Period.second) CounterStep.second = 0;
 
     CurrentOutput.first  = Offset.first  + Amplitude.first *std::sin(CounterStep.first *Step.first);
-    CurrentOutput.second = Offset.second + Amplitude.second*std::sin(CounterStep.second*Step.second);
+    CurrentOutput.second = Offset.second + Amplitude.second*std::cos(CounterStep.second*Step.second);
 
 
     Noize.first  = AmplitudeNoize*std::rand()/RAND_MAX - AmplitudeNoize/2;
@@ -114,7 +114,7 @@ void SinusGeneratorClass::slotCalculateValue()
     emit signalNewCoord(CurrentOutput);
     //CurrentOutput >> ScaleOutput >> CurrentOutput;
 
-    //PassCoordClass<float>::passCoord();
+    PassCoordClass<float>::passCoord();
 
 //    std::cout << "SINUS  : " << CurrentOutput.first << " "
 //              << "COUNTER: " << CounterStep.first<< "PERIOD: " << PeriodMeasure2 << std::endl;

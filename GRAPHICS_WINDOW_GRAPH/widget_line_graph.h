@@ -13,21 +13,31 @@
 #include "sinus_generator_class.h"
 #include <QThread>
 #include "widget_adjustable.h"
+#include "interface_pass_coord.h"
+#include "interface_pass_value.h"
 
-class WidgetLineGraph : public WidgetAdjustable
+class WidgetLineGraph : public WidgetAdjustable, public PassCoordClass<float>
 {
     Q_OBJECT
 public:
     explicit WidgetLineGraph(QWidget *parent = nullptr);
     ~WidgetLineGraph();
+    GraphPointsLineInterface& operator()(int num) { if(num == 0) return *GraphPointsStorage; else return *GraphPointsStorage2;};
 
     void InitGraphWidget();
-    SinusGeneratorClass* SinusGenerator;
     QThread threadGenerator;
 
-    GraphPointsLineInterface *GraphPointsStorage;
-    GraphPointsLineInterface *GraphPointsStorage2;
+    std::shared_ptr<GraphPointsLineInterface> GraphPointsStorage  = nullptr;
+    std::shared_ptr<GraphPointsLineInterface> GraphPointsStorage2 = nullptr;
+    std::vector<std::shared_ptr<GraphPointsLineInterface>> graphs;
 
+	void setInput(const QPair<float, float>& Coord) 
+    {
+        Coord.first  >> *GraphPointsStorage;
+        Coord.second >> *GraphPointsStorage2;
+    };
+
+    void setSize(int size) { GraphPointsStorage->setSize(size); GraphPointsStorage2->setSize(size); };
 private:
     QQuickWidget *PlotWidget;
     QHBoxLayout *Layout;
