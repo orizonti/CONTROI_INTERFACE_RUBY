@@ -568,12 +568,6 @@ class NodeCoordPassWait : public PassCoordClass<T>
 
   void operator>>(QPair<T,T>& Receiver) override  { if(Distance < 2) Receiver = PassCoordClass<T>::OutputCoord; };
 };
-    //void setCoord(const QPair<float,float>& Coord) 
-    //{ 
-    //    *PosIterator = Coord; 
-    //  if(PosIterator != PosWrite) PosIterator++; 
-    //  if(PosIterator == PosEnd  ) PosIterator = PosBegin; return *this; 
-    //}
 
 template<typename T = float>
 class NodeCoordStorage : public PassCoordClass<T>
@@ -586,35 +580,43 @@ class NodeCoordStorage : public PassCoordClass<T>
   {
     public:
     explicit IteratorRead(NodeCoordStorage<V>* store = nullptr) {if(store == nullptr) return; reset(store); };
-    void reset(NodeCoordStorage<V>* store)    { PosWrite = &store->PosWrite; PosLast = &store->PosLast; PosBegin = store->Coords.begin(); PosIterator = PosBegin; PosEnd = store->Coords.end(); PosRollback = PosBegin; }
+    IteratorRead(IteratorRead<V>& It) 
+    {                                    PosWrite = It.PosWrite; 
+                                         PosIterator = It.PosIterator; PosLast = It.PosLast; 
+                                         PosBegin = It.PosBegin;     PosEnd = It.PosEnd; };
 
-    void operator=(const IteratorRead<V>& it)  { PosIterator = it.PosIterator; }
-    void operator=(IteratorWrite<V>& it) { PosIterator = it.PosIterator; }
+    void reset(NodeCoordStorage<V>* store)      
+    { PosWrite = &store->PosWrite; PosLast = &store->PosLast; 
+      PosBegin = store->Coords.begin(); PosIterator = PosBegin; PosEnd = store->Coords.end(); }
+
+    void operator=(const IteratorRead<V>&  It)  { PosIterator = It.PosIterator; }
+    void operator=(const IteratorWrite<V>& It)  { PosIterator = It.PosIterator; }
+
+     int  operator- (IteratorRead<V>& it) { return this->PosIterator - it.PosIterator;}
+     void operator+=(int Offset)          { PosIterator = PosIterator + Offset; }; 
+    IteratorRead<V> operator+(int Offset)  { IteratorRead<V> It{*this}; It.PosIterator = It.PosIterator + Offset; return It;}; 
 
     const QPair<float,float>& operator*() const { return *PosIterator; }
+
+    int16_t DistanceToWrite1 = 0;
+    int16_t DistanceToWrite2 = 0;
+    uint16_t getDistance(IteratorWrite<V>& it ) 
+    { 
+       DistanceToWrite1 = it.PosIterator - PosIterator;
+       DistanceToWrite2 = (PosEnd - PosIterator) + (it.PosIterator - PosBegin);
+       
+       if(DistanceToWrite1 >= 0 ) return DistanceToWrite1; return DistanceToWrite2; 
+    };
+    int getRemain() { return PosEnd - PosIterator;}
 
     IteratorRead<V>& operator++(int) 
     { 
       if(PosIterator == PosLast->PosIterator) return *this;
-         PosIterator++; NumRead++; 
-      if(PosIterator == PosEnd  ) PosIterator = PosBegin; return *this; 
+         PosIterator++; 
+      if(PosIterator == PosEnd) PosIterator = PosBegin; return *this; 
     }
 
-    IteratorRead<V>& operator++() { if(PosIterator == PosEnd  ) PosIterator = PosBegin; PosIterator++; return *this; }
-
-
-    int NumRead = 0;
-    IteratorRead<V>& operator-(int NumRollback) 
-    { 
-      if(NumRollback > NumRead) NumRollback = NumRead;
-      PosIterator = PosRollback + (NumRead - NumRollback); PosRollback = PosIterator; NumRead = 0; return *this;
-    }; 
-
-    void operator-=(int NumRollback) 
-    { 
-      if(NumRollback > NumRead) NumRollback = NumRead;
-      PosIterator = PosRollback + (NumRead - NumRollback); PosRollback = PosIterator; NumRead = 0;
-    }; 
+    IteratorRead<V>& operator++() { PosIterator++; if(PosIterator == PosEnd) PosIterator = PosBegin; return *this; }
 
     bool operator!=(const IteratorRead<V>& other) const { return PosIterator != other.PosIterator; }
     bool operator==(const IteratorRead<V>& other) const { return PosIterator == other.PosIterator; }
@@ -622,7 +624,6 @@ class NodeCoordStorage : public PassCoordClass<T>
     bool operator!=(const IteratorWrite<V>& other) const { return PosIterator != other.PosIterator; }
     bool operator==(const IteratorWrite<V>& other) const { return PosIterator == other.PosIterator; }
 
-    typename std::vector<QPair<T,T>>::iterator PosRollback ; 
     typename std::vector<QPair<T,T>>::iterator PosIterator ; 
     typename std::vector<QPair<T,T>>::iterator PosBegin ; 
     typename std::vector<QPair<T,T>>::iterator PosEnd ; 
@@ -636,78 +637,104 @@ class NodeCoordStorage : public PassCoordClass<T>
   {
     public:
     explicit IteratorWrite(NodeCoordStorage<V>* store = nullptr) {if(store == nullptr) return; reset(store); };
-    void reset(NodeCoordStorage<V>* store)     {PosIterator = store->Coords.begin(); PosNext = PosIterator+1; PosBegin = store->Coords.begin(); PosEnd = store->Coords.end(); PosRead = &store->PosRead; PosLast = &store->PosLast;}
+    void reset(NodeCoordStorage<V>* store)  
+    { 
+      SizeStorage = store->SizeStorage;  OffsetRollback = store->OffsetRollback;
+      PosBegin = store->Coords.begin(); PosIterator = PosBegin; PosEnd = store->Coords.end(); 
+      PosRead = &store->PosRead; PosLast = &store->PosLast; PosRollback = &store->PosRollback; }
+
     void operator=(const IteratorWrite& it) { PosIterator = it.PosIterator; }
+
     QPair<float,float> operator*() const { return *PosIterator; }
+
+    int SizeStorage = 10;
+    int PosDistance = 0;
+    int OffsetRollback = 5;
+
+    int getRemain() { return PosEnd - PosIterator;}
     void operator++(int) 
     { 
-                       if(PosNext == PosRead->PosIterator) return;
-         *PosLast = *this; PosIterator++; 
-                       if(PosIterator == PosEnd  ) PosIterator = PosBegin; 
-                       if(PosNext == PosEnd  ) PosNext = PosBegin; 
+        PosDistance = PosRead->getDistance(*this);
+        if(PosDistance >= SizeStorage) return;
+        if(PosDistance == OffsetRollback) *PosRollback = *this;;
+                                              *PosLast = *this; 
+        PosIterator++; 
+        if(PosIterator == PosEnd  ) PosIterator = PosBegin; 
     }
+
 
     void setData(const QPair<V,V>& Coord) { *PosIterator = Coord; }
 
-    bool operator!=(const IteratorRead<V>& other) const { return PosIterator != other.PosIterator; }
-    bool operator==(const IteratorRead<V>& other) const { return PosIterator == other.PosIterator; }
-
+    bool operator!=(const IteratorRead<V>& other)  const { return PosIterator != other.PosIterator; }
+    bool operator==(const IteratorRead<V>& other)  const { return PosIterator == other.PosIterator; }
     bool operator!=(const IteratorWrite<V>& other) const { return PosIterator != other.PosIterator; }
     bool operator==(const IteratorWrite<V>& other) const { return PosIterator == other.PosIterator; }
 
     typename std::vector<QPair<T,T>>::iterator PosIterator; 
-    typename std::vector<QPair<T,T>>::iterator PosNext; 
     typename std::vector<QPair<T,T>>::iterator PosBegin; 
     typename std::vector<QPair<T,T>>::iterator PosEnd; 
 
     IteratorRead<V>* PosRead = nullptr;
     IteratorRead<V>* PosLast = nullptr;
+    IteratorRead<V>* PosRollback = nullptr;
   };
 
 	public:
   NodeCoordStorage ()         {  setSize(10); };
-	NodeCoordStorage (int size) {  setSize(size); };
-  void setSize(int size)      {qDebug() << "STORAGE SET SIZE: " << size; Coords.resize(size); reset(); } 
-  void reset()    { PosRead.reset(this); PosLast.reset(this); PosWrite.reset(this); AmountCoords = 0;};
+	NodeCoordStorage (int size) {  setSize(size ); };
+  void setSize(int size)      {  Coords.resize(size + 5); SizeStorage = size; reset(); } 
+  void reset()                {  PosRead.reset(this); PosLast.reset(this); PosWrite.reset(this); PassedNum = 0;};
 
-   IteratorRead<T> PosRead {nullptr}; 
-   IteratorRead<T> PosLast {nullptr}; 
-  IteratorWrite<T> PosWrite{nullptr}; 
-  IteratorRead<T> begin()  {return PosRead;}
-  IteratorRead<T>   end()  {return ++PosLast;}
+   int SizeStorage    = 10;
+   int OffsetRollback = 5;
+  bool RollbackAuto = false;
+  bool ContinousMode = true;
+   int PassedNum = 0;
 
-  int getAvailable() { return AmountCoords; }
-  bool isLoaded() { return PosWrite == PosRead; }
+  std::vector<QPair<T,T>> Coords;
+
+   IteratorRead<T> PosRollback {nullptr}; 
+   IteratorRead<T> PosRead     {nullptr}; 
+   IteratorRead<T> PosLast     {nullptr}; 
+  IteratorWrite<T> PosWrite    {nullptr}; 
+  IteratorRead<T>& begin()  { return   PosRead;}
+  IteratorRead<T>&   end()  { return ++PosLast;}
+
+  int getAvailable() { return PosRead.getDistance(PosWrite); }
+  int getPassed()    { return PassedNum; }
+  bool isLoaded()    { return PosRead.getDistance(PosWrite) >= SizeStorage; }
 
 	void setInput(const QPair<float,float>& Coord) override 
   { 
-    AmountCoords++; PosWrite.setData(Coord); PosWrite++; if(!isLoaded()) return;
+    PassedNum++; PosWrite.setData(Coord); PosWrite++; 
 
-    qDebug() << "STORAGE LOADED: " << isLoaded() << " COUNT: " << AmountCoords;
-    if(this->isLinked()) for(auto& link: this->NodesLinked) { for(auto& coord: *this) coord >> *link; } 
-                                        RollbackSize = 10;
-    if(RollbackSize != 0) rollbackStore(RollbackSize);
+    //qDebug() << "POS READ: " << PosRead.getRemain() << "DISTANCE: " << PosRead.getDistance(PosWrite);
+
+                                                         if(!this->isLoaded()) return;
+                                                         if(!this->isLinked()) return;
+
+    for(auto& link: this->NodesLinked) { for(auto& coord: *this) coord >> *link; } PosRead = PosLast;
+
+    //qDebug() << "POS READ: " << PosRead.getRemain() << "DISTANCE: " << PosRead.getDistance(PosWrite);
+
+    if(RollbackAuto) rollbackStore();
   };
 
-  void rollbackStore(int size)   { qDebug() << "ROLLBACK: " << size; PosRead -= size; AmountCoords += size; }; 
-  void setAutoRollback(int size) { RollbackSize = size; }
+  void setRollbackAuto(bool OnOff)   { RollbackAuto = OnOff;   };
+  void setRollbackOffset(int offset) { OffsetRollback = offset; PosWrite.OffsetRollback = offset; };
+  void rollbackStore() 
+  { 
+    PosRead = PosRollback; 
+    //qDebug() << "[ ROLLBACK ]"<< "POS READ: " << PosRead.getRemain() << "DISTANCE: " << PosRead.getDistance(PosWrite);
+  };
 
   void operator>>(std::vector<QPair<T,T>>& Storage) { for(auto& coord: *this) Storage.push_back(coord); }
 
   void setContinousMode(bool OnOff) { ContinousMode = OnOff; }
 
-  std::vector<QPair<T,T>> Coords;
-  bool ContinousMode = true;
-   int RollbackSize = 0;
-   int AmountCoords = 0;
+  const QPair<T,T>& getLast()       { return *PosLast;}
+  const QPair<T,T>& getOutput() override { auto& data = *PosRead; PosRead++; return data; };
 
-  const QPair<T,T>& getLastInput()       { return PosWrite->getDataLast();}
-  const QPair<T,T>& getOutput() override 
-  { 
-    auto& data = *PosRead; 
-    PosRead++; 
-    return data; 
-  };
   void operator=(NodeCoordStorage<T>& dst) { *this = dst.Cooords; PosRead = dst.PosRead; PosWrite = dst.PosWrite; }
 
 };
@@ -724,7 +751,7 @@ class NodeCoordVectorAdapter : public PassCoordClass<T>
   int SizeLimit = 10;
 	void setInput(const QPair<float,float>& Coord) override
 	{
-    qDebug() << "PASS TO VECTOR: " << Coord.first << Coord.second;
+    qDebug() << "[ PASS TO VECTOR ]" << Coord.first << Coord.second;
     receiver->push_back(Coord);
 	};
 
@@ -740,20 +767,25 @@ class TestNodeCoordStorage
   {
     qDebug() << "==============================================";
     qDebug() << "[ TEST NODE_COORD_STORAGE ]";
-    for(int n = 0; n < 40; n++) Data.push_back(QPair<T,T>(n,n));
+    for(int n = 1; n <= 200; n++) Data.push_back(QPair<T,T>(n,n));
+    for(auto& pos: Data) qDebug() << "[ INPUT VECTOR ]" << pos.first << pos.second;
+    qDebug() << "==============================================";
 
+    Storage.setRollbackOffset(20); Storage.setRollbackAuto(true);
     Storage | PassToVector; 
 
-    for(auto& pos: Data) qDebug() << "INPUT VECTOR: " << pos.first << pos.second;
+    qDebug() << "==============================================";
+    qDebug() << "[ PASS PROCESS ]";
     for(auto& pos: Data) pos >> Storage;  
+    qDebug() << "==============================================";
 
-    for(auto& pos: DataOutput) qDebug() << "OUTPUT VECTOR: " << pos.first << pos.second;
+    for(auto& pos: DataOutput) qDebug() << "[ OUTPUT VECTOR ]" << pos.first << pos.second;
     qDebug() << "==============================================";
   }
   NodeCoordVectorAdapter<T> PassToVector{DataOutput,20};
-  NodeCoordStorage<T> Storage{20}; 
-  std::vector<QPair<T,T>> Data;
-  std::vector<QPair<T,T>> DataOutput;
+        NodeCoordStorage<T> Storage{100}; 
+    std::vector<QPair<T,T>> Data;
+    std::vector<QPair<T,T>> DataOutput;
 };
 
 //======================================================================

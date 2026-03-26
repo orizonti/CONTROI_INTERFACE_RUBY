@@ -115,7 +115,9 @@ int main(int argc, char* argv[])
   QApplication app(argc,argv);
 
   //MeasurePeriodNode periodMeasure;
-  TestNodeCoordStorage<float> NodeCoordStorageTest;
+  //TestNodeCoordStorage<float> NodeCoordStorageTest;
+  //qDebug() << "END TEST";
+  //return 0;
 
   SinusGeneratorClass SinusGenerator; SinusGenerator.slotSetAmplitude(200); SinusGenerator.slotSetFrequency(0.10);
                                       SinusGenerator.slotSetOffset(240,240);
