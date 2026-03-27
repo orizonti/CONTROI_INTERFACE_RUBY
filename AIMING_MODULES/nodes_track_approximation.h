@@ -16,14 +16,13 @@ class GenericApproximation: public PassCoordClass<float>
   public:
   GenericApproximation(int Size = 100) 
   {
-      Track.setSize(Size); 
+      TrackInput.setSize(Size); 
       TrackFuture.setSize(Size); 
       SizeWindow = Size;
   }
   int SizeWindow = 10;
 
-
-  NodeCoordStorage<float> Track;
+  NodeCoordStorage<float> TrackInput;
   NodeCoordStorage<float> TrackFuture;
 
   double RMSE = std::numeric_limits<double>::quiet_NaN();
@@ -32,24 +31,23 @@ class GenericApproximation: public PassCoordClass<float>
     MeasurePeriodNode MeasurePeriod;
     void setInput(const QPair<float,float>& Coord) override  
     {   
-           
-          Coord >> Track;
-          if(Track.getAvailable() >= SizeWindow ) getApproximation();  
+          Coord >> TrackInput;
+          if(TrackInput.getAvailable() >= SizeWindow ) getApproximation(TrackInput);  
     };
 
-	  const QPair<float, float>& getOutput() override { return getFuture();};
+	  const QPair<float, float>& getOutput() override { return getFutureStep();};
 
-    bool isLoaded() {
-        //qDebug() << "COORD AVAILABLE: " << Track.getAvailable(); 
-        return Track.getAvailable() >= SizeWindow;}
-    virtual std::vector<float> getApproximation(std::vector<std::pair<float,float>>) = 0;  
+    virtual bool isLoaded() { return TrackInput.isLoaded();}
     virtual std::tuple<float,float,float,float,bool> getResult() = 0;
+
     friend void operator>>(const std::vector<std::pair<float,float>>& coords, GenericApproximation& receiver) { for(auto& coord: coords) coord >> receiver;}
 
-    virtual std::pair<float,float> getFuture() = 0;
-    virtual std::span<QPair<float,float>> getFuture(std::span<QPair<float,float>> track) = 0;
-    protected:
-                  virtual void getApproximation() = 0;  
+    virtual   std::pair<float,float> getFutureStep() = 0;
+    virtual NodeCoordStorage<float>& getFuture() = 0;
+
+    virtual std::vector<float> getApproximation(std::vector<std::pair<float,float>>& track) = 0;  
+    virtual std::vector<float> getApproximation(NodeCoordStorage<float>& track) = 0;  
+    virtual std::vector<float> getApproximation(std::span<std::pair<float,float>> track) = 0;  
 };
 
 template<int NUM_PARAM>
@@ -61,26 +59,38 @@ class PolynomApproximation: public GenericApproximation
       A_MAT1 = Eigen::MatrixXd(static_cast<Eigen::Index>(Size), 1);
       A_MAT3 = Eigen::MatrixXd(static_cast<Eigen::Index>(Size), 3);
        Y_VEC = Eigen::VectorXd(static_cast<Eigen::Index>(Size));
+
+       TrackInput.setRollbackOffset(0);  TrackInput.setRollbackAuto(false);
+       TrackFuture.setRollbackOffset(0); TrackFuture.setRollbackAuto(false);
     };
 
     void operator=(const PolynomApproximation<NUM_PARAM>& copy);
-    int CounterForward = 0;
+    bool isLoaded() override { return IndexInput == SizeWindow;}
 
-    NodeCoordVelocity<float> NodeVelocity;
+       void reset() { IndexInput = 0;}
+    void flushTrack() { TrackInput.skipLoaded(); };
+    MeasurePeriodNode MeasurePeriod;
 
     Eigen::MatrixXd A_MAT1;
     Eigen::MatrixXd A_MAT3;
     Eigen::VectorXd Y_VEC;
+    std::vector<float> sums{0,0,0,0};
+
     std::vector<float> trackPolynom{0,0,0,0};
     std::pair<float,float> posFuture;
 
-    std::vector<float> getApproximation(std::vector<std::pair<float,float>>) override;  
+    Eigen::Index IndexInput = 0;
+
+    void setInput(const QPair<float,float>& Coord) override;
+
+    std::vector<float> getApproximation(std::vector<std::pair<float,float>>& track) override  { std::span<std::pair<float,float>> span{track}; getApproximation(span); return this->trackPolynom; }
+    std::vector<float> getApproximation(NodeCoordStorage<float>& track) override;  
+    std::vector<float> getApproximation(std::span<std::pair<float,float>> track) override;  
+
     std::tuple<float,float,float,float,bool> getResult() override { return { trackPolynom[3], trackPolynom[2], trackPolynom[1], trackPolynom[0],true};};
 
-    std::pair<float,float> getFuture() override;
-    std::span<QPair<float,float>> getFuture(std::span<QPair<float,float>>) override;
-    protected:
-                  void getApproximation() override;  
+      std::pair<float,float> getFutureStep() override;
+    NodeCoordStorage<float>& getFuture() override;
 };
 
 
@@ -95,7 +105,7 @@ void PolynomApproximation<NUM_PARAM>::operator=(const PolynomApproximation<NUM_P
 };
 
 template<int NUM_PARAM>
-std::pair<float,float> PolynomApproximation<NUM_PARAM>::getFuture()
+std::pair<float,float> PolynomApproximation<NUM_PARAM>::getFutureStep()
 {
     //float step = 0.5;
     //posFuture.first = posLast.first + SizeWindow*step;  
@@ -108,30 +118,28 @@ std::pair<float,float> PolynomApproximation<NUM_PARAM>::getFuture()
 }
 
 template<int NUM_PARAM>
-std::span<QPair<float,float>> PolynomApproximation<NUM_PARAM>::getFuture(std::span<QPair<float,float>> track)
+NodeCoordStorage<float>& PolynomApproximation<NUM_PARAM>::getFuture()
 {
     //float step = track[SizeWindow-1].first - track[SizeWindow-2].first; 
-//    float step = track[1].first - track[0].first;
-//    //if(track_future.size() != Number) track_future.resize(Number);
-//
-//    TrackFuture[0].first = track[0].first + 20*step;  
-//    TrackFuture[0].second = trackPolynom[2]*std::pow(TrackFuture[0].first,2) +
-//                            trackPolynom[1]*TrackFuture[0].first +
-//                            trackPolynom[0];
-//
-//    //qDebug() << "===================================";
-//    for(int n = 1; n < TrackFuture.size(); n++)
-//    {
-//    TrackFuture[n].first = TrackFuture[n-1].first + step;  
-//    TrackFuture[n].second = trackPolynom[2]*std::pow(TrackFuture[n].first,2) +
-//                             trackPolynom[1]*TrackFuture[n].first +
-//                             trackPolynom[0];
-//    //qDebug() << "POS LAST  : " << posLast.first   << posLast.second
-//    //         << "FUTURE_SER: " << posFuture.first << posFuture.second << "PARAM: " << trackPolynom[2] << trackPolynom[1] << trackPolynom[0];
-//    }
-//    TrackFuture = TrackFuture.begin();
+    
+    if(!isLoaded()) return TrackFuture;
 
-    return track;
+    auto pos1 = TrackInput.begin();
+    auto pos2 = TrackInput.begin()+1;
+    float step = 0;
+    for(int n = 0; n < 10; n++) { step += ((*pos2).first - (*pos1).first)/10; pos1++; pos2++; } 
+
+    TrackFuture.reset();
+    for(auto coord: TrackInput)
+    {
+    coord.first = coord.first + 50*step;  
+    coord.second = trackPolynom[2]*std::pow(coord.first,2) +
+                   trackPolynom[1]*coord.first +
+                   trackPolynom[0];
+    coord >> TrackFuture;
+    }
+
+    return TrackFuture;
 }
 
 

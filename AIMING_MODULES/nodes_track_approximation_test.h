@@ -10,36 +10,40 @@ class PolynomApproximationDynamicTest: public PassCoordClass<float>
   public:
   PolynomApproximationDynamicTest()
   {
-    CoordStorage2.setRollbackOffset(NumberPointsApprox); CoordStorage2.setRollbackAuto(true);
+    CoordStorage2.setRollbackOffset(NumberPoints/2); CoordStorage2.setRollbackAuto(true);
     CoordStorage2 | trackApproximation;
   };
-  int NumberPoints = 50;
-  int NumberPointsApprox = NumberPoints/2;
-  PolynomApproximation<NUM_PARAM> trackApproximation{NumberPointsApprox};
+  int NumberPoints = 100;
+  PolynomApproximation<NUM_PARAM> trackApproximation{NumberPoints};
 
-  NodeCoordRandomizer<float> Randomize{0,15};
+  NodeCoordRandomizer<float> Randomize{0,20};
 
 	void setInput(const QPair<float, float>& Coord) 
   { 
     //Coord >> CoordStorage1;
+    //qDebug() << "SOURCE: " << Coord.first << Coord.second << "GOT: " << CoordStorage2.getAvailable()+1 << trackApproximation.TrackInput.getAvailable();
     Coord >> Randomize >> CoordStorage2;
-    //Coord >> Randomize >> trackApproximation >> CoordStorage3;
-    //Coord >> CoordStorage3;
+    //Coord >> Randomize >> CoordStorage3;
 
-    //if(trackApproximation.isLoaded()) { 
-    if(CoordStorage2.isLoaded()) { 
-                                   //qDebug() << "==============================";
+    if(trackApproximation.TrackInput.isLoaded()) { 
+      //qDebug() << "==========================================";
+      //qDebug() << "DISPLAY";
+      //int counter = 1;
+      //for(auto& coord: trackApproximation.TrackInput) 
+      //qDebug() <<"POS: " << coord.first << coord.second << counter++;  
+
                                    //for(auto& coord: CoordStorage2) qDebug() << "IN STORE: " << coord;
 
-                                   if(displayGraph1) displayGraph1->setPoints(CoordStorage2);
-                                   if(displayGraph2) displayGraph2->setPoints(trackApproximation.track_future); 
+                                   //if(displayGraph1) displayGraph1->setPoints(CoordStorage3);
+                                   if(displayGraph1) displayGraph1->setPoints(trackApproximation.TrackInput); 
+                                   if(displayGraph2) displayGraph2->setPoints(trackApproximation.TrackFuture); 
                                    //if(displayGraph2) displayGraph2->setPoints(CoordStorage1);
                                    //if(displayGraph2) displayGraph2->setPoints(CoordStorage3.getCoordsAll());
 
                                    //if(displayGraph1) displayGraph1->setPoints(trackApproximation.track); 
                                    //if(displayGraph2) displayGraph2->setPoints(trackApproximation.track_future); 
-                                   CoordStorage2.reset();
-                                   CoordStorage1.reset();
+                                   trackApproximation.flushTrack();
+      qDebug() << "==========================================";
                                  }
   };
   NodeCoordStorage<float> CoordStorage1{NumberPoints};
