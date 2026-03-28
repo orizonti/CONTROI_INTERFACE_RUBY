@@ -25,15 +25,22 @@ class GenericApproximation: public PassCoordClass<float>
   NodeCoordStorage<float> TrackInput;
   NodeCoordStorage<float> TrackFuture;
 
+    std::pair<float,float> posFuture{0,0};
+    std::pair<float,float> posLast{0,0};
+
   double RMSE = std::numeric_limits<double>::quiet_NaN();
   bool isResultValid = false;
 
     MeasurePeriodNode MeasurePeriod;
     void setInput(const QPair<float,float>& Coord) override  
     {   
-          Coord >> TrackInput;
-          if(TrackInput.getAvailable() >= SizeWindow ) getApproximation(TrackInput);  
+                Coord >> TrackInput;             if(!TrackInput.isLoaded()) return; 
+        getApproximation(TrackInput); 
+                         TrackInput.skipLoaded(); 
+                         TrackInput.rollbackStore(SizeWindow - 20);  
+                                        
     };
+    void flushTrack() { TrackInput.skipLoaded(); };
 
 	  const QPair<float, float>& getOutput() override { return getFutureStep();};
 
@@ -42,7 +49,7 @@ class GenericApproximation: public PassCoordClass<float>
 
     friend void operator>>(const std::vector<std::pair<float,float>>& coords, GenericApproximation& receiver) { for(auto& coord: coords) coord >> receiver;}
 
-    virtual   std::pair<float,float> getFutureStep() = 0;
+    virtual const std::pair<float,float>& getFutureStep() = 0;
     virtual NodeCoordStorage<float>& getFuture() = 0;
 
     virtual std::vector<float> getApproximation(std::vector<std::pair<float,float>>& track) = 0;  
@@ -60,16 +67,14 @@ class PolynomApproximation: public GenericApproximation
       A_MAT3 = Eigen::MatrixXd(static_cast<Eigen::Index>(Size), 3);
        Y_VEC = Eigen::VectorXd(static_cast<Eigen::Index>(Size));
 
-       TrackInput.setRollbackOffset(0);  TrackInput.setRollbackAuto(false);
-       TrackFuture.setRollbackOffset(0); TrackFuture.setRollbackAuto(false);
+       TrackInput.setRollbackAuto(false);
+       TrackFuture.setRollbackAuto(false);
     };
 
     void operator=(const PolynomApproximation<NUM_PARAM>& copy);
     bool isLoaded() override { return IndexInput == SizeWindow;}
 
-       void reset() { IndexInput = 0;}
-    void flushTrack() { TrackInput.skipLoaded(); };
-    MeasurePeriodNode MeasurePeriod;
+    void reset(); 
 
     Eigen::MatrixXd A_MAT1;
     Eigen::MatrixXd A_MAT3;
@@ -77,7 +82,6 @@ class PolynomApproximation: public GenericApproximation
     std::vector<float> sums{0,0,0,0};
 
     std::vector<float> trackPolynom{0,0,0,0};
-    std::pair<float,float> posFuture;
 
     Eigen::Index IndexInput = 0;
 
@@ -89,7 +93,7 @@ class PolynomApproximation: public GenericApproximation
 
     std::tuple<float,float,float,float,bool> getResult() override { return { trackPolynom[3], trackPolynom[2], trackPolynom[1], trackPolynom[0],true};};
 
-      std::pair<float,float> getFutureStep() override;
+    const std::pair<float,float>& getFutureStep() override;
     NodeCoordStorage<float>& getFuture() override;
 };
 
@@ -105,16 +109,15 @@ void PolynomApproximation<NUM_PARAM>::operator=(const PolynomApproximation<NUM_P
 };
 
 template<int NUM_PARAM>
-std::pair<float,float> PolynomApproximation<NUM_PARAM>::getFutureStep()
+const std::pair<float,float>& PolynomApproximation<NUM_PARAM>::getFutureStep()
 {
-    //float step = 0.5;
-    //posFuture.first = posLast.first + SizeWindow*step;  
-    //posFuture.second = trackPolynom[2]*std::pow(posFuture.first,2) +
-    //                   trackPolynom[1]*posFuture.first +
-    //                   trackPolynom[0];
-    //qDebug() << "POS LAST  : " << posLast.first   << posLast.second
-    //         << "FUTURE_ONE: " << posFuture.first << posFuture.second << "PARAM: " << trackPolynom[2] << trackPolynom[1] << trackPolynom[0];
-    return TrackFuture.getOutput();
+    float step = 0.5;
+    posFuture.first = posLast.first + 10*step;  
+    posFuture.second = trackPolynom[2]*std::pow(posFuture.first,2) +
+                       trackPolynom[1]*posFuture.first +
+                       trackPolynom[0];
+    //qDebug() << "POS LAST: " << posLast.first << posLast.second << "FUTURE: " << posFuture.first << posFuture.second; 
+    return posFuture;
 }
 
 template<int NUM_PARAM>

@@ -592,9 +592,36 @@ class NodeCoordStorage : public PassCoordClass<T>
     void operator=(const IteratorRead<V>&  It)  { PosIterator = It.PosIterator; }
     void operator=(const IteratorWrite<V>& It)  { PosIterator = It.PosIterator; }
 
-     int  operator- (IteratorRead<V>& it) { return this->PosIterator - it.PosIterator;}
-     void operator+=(int Offset)          { PosIterator = PosIterator + Offset; }; 
-    IteratorRead<V> operator+(int Offset)  { IteratorRead<V> It{*this}; It.PosIterator = It.PosIterator + Offset; return It;}; 
+     int  operator-(IteratorRead<V>& it) { return this->PosIterator - it.PosIterator;}
+
+     void operator+=(int Offset)          
+     { 
+      if(PosEnd - PosIterator > Offset) {PosIterator += Offset; return; }  
+                                         PosIterator = PosBegin + Offset - (PosEnd - PosIterator);
+     }; 
+
+    IteratorRead<V> operator+(int Offset)  
+    { 
+      IteratorRead<V> IT{*this};
+      if(PosEnd - PosIterator > Offset) {IT.PosIterator += Offset; return IT; }  
+                                         IT.PosIterator = PosBegin + Offset - (PosEnd - PosIterator);
+                                                                   return IT;
+    }; 
+
+     void operator-=(int Offset)          
+     { 
+      if(PosIterator - PosBegin >= Offset ) { PosIterator -= Offset; return; }  
+                                              PosIterator = PosEnd - Offset + (PosIterator - PosBegin);
+     }; 
+
+    IteratorRead<V> operator-(int Offset)  
+    { 
+
+      IteratorRead<V> IT{*this};
+      if(PosIterator - PosBegin >= Offset ) { IT.PosIterator -= Offset; return IT; }  
+                                              IT.PosIterator = PosEnd + (PosIterator - PosBegin) - Offset;
+                                                                        return IT;
+    }; 
 
     const QPair<float,float>& operator*() const { return *PosIterator; }
 
@@ -628,6 +655,7 @@ class NodeCoordStorage : public PassCoordClass<T>
     typename std::vector<QPair<T,T>>::iterator PosIterator ; 
     typename std::vector<QPair<T,T>>::iterator PosBegin ; 
     typename std::vector<QPair<T,T>>::iterator PosEnd ; 
+    typename std::vector<QPair<T,T>>::iterator PosFuture ; 
 
     IteratorWrite<V>* PosWrite = nullptr;
     IteratorRead<V>*  PosLast = nullptr;
@@ -640,9 +668,9 @@ class NodeCoordStorage : public PassCoordClass<T>
     explicit IteratorWrite(NodeCoordStorage<V>* store = nullptr) {if(store == nullptr) return; reset(store); };
     void reset(NodeCoordStorage<V>* store)  
     { 
-      SizeStorage = store->SizeStorage;  OffsetRollback = store->OffsetRollback;
+      SizeStorage = store->SizeStorage;  
       PosBegin = store->Coords.begin(); PosIterator = PosBegin; PosEnd = store->Coords.end(); 
-      PosRead = &store->PosRead; PosLast = &store->PosLast; PosRollback = &store->PosRollback; }
+      PosRead = &store->PosRead; PosLast = &store->PosLast;}
 
     void operator=(const IteratorWrite& it) { PosIterator = it.PosIterator; }
 
@@ -650,14 +678,12 @@ class NodeCoordStorage : public PassCoordClass<T>
 
     int SizeStorage = 10;
     int PosDistance = 0;
-    int OffsetRollback = 5;
 
     int getRemain() { return PosEnd - PosIterator;}
     void operator++(int) 
     { 
         PosDistance = PosRead->getDistance(*this);
         if(PosDistance >= SizeStorage) return;
-        if(PosDistance == OffsetRollback) *PosRollback = *this;;
                                               *PosLast = *this; 
         PosIterator++; 
         if(PosIterator == PosEnd  ) PosIterator = PosBegin; 
@@ -677,23 +703,24 @@ class NodeCoordStorage : public PassCoordClass<T>
 
     IteratorRead<V>* PosRead = nullptr;
     IteratorRead<V>* PosLast = nullptr;
-    IteratorRead<V>* PosRollback = nullptr;
   };
 
 	public:
+  enum class INPUT_MODE { SINGLE_LOAD = 0, CONTINOUS_LOAD = 1, AUTO_SKIP_LOAD = 2};
   NodeCoordStorage ()         {  setSize(10); };
 	NodeCoordStorage (int size) {  setSize(size ); };
   void setSize(int size)      {  Coords.resize(size + ExtraSpace); SizeStorage = size; reset(); } 
   void reset()                {  PosRead.reset(this); PosLast.reset(this); PosWrite.reset(this); PassedNum = 0;};
   int size() { return  SizeStorage;}
 
-   int SizeStorage    = 10;
-   int OffsetRollback = 5;
+  int SizeStorage    = 10;
+  int LengthRollback = 5;
+  INPUT_MODE MODE{INPUT_MODE::SINGLE_LOAD};
+
   bool RollbackAuto = false;
-  bool AutoSkip = true;
+
   uint8_t ExtraSpace = 4;
 
-  bool ContinousMode = true;
    int PassedNum = 0;
 
   std::vector<QPair<T,T>> Coords;
@@ -705,46 +732,42 @@ class NodeCoordStorage : public PassCoordClass<T>
   IteratorRead<T>& begin()  { return   PosRead;}
   IteratorRead<T>   end()  {auto Pos = PosLast; return ++Pos;}
 
-  int getAvailable() { return PosRead.getDistance(PosWrite); }
-  int getPassed()    { return PassedNum; }
-  bool isLoaded()    { return PosRead.getDistance(PosWrite) >= SizeStorage; }
-  void skipLoaded()  { PosRead = PosWrite; }
-  void setAutoSkip(bool OnOff) { AutoSkip = OnOff;}
+   int getAvailable() { return PosRead.getDistance(PosWrite); }
+   int getPassed()    { return PassedNum; }
+  bool isLoaded()     { return PosRead.getDistance(PosWrite) >= SizeStorage; }
+  void skipLoaded()   { PosRead = PosWrite; }
+  void setAutoSkip(bool OnOff) { this->MODE=INPUT_MODE::AUTO_SKIP_LOAD;}
+  void setContinousMode(bool OnOff) {this->MODE=INPUT_MODE::SINGLE_LOAD; if(OnOff) this->MODE=INPUT_MODE::CONTINOUS_LOAD; }
 
 	void setInput(const QPair<float,float>& Coord) override 
   { 
-                              if(this->isLoaded() && !AutoSkip) return;
-                              if(this->isLoaded()) skipLoaded(); 
-    //==============================================================================================
-    
+    if(this->isLoaded()) switch(this->MODE)
+                         {
+                          case INPUT_MODE::AUTO_SKIP_LOAD: skipLoaded(); break;
+                          case INPUT_MODE::CONTINOUS_LOAD: PosRead++; break;
+                          case INPUT_MODE::SINGLE_LOAD: return; }
+
     PosWrite.setData(Coord); 
     PosWrite++; PassedNum++; 
 
-    //qDebug() << "READ: " << PosRead.getRemain() << "WRITE: " << PosWrite.getRemain() << getAvailable();
-    //==============================================================================================
-                              if(!this->isLoaded() || !this->isLinked()) return; 
-
-    for(auto& link: this->NodesLinked) { for(auto& coord: *this) coord >> *link; } 
-
-                     skipLoaded(); 
-    if(RollbackAuto) rollbackStore();
-    //==============================================================================================
-
     //qDebug() << "POS READ: " << PosRead.getRemain() << "DISTANCE: " << PosRead.getDistance(PosWrite);
-
+    //passToLink();
   };
 
-  void setRollbackAuto(bool OnOff)   { RollbackAuto = OnOff;   };
-  void setRollbackOffset(int offset) { OffsetRollback = offset; PosWrite.OffsetRollback = offset; };
-  void rollbackStore() 
-  { 
-    PosRead = PosRollback; 
-    //qDebug() << "[ ROLLBACK ]"<< "POS READ: " << PosRead.getRemain() << "DISTANCE: " << PosRead.getDistance(PosWrite);
-  };
+  void passToLink()
+  {
+                              if(!this->isLoaded() || !this->isLinked()) return; 
+    for(auto& link: this->NodesLinked) { for(auto& coord: *this) coord >> *link; } 
+                     skipLoaded(); 
+    if(RollbackAuto) rollbackStore(LengthRollback);
+    //qDebug() << "POS READ: " << PosRead.getRemain() << "DISTANCE: " << PosRead.getDistance(PosWrite);
+  }
+
+  void setRollbackAuto(bool OnOff, int Value = 0)   { RollbackAuto = OnOff; LengthRollback = Value;  };
+  void rollbackStore(int length) { PosRead -= length; };
 
   void operator>>(std::vector<QPair<T,T>>& Storage) { for(auto& coord: *this) Storage.push_back(coord); }
 
-  void setContinousMode(bool OnOff) { ContinousMode = OnOff; }
 
   const QPair<T,T>& getLast()       { return *PosLast;}
   const QPair<T,T>& getOutput() override { auto& data = *PosRead; PosRead++; return data; };
@@ -785,7 +808,7 @@ class TestNodeCoordStorage
     for(auto& pos: Data) qDebug() << "[ INPUT VECTOR ]" << pos.first << pos.second;
     qDebug() << "==============================================";
 
-    Storage.setRollbackOffset(10); Storage.setRollbackAuto(true);
+    Storage.setRollbackAuto(true,10);
     Storage | PassToVector; 
 
     qDebug() << "==============================================";

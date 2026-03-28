@@ -114,7 +114,7 @@ int main(int argc, char* argv[])
 {
   QApplication app(argc,argv);
 
-  //MeasurePeriodNode periodMeasure;
+  MeasurePeriodNode periodMeasure;
   //TestNodeCoordStorage<float> NodeCoordStorageTest;
   //qDebug() << "END TEST";
   //return 0;
