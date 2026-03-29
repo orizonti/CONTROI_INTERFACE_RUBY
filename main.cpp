@@ -46,68 +46,43 @@
 #include "engine_can_interface.h"
 #include <QPainter>
 #include "widget_line_graph.h"
+#include "engine_keyfilter.h"
 
 QStringList LoadCameraLinks();
 
 #include "message_command_id.h"
 #include "engine_statistics_track.h"
 
-int ID1 = TypeRegister<CommandSetPair<0>  >::RegisterType();
-int ID2 = TypeRegister<CommandSetPair<1>  >::RegisterType();
-int ID10 = TypeRegister<CommandSetPair<2> >::RegisterType();
-int ID11 = TypeRegister<CommandSetPair<3> >::RegisterType();
-//int ID3 = TypeRegister<CommandDeviceController  >::RegisterType();
-int ID4 = TypeRegister<CommandDeviceLaserPower  >::RegisterType();
-int ID5 = TypeRegister<CommandDeviceLaserPointer>::RegisterType();
-int ID6 = TypeRegister<CommandDeviceFocusator   >::RegisterType();
-int ID7 = TypeRegister<RequestDeviceController  >::RegisterType();
-int ID8 = TypeRegister<RequestDeviceLaserPower  >::RegisterType();
-int ID9 = TypeRegister<RequestDeviceLaserPointer>::RegisterType();
-int ID12 = TypeRegister<RequestPositionState<0> >::RegisterType();
-int ID13 = TypeRegister<RequestPositionState<1> >::RegisterType();
+//=================================================
+//COMMAND TO INTERRACT WITH DEVICES VIA PROCESSOR MODULE 
+int ID0 = TypeRegister<CommandSetPosRotary  >::RegisterType("SET_POS_ROTARY"); 
+int ID1 = TypeRegister<CommandSetPosScanator>::RegisterType("SET_POS_SCANATOR");
+int ID2 = TypeRegister<RequestPosRotary  >::RegisterType("REQUEST_POS_SCANATOR");
+int ID3 = TypeRegister<RequestPosScanator>::RegisterType("REQUEST_POS_SCANATOR");
 
-int ID14 = TypeRegister<CommandCheckConnection  >::RegisterType();
-int ID15 = TypeRegister<CommandCloseConnection  >::RegisterType();
+int ID4 = TypeRegister<CommandAiming1>::RegisterType("COMMAND_AIMING1");
+int ID5 = TypeRegister<CommandAiming2>::RegisterType("COMMAND_AIMING2");
+int ID6 = TypeRegister<RequestAiming >::RegisterType("REQUEST_AIMING");
 
-int ID16 = TypeRegister<SystemState  >::RegisterType();
-int ID17 = TypeRegister<ControlRX  >::RegisterType();
+int ID7 = TypeRegister<CommandDeviceLaserPower  >::RegisterType("COMMAND_LASER_POWER");
+int ID8 = TypeRegister<CommandDeviceLaserPointer>::RegisterType("COMMAND_LASER_POINTER");
+int ID9 = TypeRegister<CommandDeviceFocusator   >::RegisterType("COMMAND_LASER_FOCUSATOR");
 
-void printRegisteredTypes()
-{
-//  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<CommandSetPosScanator>::TYPE_ID).arg(TypeRegister<CommandSetPosScanator>::GetTypeSize());
-//  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<CommandSetPosRotary>::TYPE_ID).arg(TypeRegister<CommandSetPosRotary>::GetTypeSize());
-//  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<CommandDevice<0>>::TYPE_ID).arg(TypeRegister<CommandDevice<0>>::GetTypeSize());
-//  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<CommandDevice<1>>::TYPE_ID).arg(TypeRegister<CommandDevice<1>>::GetTypeSize());
-//  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<CommandDevice<2>>::TYPE_ID).arg(TypeRegister<CommandDevice<2>>::GetTypeSize());
-//  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<CommandDevice<3>>::TYPE_ID).arg(TypeRegister<CommandDevice<3>>::GetTypeSize());
-//  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<RequestDevice<0>>::TYPE_ID).arg(TypeRegister<RequestDevice<0>>::GetTypeSize());
-//  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<RequestDevice<1>>::TYPE_ID).arg(TypeRegister<RequestDevice<1>>::GetTypeSize());
-//  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<RequestDevice<2>>::TYPE_ID).arg(TypeRegister<RequestDevice<2>>::GetTypeSize());
-//  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<RequestDevice<3>>::TYPE_ID).arg(TypeRegister<RequestDevice<3>>::GetTypeSize());
-//  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<CommandCalibration>::TYPE_ID).arg(TypeRegister<CommandCalibration>::GetTypeSize());
-//  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<RequestPositionState<0>>::TYPE_ID).arg(TypeRegister<RequestPositionState<0>>::GetTypeSize());
-//  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<RequestPositionState<1>>::TYPE_ID).arg(TypeRegister<RequestPositionState<0>>::GetTypeSize());
-//  qDebug() << QString("REGISTER TYPE %1 SIZE %2").arg(TypeRegister<CommandCheckConnection>::TYPE_ID).arg(TypeRegister<CommandCheckConnection>::GetTypeSize());
-}
+int ID10 = TypeRegister<RequestDeviceLaserPower  >::RegisterType("REQUEST_LASER_POWER");
+int ID11 = TypeRegister<RequestDeviceLaserPointer>::RegisterType("REQUEST_LASER_POINTER");
 
-template<> void CommandDispatcherGeneric<TypeRegister<CommandDevice<0>>::ID()>::dispatchCommand(const QByteArray& Command) 
-{
-  qDebug() << "DISPATCH COMMAND: " << TypeRegister<CommandDevice<0>>::TYPE_ID << " DEV 0";
-};
+int ID12 = TypeRegister<CommandCheckConnection  >::RegisterType("CHECK_CONNECTION");
 
-template<> void CommandDispatcherGeneric<TypeRegister<CommandSetPair<0>>::ID()>::dispatchCommand(const QByteArray& Command) 
-{
-  qDebug() << "DISPATCH COMMAND: " << TypeRegister<CommandSetPair<0>>::TYPE_ID << " POS ROTARY";
-};
-
-#define MESSAGE_TYPE_1 0
-#define MESSAGE_TYPE_2 1
-char DataArray[10];
+//=================================================
+//COMMAND TO DIRECT INTERRACT WITH ROTARY PLATFORM
+int ID21 = TypeRegister<SystemState>::RegisterType("SystemStateRotary"); 
+int ID22 = TypeRegister<ControlTX  >::RegisterType("ControlTXRotary");
+int ID23 = TypeRegister<ControlRX  >::RegisterType("ControlRXRotary");
 
 
 
-
-
+//template<> void CommandDispatcherGeneric<TypeRegister<CommandDevice<0>>::ID()>::dispatchCommand(const QByteArray& Command) { qDebug() << "DISPATCH COMMAND: " << TypeRegister<CommandDevice<0>>::TYPE_ID << " DEV 0"; };
+//template<> void CommandDispatcherGeneric<TypeRegister<CommandSetPair<0>>::ID()>::dispatchCommand(const QByteArray& Command) { qDebug() << "DISPATCH COMMAND: " << TypeRegister<CommandSetPair<0>>::TYPE_ID << " POS ROTARY"; };
 
 
 int main(int argc, char* argv[])
@@ -115,13 +90,12 @@ int main(int argc, char* argv[])
   QApplication app(argc,argv);
 
   MeasurePeriodNode periodMeasure;
-  //TestNodeCoordStorage<float> NodeCoordStorageTest;
-  //qDebug() << "END TEST";
-  //return 0;
 
-  SinusGeneratorClass SinusGenerator; SinusGenerator.slotSetAmplitude(200); SinusGenerator.slotSetFrequency(0.10);
-                                      SinusGenerator.slotSetOffset(240,240);
-  WidgetLineGraph graphWidget; graphWidget.setSize(500); graphWidget.show();
+  //=====================================================================================
+  //TEST TRACK APPROXIMATION DYNAMIC
+  //SinusGeneratorClass SinusGenerator; SinusGenerator.slotSetAmplitude(200); SinusGenerator.slotSetFrequency(0.10);
+  //                                    SinusGenerator.slotSetOffset(240,240);
+  //WidgetLineGraph graphWidget; graphWidget.setSize(500); graphWidget.show();
 
             //  DetectorTrackHold ProcessorTrack;
             //  NodeCoordRandomizer<float> Randomizer{12};
@@ -137,29 +111,28 @@ int main(int argc, char* argv[])
       //                graphWidget.GraphPointsStorage->setPoints(Test1.TrackApprox);
       //                graphWidget.GraphPointsStorage2->setPoints(Test1.TrackNoize);
 
-  PolynomApproximationDynamicTest<3> Test2;
-  NodeCoordSplitToTime SplitToTime; 
-                       SplitToTime.setResetCounter(SinusGenerator.Period.first);
-  //SinusGenerator | Test2;
-  SinusGenerator | SplitToTime(0) | Test2;
-                                    Test2.linkToGraph(graphWidget.GraphPointsStorage );
-                                    Test2.linkToGraph(graphWidget.GraphPointsStorage2);
-  SinusGenerator.slotStartGenerate(true);
-
-
-//  WidgetDeviceControl wid{"Device", Qt::Vertical};
-//  wid.enableScheme(0,1,1,0,0,0); wid.setScheme(5,0,0);
-//  wid.show();
-
-  return app.exec();
+  //PolynomApproximationDynamicTest<3> Test2;
+  //NodeCoordSplitToTime SplitToTime; 
+  //                     SplitToTime.setResetCounter(SinusGenerator.Period.first);
+  //SinusGenerator | SplitToTime(0) | Test2;
+  //                                  Test2.linkToGraph(graphWidget.GraphPointsStorage );
+  //                                  Test2.linkToGraph(graphWidget.GraphPointsStorage2);
+  //SinusGenerator.slotStartGenerate(true);
+  //return app.exec();
+  //=====================================================================================
   
-  //printRegisteredTypes();
+  TypeRegister<>::printRegisteredTypes();
 
   //ControlPTZCamera PTZDevice;
   //                 PTZDevice.connectToCamera("192.168.1.11", "8899", "admin", "admin");
 
 
+
   WidgetComplexInterface* WindowInterface = new WidgetComplexInterface;
+
+                         KeyboardFilter key;
+   WindowInterface->installEventFilter(&key);
+  
   //=====================================================================================================
   //MESSAGES
   using MessageType1    = MessageGeneric<void*, MESSAGE_HEADER_GENERIC>;
@@ -269,38 +242,41 @@ int main(int argc, char* argv[])
   using DeviceAiming1 = DeviceGenericAiming<UDPConnectionEngine, 0>;
   using DeviceAiming2 = DeviceGenericAiming<UDPConnectionEngine, 1>;
 
-  using DeviceLaserPower = DeviceLaserInterface      <UDPConnectionEngine,1>; 
-  using DeviceLaserIllum = DeviceLaserInterface      <UDPConnectionEngine,2>; 
-  using DeviceFocusator  = DeviceFocusRangerInterface<UDPConnectionEngine,3> ; 
+  using DeviceLaserPower = DeviceLaserInterface      <UDPConnectionEngine,0>; 
+  using DeviceLaserIllum = DeviceLaserInterface      <UDPConnectionEngine,1>; 
+  using DeviceFocusator  = DeviceFocusRangerInterface<UDPConnectionEngine,2> ; 
 
-                           using CommandScanator = MessageGenericExt<CommandSetPair<0>, MESSAGE_HEADER_EXT   >;
+                           using CommandScanator = MessageGenericExt<CommandSetPosScanator, MESSAGE_HEADER_EXT   >;
                            using CommandPlatform = MessageGenericExt<ControlTX        , MESSAGE_HEADER_ROTARY>;
-  using DeviceScanator = DeviceRotaryControl<UDPConnectionEngine, CommandScanator, RequestStateScanator>;
+
+  using DeviceScanator = DeviceRotaryControl<UDPConnectionEngine, CommandScanator, RequestPosScanator>;
   using DevicePlatform = DeviceRotaryControl<UDPConnectionEngine, CommandPlatform, ControlRX>;
 
   using DeviceLid        = DeviceLidControl<UDPConnectionEngine>;
   //=====================================================================================================
 
   //LASERS
-  std::shared_ptr<DeviceGenericHandleControl> ControlLaserPower = std::make_shared<DeviceLaserPower>(ConnectionInterface3 , "Силовой лазер");
-  std::shared_ptr<DeviceGenericHandleControl> ControlLaserIllum = std::make_shared<DeviceLaserIllum>(ConnectionInterface3 , "Подсветчик");
+  std::shared_ptr<DeviceGenericHandleControl> ControlLaserPower = std::make_shared<DeviceLaserPower>(ConnectionInterface3 , "[LASER_POWER]");
+  std::shared_ptr<DeviceGenericHandleControl> ControlLaserIllum = std::make_shared<DeviceLaserIllum>(ConnectionInterface3 , "[LASER_POINTER]");
   //FOCUS CONTROL
-  std::shared_ptr<DeviceGenericHandleControl> ControlFocusator  = std::make_shared<DeviceFocusator >(ConnectionInterface3 , "Фокусатор");
+  std::shared_ptr<DeviceGenericHandleControl> ControlFocusator  = std::make_shared<DeviceFocusator >(ConnectionInterface3 , "[FOCUSATOR]");
   //=====================================================================================================
   //LIDS
-  std::shared_ptr<DeviceGenericHandleControl> ControlLid  = std::make_shared<DeviceLid>(ConnectionInterface5);
+  std::shared_ptr<DeviceGenericHandleControl> ControlLid  = std::make_shared<DeviceLid>(ConnectionInterface5, "[LIDS]");
   //==================================================================================================================
   //ROTARY SCANATOR
-  std::shared_ptr<DeviceScanator> ControlScanator = std::make_shared<DeviceScanator>(ConnectionInterface1, CONTROL_PARAM::POS);
-  std::shared_ptr<DevicePlatform> ControlPlatform = std::make_shared<DevicePlatform>(ConnectionInterface4, CONTROL_PARAM::VEL);
+  std::shared_ptr<DeviceScanator> ControlScanator = std::make_shared<DeviceScanator>(ConnectionInterface1, CONTROL_PARAM::POS, "[SCANATOR]");
+  std::shared_ptr<DevicePlatform> ControlPlatform = std::make_shared<DevicePlatform>(ConnectionInterface4, CONTROL_PARAM::VEL, "[PLATFORM]");
 
-  std::shared_ptr<DeviceGenericHandleControl> ControlAiming1 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine, 0>>(ConnectionInterface1);
-  std::shared_ptr<DeviceGenericHandleControl> ControlAiming2 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine, 1>>(ConnectionInterface2);
+  std::shared_ptr<DeviceGenericHandleControl> ControlAiming1 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine, 0>>(ConnectionInterface1, "[AIMING1]");
+  std::shared_ptr<DeviceGenericHandleControl> ControlAiming2 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine, 1>>(ConnectionInterface2, "[AIMING2]");
 
+    ControlScanator->setNull(QPair<float,float>(0,0));
     ControlScanator->setLimits<CONTROL_PARAM::POS>(30000,30000);
+
+    ControlPlatform->setNull(QPair<float,float>(0,72));
     ControlPlatform->setLimits<CONTROL_PARAM::POS>(180,180); ControlPlatform->setMode(CONTROL_PARAM::POS);
     ControlPlatform->setLimits<CONTROL_PARAM::VEL>(10,10 );
-    ControlPlatform->setToNull();
 
   WindowInterface->widgetLidControl->linkToDevice(ControlLid);
 

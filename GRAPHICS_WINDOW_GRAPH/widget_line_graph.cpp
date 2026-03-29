@@ -46,7 +46,7 @@ void WidgetLineGraph::InitGraphWidget()
     //QMetaObject::invokeMethod(model,"insertSeries",0, GraphPointsStorage->ListPoints);
 
     PlotWidget->setSource(QUrl::fromLocalFile("D:/DEVELOPMENT/PROJECTS/CURRENT/PROJ_CONTROI_INTERFACE_RUBY/GRAPHICS_WINDOW_GRAPH/main.qml"));
-    qDebug() << "==========================";
+    //qDebug() << "==========================";
 
     PlotWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
     PlotWidget->resize(800,800);

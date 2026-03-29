@@ -35,7 +35,7 @@ class MessageGeneric
     MessageGeneric() 
     { 
       HEADER.MESSAGE_IDENT = TypeRegister<T>::GetTypeID(); 
-      qDebug() << "[ CREATE MESSAGE GENERIC  NON STANDART ]";
+      //qDebug() << "[ CREATE MESSAGE GENERIC  NON STANDART ]";
     };
 	public:
     H HEADER;
@@ -55,9 +55,9 @@ class MessageGeneric<T, H>
     { 
       defaultMessage >> DATA;
       HEADER.MESSAGE_IDENT = TypeRegister<T>::GetTypeID(); 
-      qDebug() << "[ CREATE MESSAGE GENERIC VARIABLE ] SIZE: " << H::getMaxSizeStatic() 
-               << "ID: " << TypeRegister<T>::GetTypeID()
-               << "TYPE: " << TypeRegister<T>::GetTypeName();
+      //qDebug() << "[ CREATE MESSAGE GENERIC VARIABLE ] SIZE: " << H::getMaxSizeStatic() 
+      //         << "ID: " << TypeRegister<T>::GetTypeID()
+      //         << "TYPE: " << TypeRegister<T>::GetTypeName();
     };
 	public:
     static H HEADER;
@@ -86,7 +86,7 @@ class MessageGeneric<T,H>
     { 
       HEADER.DATA_SIZE = sizeof(T);
       HEADER.MESSAGE_IDENT = TypeRegister<T>::GetTypeID();
-      qDebug() << "[ CREATE MESSAGE GENERIC STANDART ]";
+      //qDebug() << "[ CREATE MESSAGE GENERIC STANDART ]";
     };
 	public:
     H HEADER;

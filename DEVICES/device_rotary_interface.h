@@ -271,6 +271,7 @@ public:
   //===============================================================================================
 
 
+  void setNull(QPair<float,float> PosNull) { PositionNullDevice = PosNull; setToNull(); };
 	void setToNull();
   void loadSettings();
   std::shared_ptr<PortAdapter<DeviceRotaryInterface>> PortMoveRelative = nullptr;
@@ -290,9 +291,8 @@ template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
 DeviceRotaryControl<T_CONNECTION, T_COMMAND, T_MESSAGE>::DeviceRotaryControl(std::shared_ptr<T_CONNECTION> Connection, CONTROL_PARAM ControlType, QString Name): 
 DeviceGenericInterface<T_CONNECTION,T_COMMAND, T_MESSAGE>(Connection, Name)
 {
-	setToNull();
 
-  ControlRotaryPos   = std::make_shared<DeviceRotaryControlAdapter<DEVICE_TYPE>>();
+  ControlRotaryPos = std::make_shared<DeviceRotaryControlAdapter<DEVICE_TYPE>>();
   ControlRotaryVel = std::make_shared<DeviceRotaryControlAdapter<DEVICE_TYPE>>();
 
   ControlRotaryPos->linkAdapter(this, &DEVICE_TYPE::moveToPos, &DEVICE_TYPE::getPos);
@@ -316,7 +316,6 @@ DeviceGenericInterface<T_CONNECTION,T_COMMAND, T_MESSAGE>(Connection, Name)
                                       &DeviceRotaryInterface::getPos);
   PortMoveVelocity->linkAdapter(this, &DeviceRotaryInterface::moveWithVelocity, 
                                       &DeviceRotaryInterface::getPos);
-  setMode(CONTROL_PARAM::VEL); 
 }
 
 template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
@@ -364,7 +363,6 @@ void DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::setToNull()
                     PositionTargetDevice = PositionTarget + PositionNullDevice; 
   this->sendCommand(PositionTargetDevice);                  PositionRelativeAnchor = PositionTarget;
 
-  qDebug() << "SET TO NULL: " << PositionTargetDevice.first << PositionTargetDevice.second;
 }
 
 template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
@@ -416,7 +414,7 @@ template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
 void DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::setMode  (CONTROL_PARAM Mode) 
 {                                   ControlEngineTarget.Engine1.Mode = (int)Mode; 
                                     ControlEngineTarget.Engine2.Mode = (int)Mode; 
-  DEVICE_INTERFACE::Command.setData(ControlEngineTarget); qDebug() << "ROTARY MODE: " << Qt::hex << (int)Mode;
+  DEVICE_INTERFACE::Command.setData(ControlEngineTarget); 
   if(Mode == CONTROL_PARAM::VEL) PortMoveActive = PortMoveVelocity;
   if(Mode == CONTROL_PARAM::POS) PortMoveActive = PortMovePosition; };
 

@@ -15,7 +15,7 @@ class PolynomApproximationDynamicTest: public PassCoordClass<float>
   int NumberPoints = 140;
   PolynomApproximation<NUM_PARAM> trackApproximation{NumberPoints};
 
-  NodeCoordRandomizer<float> Randomize{0,20};
+  NodeCoordRandomizer<float> Randomize{0,10};
 
 	void setInput(const QPair<float, float>& Coord) 
   { 

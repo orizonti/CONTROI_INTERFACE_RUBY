@@ -78,6 +78,26 @@ class CommandSetPair
    friend void operator<<(QDataStream& stream, CommandSetPair& command) { stream << command.Param1 << command.Param2; };
 };
 
+template<int N_CHAN>
+class CommandAiming
+{
+   public:
+   QPair<float,float> AimPos;
+   QPair<float,float> AimCorrection;
+
+   public:
+   template<typename T> void operator=(const QPair<T,T>& Pos) { AimPos = Pos; };
+   template<typename T> void setData  (const QPair<T,T>& Pos) { AimPos = Pos; };
+   template<typename T> void setData  (const QPair<T,T>& Pos, const QPair<T,T>& Correction) 
+   { 
+    AimPos = Pos; AimCorrection = Correction; };
+
+   friend void operator<<(QDataStream& stream, CommandAiming& command) { stream << command.AimPos.first 
+                                                                                << command.AimPos.second 
+                                                                                << command.AimCorrection.first 
+                                                                                << command.AimCorrection.second; };
+};
+
 template<int NUM_DEV>
 struct RequestDevice
 {
@@ -110,6 +130,25 @@ struct RequestPositionState
     uint16_t Sensor2;
 };
 
+template<int N_CHAN>
+struct RequestAimingState
+{
+    public:
+    uint16_t Position1;
+    uint16_t Position2;
+
+    uint16_t Velocity;
+    uint16_t Acceleration;
+
+    uint16_t Dispersion;
+    uint16_t TraitAim;
+
+    float ErrorAiming;
+    float TrackParam1;
+    float TrackParam2;
+    float TrackParam3;
+};
+
 struct CommandCheckConnection  { uint8_t Connect  = 0xC5; uint8_t Connect2 = 0xC6; };
 struct CommandCloseConnection  { uint8_t Close1   = 0xC6; uint8_t Close2   = 0xC6; };
 
@@ -127,6 +166,15 @@ struct CommandCalibration
     uint16_t  Reserve3      = 1;
 };
 
+using CommandSetPosRotary   = CommandSetPair<0>;
+using CommandSetPosScanator = CommandSetPair<1>;
+       using RequestPosRotary   = RequestMoveState<0>;
+       using RequestPosScanator = RequestMoveState<1>;
+
+using CommandAiming1 = CommandAiming<0>;
+using CommandAiming2 = CommandAiming<1>;
+       using RequestAiming = RequestAimingState<1>;
+//=====================================================
 using CommandDeviceLaserPointer = CommandDeviceRedux<0>;
 using CommandDeviceLaserPower   = CommandDeviceRedux<1>;
 using CommandDeviceFocusator    = CommandDeviceRedux<2>;
@@ -135,11 +183,7 @@ using RequestDeviceController   = RequestDevice<0>;
 using RequestDeviceLaserPower   = RequestDevice<1>;
 using RequestDeviceLaserPointer = RequestDevice<2>;
 using RequestDeviceFocusator    = RequestDevice<3>;
-
-using RequestStateRotary      = RequestMoveState<0>;
-using RequestStateScanator    = RequestMoveState<1>;
-using RequestPosStateRotary   = RequestPositionState<0>;
-using RequestPosStateScanator = RequestPositionState<1>;
+//=====================================================
 
 
 #define LASER_CHECK 0x20

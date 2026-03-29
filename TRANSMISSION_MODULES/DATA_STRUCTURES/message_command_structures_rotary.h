@@ -192,6 +192,7 @@ class CommandLidControlJson : public CommandJson
   void printCommand() { qDebug() << "[ COMMAND LID ] " << command_string.c_str(); }
   template<typename T> void setData(T Param) {}; 
 
+  static QString printDataType() { return "CommandLidControlJson"; }
 };
 
 class MessageRotaryStateJson : public CommandJson

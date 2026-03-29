@@ -36,6 +36,14 @@ template<> constexpr int TypeRegister<RequestMoveState<2>  >::ID() { return 32;}
 template<> constexpr int TypeRegister<RequestMoveState<3>  >::ID() { return 33;}; 
 template<> constexpr int TypeRegister<RequestMoveState<4>  >::ID() { return 34;}; 
 
+template<> constexpr int TypeRegister<CommandAiming<0>  >::ID() { return 40;}; 
+template<> constexpr int TypeRegister<CommandAiming<1>  >::ID() { return 41;}; 
+template<> constexpr int TypeRegister<CommandAiming<2>  >::ID() { return 42;}; 
+template<> constexpr int TypeRegister<CommandAiming<3>  >::ID() { return 43;}; 
+
+template<> constexpr int TypeRegister<RequestAimingState<0>  >::ID() { return 44;}; 
+template<> constexpr int TypeRegister<RequestAimingState<1>  >::ID() { return 46;}; 
+
 template<> constexpr int TypeRegister<CommandDeviceRedux<0>>::ID() { return 0x110; };
 template<> constexpr int TypeRegister<CommandDeviceRedux<1>>::ID() { return 0x120; };
 template<> constexpr int TypeRegister<CommandDeviceRedux<2>>::ID() { return 0x130; };

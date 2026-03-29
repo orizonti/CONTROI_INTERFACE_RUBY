@@ -39,12 +39,12 @@ CameraInterfaceUniversal::CameraInterfaceUniversal(QString strVideoSource, QStri
 
 
   #ifdef GST_CAPTURE
-      qDebug() << "MAKE PIPE: " << strVideoSource;
+      //qDebug() << "MAKE PIPE: " << strVideoSource;
 
                                                            GError *err = nullptr;
       GstElement* pipeLineInput = gst_parse_launch   (strVideoSource.toStdString().c_str(), &err);  
           frameInputNode = gst_bin_get_by_name(GST_BIN (pipeLineInput), "sink_node");        
-          qDebug() << "INPUT NODE: " << frameInputNode;
+          //qDebug() << "INPUT NODE: " << frameInputNode;
              auto result = gst_element_set_state(pipeLineInput, GST_STATE_PLAYING);          
                            //gst_element_set_state(pipeLineInput, GST_STATE_NULL); gst_object_unref(pipeLineInput);
   QObject::connect(&timerWaitFrame, SIGNAL(timeout()),this, SLOT(slotWaitFrame()));

@@ -25,7 +25,7 @@ SinusGeneratorClass::SinusGeneratorClass(QObject* Obj) : QObject(Obj)
 
 void SinusGeneratorClass::moveToAnotherThread()
 {
-    qDebug() << "[ SINUS GENERATOR MOVE TO THREAD ]";
+    //qDebug() << "[ SINUS GENERATOR MOVE TO THREAD ]";
 	QObject::disconnect(this->TimerGenerateSinus, SIGNAL(timeout()), this, SLOT(slotCalculateValue()));
 	QObject::disconnect(this, SIGNAL(signalStartGenerate()), TimerGenerateSinus, SLOT(start()));
 	QObject::disconnect(this, SIGNAL(signalStopGenerate()) , TimerGenerateSinus, SLOT(stop() ));
@@ -49,10 +49,8 @@ void SinusGeneratorClass::moveToAnotherThread()
 
 SinusGeneratorClass::~SinusGeneratorClass()
 {
-    qDebug() << "[ STOP SINUS GENERATOR ]";
     emit signalEndWork();
     QThread::currentThread()->msleep(200);
-    qDebug() << "[ DELETE: SINUS GENERATOR ]";
 }
 
 void SinusGeneratorClass::setInput(const QPair<float,float>& Coord) { }
@@ -123,7 +121,7 @@ void SinusGeneratorClass::slotCalculateValue()
 
 void SinusGeneratorClass::slotStartGenerate(bool StartStop)
 {
-    qDebug() << "[ SINUS GENERATOR ] START GENERATE  [ " << StartStop << " ]";
+    //qDebug() << "[ SINUS GENERATOR ] START GENERATE  [ " << StartStop << " ]";
 	if (StartStop) emit signalStartGenerate();
 	          else emit signalStopGenerate() ;
 }

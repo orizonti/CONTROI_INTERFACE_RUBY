@@ -31,7 +31,7 @@ public:
     void AppendCallback(const MessageCall& Call)
     {
        CallList[TypeRegister<T>::ID()] = Call;
-       qDebug() << "APPEND CALLBACK TO : "<< typeid(T).name() << " ID:" << TypeRegister<T>::ID() << "[ MAP ]";
+       qDebug() << "APPEND CALLBACK TO : "<< typeid(T).name() << " ID:" << TypeRegister<T>::ID();
     }
 
 
@@ -139,7 +139,8 @@ public:
                       CallList.insert(CallList.begin(), List.begin(), List.end());
        }
        CallList[TypeRegister<T>::ID()] = Call;
-       qDebug() << "APPEND CALLBACK TO : "<< typeid(T).name() << " ID:" << TypeRegister<T>::ID();
+       qDebug() << "APPEND CALLBACK TO : "<< TypeRegister<T>::GetTypeName() << " ID:" << TypeRegister<T>::ID();
+
     }
 
     template< typename T, typename MessageType> 

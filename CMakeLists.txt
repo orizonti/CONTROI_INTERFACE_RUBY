@@ -115,6 +115,7 @@ add_executable (testCameraRTSP
 
         "./UTILITIES/debug_output_filter.cpp"
         "./UTILITIES/sinus_generator_class.cpp"
+        "./UTILITIES/engine_keyfilter.cpp"
 
         "./UTILITIES/register_settings.cpp"
         "./CAMERA_RTSP_INTERFACE/interface_camera_rtsp.cpp"

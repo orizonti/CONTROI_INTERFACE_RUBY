@@ -55,7 +55,6 @@ void SinkDisplayLabel::setImageFrom(SourceImageDisplayInterface* Src)
 
 void SinkDisplayLabel::linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device)    
 {
-    qDebug() << "[ SINK DISPLAY LINK TO DEVICE ]";
 	QObject::connect(LabelDisplay, &LabelActiveImage::signalPosPicked, [Device](std::pair<float,float> Coord) 
 	{
        Device->setPair(Coord);

@@ -29,7 +29,6 @@ public:
 
     explicit DeviceLaserInterface(std::shared_ptr<T_CONNECTION> Connection, QString Name = "[ DEVICE ]");
 	        ~DeviceLaserInterface();
-	QString TAG_NAME{"[ LASER ]"};
 	QString DISPLAY_NAME{"Силовой лазер"};
 
 	public:
@@ -53,7 +52,6 @@ public:
     void setValue(float Value) override { setPower(90*Value); }
 	void setEnable(bool OnOff, uint16_t Number = 0) override
     {
-        qDebug() << TAG_NAME << "[ ENAGLE BLOCK ]" << Number << OnOff;
         if(Number == 1) setPowerEnable(OnOff); 
         if(Number == 2) setPilotEnable(OnOff); 
     }
@@ -61,14 +59,11 @@ public:
 
 	void setPower(uint16_t Value)   
     { 
-        qDebug() << "====================================";
-        qDebug() << "SET POWER: " << Value;
-        QTimer::singleShot(10,   [this]() { this->setPowerEnable(false); qDebug() << "[ LASER BEAM OFF ]";        });
-        QTimer::singleShot(1000, [this]() { this->setReady(false);       qDebug() << "[ LASER DISABLE  ]";        });
-        QTimer::singleShot(2000, [this]() { this->setCheckProcedure();   qDebug() << "[ LASER ENABLE   ]";        });
-        QTimer::singleShot(3000, [this]() { this->setReady(true);        qDebug() << "[ LASER ENABLE   ]";        });
-        QTimer::singleShot(4000, [this,Value]() { this->setParam(LASER_MODULE_POWER, Value);   
-                                                                        qDebug() << "[ LASER SET POWER ]" << Value; });
+        QTimer::singleShot(10,   [this]()       { this->setPowerEnable(false); });
+        QTimer::singleShot(1000, [this]()       { this->setReady(false);       });
+        QTimer::singleShot(2000, [this]()       { this->setCheckProcedure();   });
+        QTimer::singleShot(3000, [this]()       { this->setReady(true);        });
+        QTimer::singleShot(4000, [this,Value]() { this->setParam(LASER_MODULE_POWER, Value); });
     };
 	void setPowerHigh()   { setPower(90); };
 	void setPowerLow()    { setPower(15);  };
@@ -82,7 +77,7 @@ private:
 };
 
 template<typename T_CONNECTION, int NUM_DEVICE>
-DeviceLaserInterface<T_CONNECTION,NUM_DEVICE>::~DeviceLaserInterface() { qDebug() << TAG_NAME << "DELETE"; }
+DeviceLaserInterface<T_CONNECTION,NUM_DEVICE>::~DeviceLaserInterface() { qDebug() << this->TAG_NAME << "DELETE"; }
 
 template<typename T_CONNECTION, int NUM_DEVICE>
 void DeviceLaserInterface<T_CONNECTION, NUM_DEVICE>::setParam(uint16_t ID, uint32_t Value)
@@ -90,7 +85,6 @@ void DeviceLaserInterface<T_CONNECTION, NUM_DEVICE>::setParam(uint16_t ID, uint3
 	uint8_t param = Value > 0 ? 1 : 0;  
 	Command.DATA.Command = ID_PARAM_KEY[ID][param];
 	Command.DATA.Param    = Value;
-    qDebug() << "CODE: " << Qt::hex << Command.DATA.Command << " PARAM: " << Qt::dec << Command.DATA.Param;
     this->sendCommand(Command);
 }
 
@@ -99,7 +93,6 @@ void DeviceLaserInterface<T_CONNECTION, NUM_DEVICE>::setCheckProcedure()
 {
 	Command.DATA.Command  = 0x20;
 	Command.DATA.Param    = 0;
-    qDebug() << "CODE: " << Qt::hex << Command.DATA.Command << " PARAM: " << Qt::dec << Command.DATA.Param;
 	this->sendCommand(Command);
 }
 
@@ -113,7 +106,7 @@ template<typename T_CONNECTION, int NUM_DEVICE>
 DeviceLaserInterface<T_CONNECTION, NUM_DEVICE>::DeviceLaserInterface(std::shared_ptr<T_CONNECTION> Connection, QString Name): 
 DEVICE_INTERFACE(Connection, Name)
 {
-  QTimer::singleShot(100, [this]()  { this->setCheckProcedure(); qDebug() << "[ LASER ENABLE ]";        });
+  QTimer::singleShot(100, [this]()  { this->setCheckProcedure(); });
 
   DISPLAY_NAME = Name;
   KEY_MODULE[LASER_FAULT]     = LASER_MODULE;

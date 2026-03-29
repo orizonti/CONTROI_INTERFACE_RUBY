@@ -17,6 +17,7 @@ class MessageGenericExt : public MessageGeneric<T,H>
      QByteArray castToByteArray();
            void dumpToByteArray(QByteArray& array);
            void operator>>     (QByteArray& array);
+    static QString printDataType() { return TypeRegister<T>::GetTypeName(); };
 
         QString toString();
            bool isMessasge() { return (this->HEADER.isValid()); };
@@ -26,6 +27,11 @@ class MessageGenericExt : public MessageGeneric<T,H>
   template<typename T_PARAM> void setData(const T_PARAM& DATA_PARAMS) 
   { 
     this->DATA = DATA_PARAMS; 
+  };
+
+  template<typename T_PARAM> void setData(const T_PARAM& PARAM1, const T_PARAM& PARAM2) 
+  { 
+    this->DATA.setData(PARAM1, PARAM2);; 
   };
       MessageGenericExt<void*,H>& toGenericMessage() { return *reinterpret_cast<MessageGenericExt<void*,H>*>(this);  }
   private:
@@ -38,8 +44,8 @@ template<typename T,typename H>
 MessageGenericExt<T,H>::MessageGenericExt() 
 {
    this->HEADER.MESSAGE_IDENT = TypeRegister<T>::GetTypeID(); 
-   qDebug() << "[ CREATE MESSAGE GENERIC ] " << Qt::hex << TypeRegister<T>::GetTypeID() << TypeRegister<T>::GetTypeName() ;
-   qDebug() << Qt::hex << this->toByteArray();
+   //qDebug() << "[ CREATE MESSAGE GENERIC ] " << Qt::hex << TypeRegister<T>::GetTypeID() << TypeRegister<T>::GetTypeName() ;
+   //qDebug() << Qt::hex << this->toByteArray();
 };
 template<typename T,typename H> 
  QString MessageGenericExt<T,H>::toString() { return QString("VAL: %1").arg(this->DATA); }
