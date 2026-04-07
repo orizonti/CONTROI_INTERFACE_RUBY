@@ -37,18 +37,19 @@ public:
 
     virtual void putMessage(T_MESSAGE Message) {};
 
+	void transmitMessage(const char* Message, int size, uint16_t param = 0) { ConnectionDevice->slotSendMessage(Message, size, param); }
+
 	void setParam (uint16_t CommandID, uint32_t CommandParam) override {};
 	void setParam (uint16_t CommandID, float    CommandParam) override {} ;
 
-	void sendCommand(QByteArray command) 
-	{ 
-		ConnectionDevice->slotSendMessage(command); 
-	};
+	void sendCommand(QByteArray command) { ConnectionDevice->slotSendMessage(command); };
+
 	void sendCommand(T_COMMAND& commandToSend) 
 	{ 
 		qDebug()<< TAG_NAME << "[ SEND COMMAND ]" << T_COMMAND::printDataType();
 				  Command = commandToSend;
 				  Command.dumpToByteArray(MessageOutputBuffer);
+
 		ConnectionDevice->slotSendMessage(MessageOutputBuffer);
 	                                      //MessageOutputBuffer = command.castToByteArray();
 	};

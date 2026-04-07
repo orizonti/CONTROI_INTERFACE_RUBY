@@ -27,7 +27,7 @@ class CANConnectionEngine : public ConnectionInterface
 {
     Q_OBJECT
 public:
-  explicit CANConnectionEngine(QString Device, QObject *parent = nullptr);
+  explicit CANConnectionEngine(QObject *parent = nullptr);
           ~CANConnectionEngine();
 
 public:
@@ -48,17 +48,14 @@ public:
   //void linkTo(std::shared_ptr<DispatcherType> Dispatcher) { DispatcherLinked = Dispatcher; }  
 
 public slots:
-  void slotSendMessage(const QByteArray& ArrayCommand, uint16_t IDDevice = 0);
-  //void slotSendMessage(const char* DataCommand, int size, uint16_t IDDevice = 0);
+  void slotSendMessage(const QByteArray& ArrayCommand, uint8_t IDDevice = 0);
+  void slotSendMessage(const char* DataCommand, int size, uint8_t IDDevice = 0);
 
   void slotCheckConnection();
   void slotCloseConnection(){};
 
 private slots:
   void slotReadData();
-
-private:
-  //std::shared_ptr<DispatcherType> DispatcherLinked = nullptr;
 
 signals:
   void signalMessageAvailable();
@@ -70,20 +67,19 @@ class CANTestMessage: public QObject
   Q_OBJECT
   public:
   CANTestMessage(QObject* parent = nullptr) : QObject(parent) 
-  { connect(&timerSendTest,&QTimer::timeout, this, &CANTestMessage::slotSendTest); };
+  { 
+    //connect(&timerSendTest,&QTimer::timeout, this, &CANTestMessage::slotSendTest); 
+  };
 
   void linkTo(CANConnectionEngine* device) { deviceCAN = device; };
   CANConnectionEngine* deviceCAN = nullptr;
 
   QTimer timerSendTest;
-  CommandSetPosScanator Command;
-  QByteArray message{(const char*)&Command, sizeof(Command)};
+ // CommandSetPosScanator Command;
+ // QByteArray message{(const char*)&Command, sizeof(Command)};
 
 public slots:
-  virtual void slotSendTest()
-  { 
-    deviceCAN->slotSendMessage((const QByteArray&)message, TypeRegister<CommandSetPosScanator>::GetTypeID()); 
-  }
+  //virtual void slotSendTest(){ deviceCAN->slotSendMessage(message, TypeRegister<CommandSetPosScanator>::GetTypeID()); }
   void slotStartSendTest(bool OnOff) {if(deviceCAN == nullptr) return; if(OnOff) timerSendTest.start(1000); else timerSendTest.stop(); }
 
 };
@@ -103,13 +99,13 @@ class CANDelayMeasure: public CANTestMessage
     connect(device,&CANConnectionEngine::signalMessageAvailable, this, &CANDelayMeasure::slotMessageReceived); 
     deviceCAN = device; 
   };
-  void slotSendTest() override 
-  { 
+  //void slotSendTest() override 
+  //{ 
 
-    qDebug() << "[ CAN DELAY START ] ";
-    timeStart = std::chrono::high_resolution_clock::now();
-    CANTestMessage::slotSendTest();
-  }
+  //  qDebug() << "[ CAN DELAY START ] ";
+  //  timeStart = std::chrono::high_resolution_clock::now();
+  //  CANTestMessage::slotSendTest();
+  //}
 
 public slots:
   void slotMessageReceived()

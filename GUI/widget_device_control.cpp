@@ -316,7 +316,7 @@ void WidgetDeviceControl::linkSignals()
     //if(!groupArrows->isVisible()) return;
 
     std::vector<QPair<float,float>> VelsVector;
-    float VelocityScale = 0.5;
+    float VelocityScale = 0.10;
     if(schemeArrowsControl == 4)
     {
         buttonsArrow.push_back(buttonLeft);  VelsVector.push_back(QPair<float,float>(-VelocityScale, 0));

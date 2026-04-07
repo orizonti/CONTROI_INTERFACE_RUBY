@@ -43,14 +43,14 @@ void TCPConnectionEngine::slotReadData()
 }
 
 
-void TCPConnectionEngine::slotSendMessage(const QByteArray& Command, uint16_t Param)
+void TCPConnectionEngine::slotSendMessage(const QByteArray& Command, uint8_t Param)
 {
    //qDebug() << OutputFilter::Filter(1) << "SEND COMMAND: " << QString(Command.toHex());
    if(!Socket) return;
    if(!Socket->isOpen()) return; Socket->write(Command);
 }
 
-void TCPConnectionEngine::slotSendMessage(const char* DataCommand, int size, uint16_t Param)
+void TCPConnectionEngine::slotSendMessage(const char* DataCommand, int size, uint8_t Param)
 {
    if(!Socket) return;
    if(!Socket->isOpen()) return; Socket->write(DataCommand,size);

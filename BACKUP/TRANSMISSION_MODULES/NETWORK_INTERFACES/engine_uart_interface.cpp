@@ -55,7 +55,7 @@ void UARTConnectionEngine::slotReadData()
 }
 
 
-void UARTConnectionEngine::slotSendMessage(const QByteArray& Command, uint16_t Param)
+void UARTConnectionEngine::slotSendMessage(const QByteArray& Command, uint8_t Param)
 {
    //qDebug() << OutputFilter::Filter(1) << "SEND COMMAND: " << QString(Command.toHex());
    qDebug() << "SEND COMMAND: " << QString(Command.toHex());
@@ -63,7 +63,7 @@ void UARTConnectionEngine::slotSendMessage(const QByteArray& Command, uint16_t P
    //if(!Port.isOpen()) return; Port.write(Command);
 }
 
-void UARTConnectionEngine::slotSendMessage(const char* DataCommand, int size, uint16_t Param)
+void UARTConnectionEngine::slotSendMessage(const char* DataCommand, int size, uint8_t Param)
 {
    qDebug() << "SEND COMMAND: " << QString(QByteArray(DataCommand,size).toHex());
     Port.write(QString("t12324545...[CR]").toUtf8());

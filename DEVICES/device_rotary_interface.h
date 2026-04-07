@@ -57,7 +57,7 @@ class DynamicModule: public QObject
     VelocityLimit.second = Device->getLimits().second/600;
   }
 
-  int PeriodStep  = 40;
+  int PeriodStep  = 2;
 
   QPair<float,float> VelocityLimit;
   QPair<float,float> Velocity;
@@ -200,7 +200,7 @@ public:
 
 	void stopMove()  override 
   { 
-    moveWithVelocity(QPair<float,float>(0,0)); 
+    //moveWithVelocity(QPair<float,float>(0,0)); 
     ModuleMoveVelocity.stopMove(); 
   }
   //===============================================================================================
@@ -271,7 +271,7 @@ public:
   //===============================================================================================
 
 
-  void setNull(QPair<float,float> PosNull) { PositionNullDevice = PosNull; setToNull(); };
+  void setNull(QPair<float,float> PosNull) { setMode(CONTROL_PARAM::POS); PositionNullDevice = PosNull; setToNull();  };
 	void setToNull();
   void loadSettings();
   std::shared_ptr<PortAdapter<DeviceRotaryInterface>> PortMoveRelative = nullptr;
@@ -291,6 +291,7 @@ template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
 DeviceRotaryControl<T_CONNECTION, T_COMMAND, T_MESSAGE>::DeviceRotaryControl(std::shared_ptr<T_CONNECTION> Connection, CONTROL_PARAM ControlType, QString Name): 
 DeviceGenericInterface<T_CONNECTION,T_COMMAND, T_MESSAGE>(Connection, Name)
 {
+  setMode(ControlType);
 
   ControlRotaryPos = std::make_shared<DeviceRotaryControlAdapter<DEVICE_TYPE>>();
   ControlRotaryVel = std::make_shared<DeviceRotaryControlAdapter<DEVICE_TYPE>>();
@@ -370,7 +371,6 @@ void DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::moveWithVelocity(con
 {
                                    VelocityTarget = Velocity;
                  this->sendCommand(VelocityTarget);
-
   qDebug() << "MOVE WITH VELOCITY: " << VelocityTarget.first << VelocityTarget.second;
 }
 

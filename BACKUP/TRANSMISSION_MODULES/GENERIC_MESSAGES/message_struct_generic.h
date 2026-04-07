@@ -116,7 +116,7 @@ class MessageGeneric<T,H>
   public:
 
                   bool isMessasge() { return (HEADER.isValid()); };
-                   int GetSize()       { return HEADER.DATA_SIZE + sizeof(H);  };
+                   int GetSize()    { return HEADER.DATA_SIZE + sizeof(H);  };
   constexpr static int GetSizeMessage() { return sizeof(MessageGeneric<T,H>); };
 
   MessageGeneric<void*,H>& toGenericMessage() { return *reinterpret_cast<MessageGeneric<void*,H>*>(this);  }

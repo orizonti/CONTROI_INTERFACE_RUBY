@@ -220,7 +220,7 @@ bool CameraInterfaceUniversal::checkHost(const QString& ipAddress)
 {
     QProcess process;
     process.start("nmap", QStringList() << "-sP" << ipAddress ); // Ping once on Windows
-    process.waitForFinished(5000);
+    process.waitForFinished(7000);
     auto output = QString(process.readAllStandardOutput());
     qDebug() << "[ CHECK HOST ] " << ipAddress;
 

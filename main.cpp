@@ -49,45 +49,150 @@
 #include "engine_keyfilter.h"
 
 QStringList LoadCameraLinks();
-
-#include "message_command_id.h"
+//#include "message_command_id.h"
 #include "engine_statistics_track.h"
 
 //=================================================
 //COMMAND TO INTERRACT WITH DEVICES VIA PROCESSOR MODULE 
-int ID0 = TypeRegister<CommandSetPosRotary  >::RegisterType("SET_POS_ROTARY"); 
-int ID1 = TypeRegister<CommandSetPosScanator>::RegisterType("SET_POS_SCANATOR");
-int ID2 = TypeRegister<RequestPosRotary  >::RegisterType("REQUEST_POS_SCANATOR");
-int ID3 = TypeRegister<RequestPosScanator>::RegisterType("REQUEST_POS_SCANATOR");
 
-int ID4 = TypeRegister<CommandAiming1>::RegisterType("COMMAND_AIMING1");
-int ID5 = TypeRegister<CommandAiming2>::RegisterType("COMMAND_AIMING2");
-int ID6 = TypeRegister<RequestAiming >::RegisterType("REQUEST_AIMING");
+template<> constinit const int TypeRegister<CommandSetPosRotary>      ::TYPE_ID{0 };
+template<> constinit const int TypeRegister<CommandSetPosScanator>    ::TYPE_ID{1 };
+template<> constinit const int TypeRegister<RequestPosRotary  >       ::TYPE_ID{2 };
+template<> constinit const int TypeRegister<RequestPosScanator>       ::TYPE_ID{3 };
+template<> constinit const int TypeRegister<CommandAiming1>           ::TYPE_ID{4 };
+template<> constinit const int TypeRegister<CommandAiming2>           ::TYPE_ID{5 };
+template<> constinit const int TypeRegister<RequestAiming >           ::TYPE_ID{6 };
+template<> constinit const int TypeRegister<CommandDeviceLaserPointer>::TYPE_ID{0x110};
+template<> constinit const int TypeRegister<CommandDeviceLaserPower  >::TYPE_ID{0x120};
+template<> constinit const int TypeRegister<CommandDeviceFocusator   >::TYPE_ID{0x130};
+template<> constinit const int TypeRegister<RequestDeviceLaserPointer>::TYPE_ID{0x210};
+template<> constinit const int TypeRegister<RequestDeviceLaserPower  >::TYPE_ID{0x220};
+template<> constinit const int TypeRegister<CommandCheckConnection   >::TYPE_ID{0x230};
+template<> constinit const int TypeRegister<SystemState>              ::TYPE_ID{22}; 
+template<> constinit const int TypeRegister<ControlTX  >              ::TYPE_ID{32};
+template<> constinit const int TypeRegister<ControlRX  >              ::TYPE_ID{42};
+template<> constinit const int TypeRegister<MessageRotaryStateJson >  ::TYPE_ID{100};
 
-int ID7 = TypeRegister<CommandDeviceLaserPower  >::RegisterType("COMMAND_LASER_POWER");
-int ID8 = TypeRegister<CommandDeviceLaserPointer>::RegisterType("COMMAND_LASER_POINTER");
-int ID9 = TypeRegister<CommandDeviceFocusator   >::RegisterType("COMMAND_LASER_FOCUSATOR");
+template<> class TypeRegisterSizes<sizeof(MESSAGE_HEADER_GENERIC)>
+{
+  public:
+      static constexpr std::array<int,100> SIZES
+      {
+          sizeof(CommandSetPosRotary      ),
+          sizeof(CommandSetPosScanator    ),
+          sizeof(RequestPosRotary         ),
+          sizeof(RequestPosScanator       ),
+          sizeof(CommandAiming1           ),
+          sizeof(CommandAiming2           ),
+          sizeof(RequestAiming            ),
+          sizeof(CommandDeviceLaserPower  ),
+          sizeof(CommandDeviceLaserPointer),
+          sizeof(CommandDeviceFocusator   ),
+          sizeof(RequestDeviceLaserPower  ),
+          sizeof(RequestDeviceLaserPointer),
+          sizeof(CommandCheckConnection   ),
+      };
 
-int ID10 = TypeRegister<RequestDeviceLaserPower  >::RegisterType("REQUEST_LASER_POWER");
-int ID11 = TypeRegister<RequestDeviceLaserPointer>::RegisterType("REQUEST_LASER_POINTER");
-
-int ID12 = TypeRegister<CommandCheckConnection  >::RegisterType("CHECK_CONNECTION");
-
-//=================================================
-//COMMAND TO DIRECT INTERRACT WITH ROTARY PLATFORM
-int ID21 = TypeRegister<SystemState>::RegisterType("SystemStateRotary"); 
-int ID22 = TypeRegister<ControlTX  >::RegisterType("ControlTXRotary");
-int ID23 = TypeRegister<ControlRX  >::RegisterType("ControlRXRotary");
+      static constexpr int HEADER_SIZE = sizeof(MESSAGE_HEADER_GENERIC);
+      static constexpr int MinSize = TypeRegisterSizes<0>::GetMinTypeSize(SIZES) + HEADER_SIZE; 
+      static constexpr int MaxSize = TypeRegisterSizes<0>::GetMaxTypeSize(SIZES) + HEADER_SIZE; 
+};
 
 
+class TestMessageTransmission
+{
+  static constexpr int MinSize = TypeRegister<>::GetMinTypeSize<sizeof(MESSAGE_HEADER_GENERIC)>();
+  using MessageType    = MessageGeneric<void*, MESSAGE_HEADER_GENERIC>;
+  using BufferType     = RingBufferGeneric<MESSAGE_HEADER_GENERIC, TypeRegister<>::GetMinTypeSize<MinSize>(), 20,IteratorMode::Continous>; 
+  using DispatcherType = MessageDispatcher<MESSAGE_HEADER_GENERIC, BufferType>;
 
-//template<> void CommandDispatcherGeneric<TypeRegister<CommandDevice<0>>::ID()>::dispatchCommand(const QByteArray& Command) { qDebug() << "DISPATCH COMMAND: " << TypeRegister<CommandDevice<0>>::TYPE_ID << " DEV 0"; };
-//template<> void CommandDispatcherGeneric<TypeRegister<CommandSetPair<0>>::ID()>::dispatchCommand(const QByteArray& Command) { qDebug() << "DISPATCH COMMAND: " << TypeRegister<CommandSetPair<0>>::TYPE_ID << " POS ROTARY"; };
+  public:
+
+  TestMessageTransmission()
+  {
+            Connection = std::make_shared<UDPConnectionEngine>();
+            RingBuffer = std::make_shared<BufferType>();
+            Dispatcher = std::make_shared<DispatcherType>();
+   *Connection | RingBuffer | Dispatcher;
+
+    Connection->connectTo("192.168.1.58",3333);
+    Connection->listenTo("192.168.1.121",4444);
+  }
+
+  std::shared_ptr<UDPConnectionEngine>     Connection ;
+  std::shared_ptr<MessageStorageInterface> RingBuffer ;
+  std::shared_ptr<DispatcherType>          Dispatcher ;
+
+  template<typename T> void addType() 
+  { 
+    Dispatcher->AppendCallback<T> ( [](MessageType& Message)
+    {
+     auto data = DispatcherType::ExtractData<T>(&Message); qDebug() << "GET REQUEST: " << TypeRegister<T>::GetTypeName() <<  data->print();
+    });
+  };
+
+  template<typename T> void pushMessage(const T& Data)
+  {
+     auto Message = new MessageGeneric<T,MESSAGE_HEADER_GENERIC>;   
+          Message->DATA = Data;
+
+    qDebug() << "PUT MESSAGE: " << TypeRegister<T>::GetTypeName() 
+             << " ID: "   << Message->HEADER.MESSAGE_IDENT 
+             << " SIZE: " << Message->HEADER.DATA_SIZE << " SIZE_MESSAGE: " << Message->GetSizeMessage();
+             
+    Connection->slotSendMessage((const char*)Message, Message->GetSizeMessage(),0);
+    delete Message;
+  }
+};
 
 
 int main(int argc, char* argv[])
 {
   QApplication app(argc,argv);
+
+  TypeRegister<CommandSetPosRotary  >    ::registerType("SET_POS_ROTARY"); 
+  TypeRegister<CommandSetPosScanator>    ::registerType("SET_POS_SCANATOR");
+  TypeRegister<RequestPosRotary  >       ::registerType("REQUEST_POS_SCANATOR");
+  TypeRegister<RequestPosScanator>       ::registerType("REQUEST_POS_SCANATOR");
+  TypeRegister<CommandAiming1>           ::registerType("COMMAND_AIMING1");
+  TypeRegister<CommandAiming2>           ::registerType("COMMAND_AIMING2");
+  TypeRegister<RequestAiming >           ::registerType("REQUEST_AIMING");
+  TypeRegister<CommandDeviceLaserPower  >::registerType("COMMAND_LASER_POWER");
+  TypeRegister<CommandDeviceLaserPointer>::registerType("COMMAND_LASER_POINTER");
+  TypeRegister<CommandDeviceFocusator   >::registerType("COMMAND_LASER_FOCUSATOR");
+  TypeRegister<RequestDeviceLaserPower  >::registerType("REQUEST_LASER_POWER");
+  TypeRegister<RequestDeviceLaserPointer>::registerType("REQUEST_LASER_POINTER");
+   TypeRegister<CommandCheckConnection  >::registerType("CHECK_CONNECTION");
+                TypeRegister<SystemState>::registerType("SystemStateRotary"); 
+               TypeRegister <ControlTX  >::registerType("ControlTXRotary");
+                TypeRegister<ControlRX  >::registerType("ControlRXRotary");
+
+  TypeRegister<>::TYPES_INFO.printTypesSignature();
+  qDebug() << "[ MIN ] " << TypeRegister<>::GetMinTypeSize<sizeof(MESSAGE_HEADER_GENERIC)>() 
+           << "[ MAX ] " << TypeRegister<>::GetMaxTypeSize<sizeof(MESSAGE_HEADER_GENERIC)>() ;
+
+
+
+               //====================================================
+               TestMessageTransmission TestTransmission;
+               TestTransmission.addType<CommandSetPosRotary>();
+               TestTransmission.addType<CommandSetPosScanator>();
+               TestTransmission.addType<RequestPosRotary>();
+               TestTransmission.addType<RequestPosScanator>();
+               TestTransmission.addType<CommandAiming1>();
+               TestTransmission.addType<CommandAiming2>();
+               TestTransmission.addType<CommandDeviceLaserPower>();
+               TestTransmission.addType<CommandDeviceLaserPointer>();
+               TestTransmission.addType<RequestDeviceLaserPower>();
+               TestTransmission.addType<RequestDeviceLaserPointer>();
+
+               //TestTransmission.pushMessage(CommandSetPosScanator(20,33));
+               //TestTransmission.pushMessage(CommandSetPosScanator(20.2,11.2));
+               //TestTransmission.pushMessage(CommandSetPosScanator(2,3));
+               //TestTransmission.pushMessage(CommandSetPosScanator(3,5));
+               //TestTransmission.pushMessage(CommandSetPosScanator(20,33));
+               //====================================================
+
 
   MeasurePeriodNode periodMeasure;
 
@@ -121,7 +226,7 @@ int main(int argc, char* argv[])
   //return app.exec();
   //=====================================================================================
   
-  TypeRegister<>::printRegisteredTypes();
+  //TypeRegister<>::printRegisteredTypes();
 
   //ControlPTZCamera PTZDevice;
   //                 PTZDevice.connectToCamera("192.168.1.11", "8899", "admin", "admin");
@@ -185,21 +290,27 @@ int main(int argc, char* argv[])
 
   std::shared_ptr<UDPConnectionEngine> ConnectionInterface5 = std::make_shared<UDPConnectionEngine>();
 
+  QString ip_terminal = "192.168.1.121";
+  QString ip_proc_module1 = "192.168.1.57";
+  QString ip_proc_module2 = "192.168.1.75";
+  QString ip_proc_module3 = "192.168.1.59";
 
-  ConnectionInterface1->listenTo("192.168.1.200",2323);
-  ConnectionInterface1->connectTo("192.168.1.59",2525);
+  QString ip_platform = "192.168.1.120";
 
-  ConnectionInterface2->listenTo("192.168.1.200",2323);
-  ConnectionInterface2->connectTo("192.168.1.58",2525);
+  ConnectionInterface1->listenTo (ip_terminal    ,2323);
+  ConnectionInterface1->connectTo(ip_proc_module1,2525);
 
-  ConnectionInterface3->listenTo("192.168.1.200",2323);
-  ConnectionInterface3->connectTo("192.168.1.57",2525);
+  ConnectionInterface2->listenTo (ip_terminal    ,2323);
+  ConnectionInterface2->connectTo(ip_proc_module2,2525);
+
+  ConnectionInterface3->listenTo (ip_terminal    ,2323);
+  ConnectionInterface3->connectTo(ip_proc_module3,2525);
  
-  ConnectionInterface4->listenTo( "192.168.1.200",40805);
-  ConnectionInterface4->connectTo("192.168.1.120",40804);
+  ConnectionInterface4->listenTo (ip_terminal,40805);
+  ConnectionInterface4->connectTo(ip_platform,40804);
 
-  ConnectionInterface5->listenTo( "192.168.1.200",55217);
-  ConnectionInterface5->connectTo("192.168.1.120",9000);
+  ConnectionInterface5->listenTo (ip_terminal,55217);
+  ConnectionInterface5->connectTo(ip_platform,9000 );
 
 
   //==========================================================================================
@@ -207,21 +318,21 @@ int main(int argc, char* argv[])
     Dispatcher1_1->AppendCallback<CommandSetPair<1>> ( [](MessageType1& Message)
     {
      auto data = DispatcherType1::ExtractData<CommandSetPair<1>>(&Message);
-     qDebug() << "GET COMMAND: " << data->Param1 << data->Param2;
+     qDebug() << "GET COMMAND: " << data->Command.first << data->Command.second;
     });
 
     Dispatcher1_1->AppendCallback<CommandSetPair<0>> ( [WindowInterface](MessageType1& Message)
     {
      auto data = DispatcherType1::ExtractData<CommandSetPair<0>>(&Message);
-     qDebug() << "GET AIMING STATE: " << data->Param1 << data->Param2 << "[CHANNEL]" << 1;
-     WindowInterface->outputVideo1->setCoordPaint(std::pair<float,float>(data->Param1, data->Param2));
+     qDebug() << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 1;
+     WindowInterface->outputVideo1->setCoordPaint(data->Command);
     });
 
     Dispatcher1_2->AppendCallback<CommandSetPair<1>> ( [WindowInterface](MessageType1& Message)
     {
      auto data = DispatcherType1::ExtractData<CommandSetPair<1>>(&Message);
-     qDebug() << "GET AIMING STATE: " << data->Param1 << data->Param2 << "[CHANNEL]" << 2;
-     WindowInterface->outputVideo2->setCoordPaint(std::pair<float,float>(data->Param1, data->Param2));
+     qDebug() << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 2;
+     WindowInterface->outputVideo2->setCoordPaint(data->Command);
     });
     
            
@@ -234,7 +345,7 @@ int main(int argc, char* argv[])
                                   MessageRotaryStateJson receiver; 
     Dispatcher3_1->AppendCallback<MessageRotaryStateJson> ( [receiver](MessageType3& Message) mutable
     {
-     receiver.loadData(Message.DATA); receiver.printMessage();
+     //receiver.loadData<500>(Message.DATA); receiver.printMessage();
     });
 
   //=====================================================================================================
@@ -247,7 +358,7 @@ int main(int argc, char* argv[])
   using DeviceFocusator  = DeviceFocusRangerInterface<UDPConnectionEngine,2> ; 
 
                            using CommandScanator = MessageGenericExt<CommandSetPosScanator, MESSAGE_HEADER_EXT   >;
-                           using CommandPlatform = MessageGenericExt<ControlTX        , MESSAGE_HEADER_ROTARY>;
+                           using CommandPlatform = MessageGenericExt<ControlTX            , MESSAGE_HEADER_ROTARY>;
 
   using DeviceScanator = DeviceRotaryControl<UDPConnectionEngine, CommandScanator, RequestPosScanator>;
   using DevicePlatform = DeviceRotaryControl<UDPConnectionEngine, CommandPlatform, ControlRX>;
@@ -265,8 +376,8 @@ int main(int argc, char* argv[])
   std::shared_ptr<DeviceGenericHandleControl> ControlLid  = std::make_shared<DeviceLid>(ConnectionInterface5, "[LIDS]");
   //==================================================================================================================
   //ROTARY SCANATOR
-  std::shared_ptr<DeviceScanator> ControlScanator = std::make_shared<DeviceScanator>(ConnectionInterface1, CONTROL_PARAM::POS, "[SCANATOR]");
-  std::shared_ptr<DevicePlatform> ControlPlatform = std::make_shared<DevicePlatform>(ConnectionInterface4, CONTROL_PARAM::VEL, "[PLATFORM]");
+  std::shared_ptr<DeviceScanator> ControlScanator = std::make_shared<DeviceScanator>(ConnectionInterface2, CONTROL_PARAM::POS, "[SCANATOR]");
+  std::shared_ptr<DevicePlatform> ControlPlatform = std::make_shared<DevicePlatform>(ConnectionInterface4, CONTROL_PARAM::POS, "[PLATFORM]");
 
   std::shared_ptr<DeviceGenericHandleControl> ControlAiming1 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine, 0>>(ConnectionInterface1, "[AIMING1]");
   std::shared_ptr<DeviceGenericHandleControl> ControlAiming2 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine, 1>>(ConnectionInterface2, "[AIMING2]");
@@ -274,8 +385,8 @@ int main(int argc, char* argv[])
     ControlScanator->setNull(QPair<float,float>(0,0));
     ControlScanator->setLimits<CONTROL_PARAM::POS>(30000,30000);
 
-    ControlPlatform->setNull(QPair<float,float>(0,72));
-    ControlPlatform->setLimits<CONTROL_PARAM::POS>(180,180); ControlPlatform->setMode(CONTROL_PARAM::POS);
+    //ControlPlatform->setNull(QPair<float,float>(0,72));
+    ControlPlatform->setLimits<CONTROL_PARAM::POS>(180,180); 
     ControlPlatform->setLimits<CONTROL_PARAM::VEL>(10,10 );
 
   WindowInterface->widgetLidControl->linkToDevice(ControlLid);
@@ -289,14 +400,14 @@ int main(int argc, char* argv[])
   WindowInterface->outputVideo1->linkToDevice(ControlAiming1);
   WindowInterface->outputVideo2->linkToDevice(ControlAiming2);
 
-  WindowInterface->widgetMainControl1->linkToDeviceRotary(ControlPlatform->ControlRotaryPos);
+  WindowInterface->widgetMainControl1->linkToDeviceRotary(ControlPlatform->ControlRotaryVel);
   WindowInterface->widgetMainControl1->linkToDevice(ControlLid,0);
   WindowInterface->widgetMainControl1->linkToDevice(ControlLaserIllum,1);
   WindowInterface->widgetMainControl1->linkToDevice(ControlLaserPower,2);
   WindowInterface->widgetMainControl1->linkToDevice(ControlAiming1,3);
   WindowInterface->widgetMainControl1->linkToDevice(ControlAiming2,4);
 
-  WindowInterface->widgetMainControl2->linkToDeviceRotary(ControlPlatform->ControlRotaryPos);
+  WindowInterface->widgetMainControl2->linkToDeviceRotary(ControlPlatform->ControlRotaryVel);
   WindowInterface->widgetMainControl2->linkToDevice(ControlLid,0);
   WindowInterface->widgetMainControl2->linkToDevice(ControlLaserIllum,1);
   WindowInterface->widgetMainControl2->linkToDevice(ControlLaserPower,2);
@@ -312,11 +423,12 @@ int main(int argc, char* argv[])
   links.resize(10);
   //links[0] = "rtsp://192.168.1.31:554/user=admin_password=_channel=1_stream=0.sdp";
   //links[0] = "rtspsrc location=rtsp://admin:123456@192.168.1.247/live/video is-live=true latency=1 buffer-mode=auto ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! video/x-raw,format=RGB ! appsink name=sink_node drop=1 sync=0 max-buffers=1 async=1";
-  links[0] = "udpsrc port=5000 ! application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=(int)96 ! rtph264depay ! h264parse ! openh264dec ! videoconvert n-threads=3 ! video/x-raw,format=RGB ! appsink name=sink_node drop=1 async=false sync=true max-buffers=1";
+  links[2] = "udpsrc port=5000 ! application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=(int)96 ! rtph264depay ! h264parse ! openh264dec ! videoconvert n-threads=3 ! video/x-raw,format=RGB ! appsink name=sink_node drop=1 async=false sync=true max-buffers=1";
 
   //links[0] = "rtspsrc location=rtsp://192.168.1.31:554/user=admin_password=_channel=1_stream=0.sdp drop-on-latency=true is-live=1 latency=10 buffer-mode=auto ! queue ! rtph264depay ! h264parse ! openh264dec ! videoconvert n-threads=1 primaries-mode=fast ! video/x-raw,format=RGB ! appsink name=sink_node drop=1 sync=0 async=1 max-buffers=1";
   links[1] = "rtspsrc location=rtsp://192.168.1.108:554/stream3 latency=10 drop-on-latency=true is-live=true buffer-mode=auto! queue ! rtpjpegdepay ! jpegparse ! jpegdec ! videoconvert ! appsink name=sink_node drop=1 sync=0 max-buffers=1 async=1";
-  links[2] = "rtspsrc location=rtsp://192.168.1.59:8554/test latency=10 drop-on-latency=true is-live=true buffer-mode=auto ! queue ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! appsink name=sink_node drop=1 sync=0 max-buffers=1 async=1";
+  //links[0] = "rtspsrc location=rtsp://192.168.1.59:8554/test latency=10 drop-on-latency=true is-live=true buffer-mode=auto ! queue ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! appsink name=sink_node drop=1 sync=0 max-buffers=1 async=1";
+  links[0] = "rtspsrc location=rtsp://192.168.1.59:8554/test latency=10 drop-on-latency=true is-live=true buffer-mode=auto ! queue ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! appsink drop=1 sync=0 max-buffers=1 async=1";
   //links[2] = "rtspsrc location=rtsp://192.168.1.31:554/user=admin_password=_channel=1_stream=0.sdp latency=1 ! queue ! rtph265depay ! h265parse ! d3d11h265dec ! videoconvert ! appsink";
   //links[2] = "rtsp://192.168.1.38:8554/test";
 
@@ -324,8 +436,7 @@ int main(int argc, char* argv[])
   //links[1] = "videotestsrc pattern=ball ! video/x-raw,format=BGR,width=640,height=480 ! queue ! videoconvert ! appsink name=sink_node";
   //links[2] = "videotestsrc ! video/x-raw,format=BGR,width=640,height=480 ! queue ! videoconvert ! appsink name=sink_node";
 
-
-  gst_init(&argc, &argv);
+  //gst_init(&argc, &argv);
   CameraInterfaceUniversal* Camera1 = new CameraInterfaceUniversal(links[0], "[CAMERA1]");
   CameraInterfaceUniversal* Camera2 = new CameraInterfaceUniversal(links[1], "[CAMERA2]");
   CameraInterfaceUniversal* Camera3 = new CameraInterfaceUniversal(links[2], "[CAMERA3]");
@@ -446,3 +557,5 @@ return DevicesList;
                                                //StartTime = std::chrono::high_resolution_clock::now();
                                                //EndTime = std::chrono::high_resolution_clock::now();
                                                //Period = std::chrono::duration_cast<std::chrono::milliseconds>(EndTime - StartTime);
+//template<> void CommandDispatcherGeneric<TypeRegister<CommandDevice<0>>::ID()>::dispatchCommand(const QByteArray& Command) { qDebug() << "DISPATCH COMMAND: " << TypeRegister<CommandDevice<0>>::TYPE_ID << " DEV 0"; };
+//template<> void CommandDispatcherGeneric<TypeRegister<CommandSetPair<0>>::ID()>::dispatchCommand(const QByteArray& Command) { qDebug() << "DISPATCH COMMAND: " << TypeRegister<CommandSetPair<0>>::TYPE_ID << " POS ROTARY"; };

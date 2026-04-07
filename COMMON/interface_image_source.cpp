@@ -1,2 +1,2 @@
 #include "interface_image_source.h"
-ImageSourceInterface::ImageSourceInterface(QObject* parent): QObject(parent){};
+SourceImageInterface::SourceImageInterface(QObject* parent): QObject(parent){};

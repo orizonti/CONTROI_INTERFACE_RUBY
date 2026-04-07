@@ -105,6 +105,7 @@ struct DriveTX
 
     double target    = 0.0;   // задание в зависимости от режима управления
 
+  bool isSinglePrecision() { return false; }
   friend QDataStream& operator>>(QDataStream& stream, DriveTX& rec);
 };
 
@@ -114,6 +115,7 @@ class ControlTX
   DriveTX value0; 
   DriveTX value1; 
 
+  bool isSinglePrecision() { return false; }
   QByteArray toByteArray() { return QByteArray((char*)this, sizeof(ControlTX));}
 
   friend void operator>>(QDataStream& stream, ControlTX& rec);

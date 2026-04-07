@@ -33,8 +33,8 @@ public:
     int DataCounter = 0;
 
 public slots:
-  void slotSendMessage(const QByteArray& Command, uint16_t Param = 0) override;
-  void slotSendMessage(const char* Command, int size, uint16_t Param = 0) override;
+  void slotSendMessage(const QByteArray& Command, uint8_t Param = 0) override;
+  void slotSendMessage(const char* Command, int size, uint8_t Param = 0) override;
 
   void slotCheckConnection() override;
   void slotCloseConnection() override;

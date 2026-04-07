@@ -1,5 +1,5 @@
-#ifndef UART_ENGINE_INTERFACE_H
-#define UART_ENGINE_INTERFACE_H
+#ifndef TCP_ENGINE_INTERFACE_H
+#define TCP_ENGINE_INTERFACE_H
 
 #include <QObject>
 #include <QDebug>
@@ -17,27 +17,26 @@
 #include "connection_interface.h"
 #include "message_dispatcher_generic.h"
 #include "debug_output_filter.h"
-#include <QSerialPort>
 
 
-class UARTConnectionEngine : public ConnectionInterface
+class TCPConnectionEngine : public ConnectionInterface
 {
     Q_OBJECT
 public:
-  explicit UARTConnectionEngine(QObject *parent = nullptr);
-          ~UARTConnectionEngine();
+  explicit TCPConnectionEngine(QObject *parent = nullptr);
+          ~TCPConnectionEngine();
 
 public:
   bool isMessageAvailable() override;
   bool isConnected() override;
-  void connectTo(QString IPDevice, int Speed) override;
-  void  listenTo(QString IPDevice, int Speed) override;
+  void connectTo(QString IPDevice, int Port) override;
+  void  listenTo(QString IPDevice, int Port) override;
   void  listenTo(QHostAddress::SpecialAddress IPDevice, int Port) override;
   void tryConnectConstantly(QString Address, int Port) override;
 
 public slots:
-  void slotSendMessage(const QByteArray& Command, uint16_t Param = 0) override;
-  void slotSendMessage(const char* DataCommand, int size, uint16_t Param = 0) override;
+  void slotSendMessage(const QByteArray& Command, uint8_t Param = 0) override;
+  void slotSendMessage(const char* DataCommand, int size, uint8_t Param = 0) override;
 
   void slotCheckConnection() override;
   void slotCloseConnection() override;
@@ -49,9 +48,15 @@ private slots:
   void slotAcceptConnection();
 
 private:
+  QTcpSocket* Socket = 0;
+  QTcpServer* Server = 0;
+  QTimer      TimerAutoconnection;
 //=================================================================
-QSerialPort Port;
 public:
+    QString IPRemote = "127.0.0.1";
+        int PortRemote = 2325;
+    QString IPLocal = "127.0.0.1";
+        int PortLocal = 2325;
 
   signals:
   void signalDeviceConnected();
@@ -59,4 +64,4 @@ public:
 };
 
 
-#endif // UART_ENGINE_INTERFACE_H
+#endif // TCP_ENGINE_INTERFACE_H

@@ -6,9 +6,11 @@
 #include <QtCore\qmath.h>
 #include <QGraphicsPixmapItem>
 #include "label_active_image.h"
-
-#include "message_command_id.h"
 #include <QSizePolicy>
+
+#include "message_header_generic_ext.h"
+#include "message_struct_generic_ext.h"
+#include "message_command_structures.h"
 
 WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
     : WidgetAdjustable(parent)
@@ -17,6 +19,7 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
     ui->setupUi(this);
 
     qDebug() << "CREATE COMPLEX INTERFACE";
+
     widgetMainControl1 = new WidgetMainControl(0);
     widgetMainControl2 = new WidgetMainControl(1);
     widgetMainControl1->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));

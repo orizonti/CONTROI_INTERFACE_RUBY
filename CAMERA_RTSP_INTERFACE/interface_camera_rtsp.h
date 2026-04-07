@@ -15,8 +15,8 @@
 #include "engine_udp_interface.h"
 
 
-//#define CV_CAPTURE 1
-#define GST_CAPTURE 1
+#define CV_CAPTURE 1
+//#define GST_CAPTURE 1
 
 struct frameStateStruct
 {

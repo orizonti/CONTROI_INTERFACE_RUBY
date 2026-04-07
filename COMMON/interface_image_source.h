@@ -39,11 +39,11 @@ class FramePeriodMeasure
     std::chrono::duration<float> Duration;
 };
 
-class ImageSourceInterface: public QObject
+class SourceImageInterface: public QObject
 {
     Q_OBJECT
     public:
-    ImageSourceInterface(QObject* parent = 0);
+    SourceImageInterface(QObject* parent = 0);
     virtual QImage&  GetImageToDisplay() = 0;
     virtual cv::Mat& GetImageToProcess() = 0;
 
@@ -63,7 +63,7 @@ class ImageSourceInterface: public QObject
     virtual std::pair<int,int> GetImageSize() { return std::pair<int,int>(720,540);};
     virtual std::pair<float,float> GetFramePeriod() { return std::pair<float,float>(0,0);};  //PERIOD GET, PERIOD PROCESS
 
-    virtual std::shared_ptr<ImageSourceInterface> GetImageSourceChannel() {return std::shared_ptr<ImageSourceInterface>(this);};
+    virtual std::shared_ptr<SourceImageInterface> GetImageSourceChannel() {return std::shared_ptr<SourceImageInterface>(this);};
     
     FramePeriodMeasure FrameMeasureInput;
     FramePeriodMeasure FrameMeasureProcess;

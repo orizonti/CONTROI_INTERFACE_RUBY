@@ -105,14 +105,15 @@ void UDPConnectionEngine::slotReadData()
 }
 
 
-void UDPConnectionEngine::slotSendMessage(const QByteArray& Command, uint16_t Param)
+void UDPConnectionEngine::slotSendMessage(const QByteArray& Command, uint8_t Param)
 {
- qDebug() << "SEND COMMAND: " << QString(Command.toHex()) << "SIZE: " << Command.size() << "SOCKET: " << IPRemote << PortRemote;
+ //qDebug() << OutputFilter::Filter(10) << "SEND COMMAND: " << QString(Command.toHex()) << "SIZE: " << Command.size() << "SOCKET: " << IPRemote << PortRemote;
  Socket->writeDatagram(Command,QHostAddress(IPRemote),PortRemote); 
 }
 
-void UDPConnectionEngine::slotSendMessage(const char* Command, int size, uint16_t Param)
+void UDPConnectionEngine::slotSendMessage(const char* Command, int size, uint8_t Param)
 {
+    qDebug() << "SEND MESSAGE TO : " << IPRemote << PortRemote;
     Socket->writeDatagram(Command,size,QHostAddress(IPRemote), PortRemote);
 }
 

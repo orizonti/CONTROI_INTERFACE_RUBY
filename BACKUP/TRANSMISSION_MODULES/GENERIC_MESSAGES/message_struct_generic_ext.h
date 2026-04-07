@@ -46,18 +46,6 @@ void MessageGenericExt<T,H>::dumpToByteArray(QByteArray& RawData)
 {
 QDataStream out_stream(&RawData, QIODevice::ReadWrite);
             out_stream.setByteOrder(QDataStream::LittleEndian);
-            out_stream.setFloatingPointPrecision(QDataStream::DoublePrecision);
-
-out_stream << this->HEADER;
-out_stream << this->DATA;
-};
-
-template<typename T,typename H>
-void MessageGenericExt<T,H>::operator>>(QByteArray& RawData)
-{
-QDataStream out_stream(&RawData, QIODevice::ReadWrite);
-            out_stream.setByteOrder(QDataStream::LittleEndian);
-            out_stream.setFloatingPointPrecision(QDataStream::DoublePrecision);
 
 out_stream << this->HEADER;
 out_stream << this->DATA;
@@ -76,6 +64,18 @@ QByteArray MessageGenericExt<T,H>::toByteArray()
              RawData.setRawData((char*)this,this->GetSizeMessage());
       return RawData;
 };
+
+template<typename T,typename H>
+void MessageGenericExt<T,H>::operator>>(QByteArray& RawData)
+{
+QDataStream out_stream(&RawData, QIODevice::ReadWrite);
+            out_stream.setByteOrder(QDataStream::LittleEndian);
+            out_stream.setFloatingPointPrecision(QDataStream::DoublePrecision);
+
+out_stream << this->HEADER;
+out_stream << this->DATA;
+};
+
 
 
 template<typename T,typename H>
