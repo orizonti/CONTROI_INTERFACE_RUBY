@@ -46,10 +46,11 @@ public:
 
 	void sendCommand(T_COMMAND& commandToSend) 
 	{ 
-		qDebug()<< TAG_NAME << "[ SEND COMMAND ]" << T_COMMAND::printDataType();
+		//qDebug()<< TAG_NAME << "[ SEND COMMAND ]" << T_COMMAND::printDataType();
 				  Command = commandToSend;
 				  Command.dumpToByteArray(MessageOutputBuffer);
 
+		//qDebug() << "[ SEND COMMAND ]" << MessageOutputBuffer.toHex();
 		ConnectionDevice->slotSendMessage(MessageOutputBuffer);
 	                                      //MessageOutputBuffer = command.castToByteArray();
 	};
@@ -59,6 +60,7 @@ public:
 		                         qDebug()<< TAG_NAME << "[ SEND COMMAND ]" << T_COMMAND::printDataType();
 								 Command.setData(data); 
 								 Command.dumpToByteArray(MessageOutputBuffer);
+		               qDebug() << "[ SEND COMMAND ]" << MessageOutputBuffer.toHex();
 			           ConnectionDevice->slotSendMessage(MessageOutputBuffer); };
 
 	template<typename T> 

@@ -97,53 +97,7 @@ template<> class TypeRegisterSizes<sizeof(MESSAGE_HEADER_GENERIC)>
       static constexpr int MinSize = TypeRegisterSizes<0>::GetMinTypeSize(SIZES) + HEADER_SIZE; 
       static constexpr int MaxSize = TypeRegisterSizes<0>::GetMaxTypeSize(SIZES) + HEADER_SIZE; 
 };
-
-
-class TestMessageTransmission
-{
-  static constexpr int MinSize = TypeRegister<>::GetMinTypeSize<sizeof(MESSAGE_HEADER_GENERIC)>();
-  using MessageType    = MessageGeneric<void*, MESSAGE_HEADER_GENERIC>;
-  using BufferType     = RingBufferGeneric<MESSAGE_HEADER_GENERIC, TypeRegister<>::GetMinTypeSize<MinSize>(), 20,IteratorMode::Continous>; 
-  using DispatcherType = MessageDispatcher<MESSAGE_HEADER_GENERIC, BufferType>;
-
-  public:
-
-  TestMessageTransmission()
-  {
-            Connection = std::make_shared<UDPConnectionEngine>();
-            RingBuffer = std::make_shared<BufferType>();
-            Dispatcher = std::make_shared<DispatcherType>();
-   *Connection | RingBuffer | Dispatcher;
-
-    Connection->connectTo("192.168.1.58",3333);
-    Connection->listenTo("192.168.1.121",4444);
-  }
-
-  std::shared_ptr<UDPConnectionEngine>     Connection ;
-  std::shared_ptr<MessageStorageInterface> RingBuffer ;
-  std::shared_ptr<DispatcherType>          Dispatcher ;
-
-  template<typename T> void addType() 
-  { 
-    Dispatcher->AppendCallback<T> ( [](MessageType& Message)
-    {
-     auto data = DispatcherType::ExtractData<T>(&Message); qDebug() << "GET REQUEST: " << TypeRegister<T>::GetTypeName() <<  data->print();
-    });
-  };
-
-  template<typename T> void pushMessage(const T& Data)
-  {
-     auto Message = new MessageGeneric<T,MESSAGE_HEADER_GENERIC>;   
-          Message->DATA = Data;
-
-    qDebug() << "PUT MESSAGE: " << TypeRegister<T>::GetTypeName() 
-             << " ID: "   << Message->HEADER.MESSAGE_IDENT 
-             << " SIZE: " << Message->HEADER.DATA_SIZE << " SIZE_MESSAGE: " << Message->GetSizeMessage();
-             
-    Connection->slotSendMessage((const char*)Message, Message->GetSizeMessage(),0);
-    delete Message;
-  }
-};
+//=============================================================================================
 
 
 int main(int argc, char* argv[])
@@ -168,31 +122,6 @@ int main(int argc, char* argv[])
                 TypeRegister<ControlRX  >::registerType("ControlRXRotary");
 
   TypeRegister<>::TYPES_INFO.printTypesSignature();
-  qDebug() << "[ MIN ] " << TypeRegister<>::GetMinTypeSize<sizeof(MESSAGE_HEADER_GENERIC)>() 
-           << "[ MAX ] " << TypeRegister<>::GetMaxTypeSize<sizeof(MESSAGE_HEADER_GENERIC)>() ;
-
-
-
-               //====================================================
-               TestMessageTransmission TestTransmission;
-               TestTransmission.addType<CommandSetPosRotary>();
-               TestTransmission.addType<CommandSetPosScanator>();
-               TestTransmission.addType<RequestPosRotary>();
-               TestTransmission.addType<RequestPosScanator>();
-               TestTransmission.addType<CommandAiming1>();
-               TestTransmission.addType<CommandAiming2>();
-               TestTransmission.addType<CommandDeviceLaserPower>();
-               TestTransmission.addType<CommandDeviceLaserPointer>();
-               TestTransmission.addType<RequestDeviceLaserPower>();
-               TestTransmission.addType<RequestDeviceLaserPointer>();
-
-               //TestTransmission.pushMessage(CommandSetPosScanator(20,33));
-               //TestTransmission.pushMessage(CommandSetPosScanator(20.2,11.2));
-               //TestTransmission.pushMessage(CommandSetPosScanator(2,3));
-               //TestTransmission.pushMessage(CommandSetPosScanator(3,5));
-               //TestTransmission.pushMessage(CommandSetPosScanator(20,33));
-               //====================================================
-
 
   MeasurePeriodNode periodMeasure;
 
@@ -315,17 +244,17 @@ int main(int argc, char* argv[])
 
   //==========================================================================================
   //MESSAGE PROCESSING
-    Dispatcher1_1->AppendCallback<CommandSetPair<1>> ( [](MessageType1& Message)
-    {
-     auto data = DispatcherType1::ExtractData<CommandSetPair<1>>(&Message);
-     qDebug() << "GET COMMAND: " << data->Command.first << data->Command.second;
-    });
-
     Dispatcher1_1->AppendCallback<CommandSetPair<0>> ( [WindowInterface](MessageType1& Message)
     {
      auto data = DispatcherType1::ExtractData<CommandSetPair<0>>(&Message);
      qDebug() << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 1;
      WindowInterface->outputVideo1->setCoordPaint(data->Command);
+    });
+
+    Dispatcher1_1->AppendCallback<CommandSetPair<1>> ( [](MessageType1& Message)
+    {
+     auto data = DispatcherType1::ExtractData<CommandSetPair<1>>(&Message);
+     qDebug() << "GET COMMAND: " << data->Command.first << data->Command.second;
     });
 
     Dispatcher1_2->AppendCallback<CommandSetPair<1>> ( [WindowInterface](MessageType1& Message)
@@ -334,7 +263,6 @@ int main(int argc, char* argv[])
      qDebug() << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 2;
      WindowInterface->outputVideo2->setCoordPaint(data->Command);
     });
-    
            
     Dispatcher2_1->AppendCallback<ControlRX> ( [](MessageType2& Message) 
     {
@@ -383,11 +311,10 @@ int main(int argc, char* argv[])
   std::shared_ptr<DeviceGenericHandleControl> ControlAiming2 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine, 1>>(ConnectionInterface2, "[AIMING2]");
 
     ControlScanator->setNull(QPair<float,float>(0,0));
-    ControlScanator->setLimits<CONTROL_PARAM::POS>(30000,30000);
+    ControlScanator->setLimits(CONTROL_PARAM::POS,30000,30000);
 
+    ControlPlatform->setLimits(CONTROL_PARAM::POS,180,180); 
     //ControlPlatform->setNull(QPair<float,float>(0,72));
-    ControlPlatform->setLimits<CONTROL_PARAM::POS>(180,180); 
-    ControlPlatform->setLimits<CONTROL_PARAM::VEL>(10,10 );
 
   WindowInterface->widgetLidControl->linkToDevice(ControlLid);
 
@@ -400,21 +327,21 @@ int main(int argc, char* argv[])
   WindowInterface->outputVideo1->linkToDevice(ControlAiming1);
   WindowInterface->outputVideo2->linkToDevice(ControlAiming2);
 
-  WindowInterface->widgetMainControl1->linkToDeviceRotary(ControlPlatform->ControlRotaryVel);
+  WindowInterface->widgetMainControl1->linkToDeviceRotary(ControlPlatform->ControlRotaryPos);
   WindowInterface->widgetMainControl1->linkToDevice(ControlLid,0);
   WindowInterface->widgetMainControl1->linkToDevice(ControlLaserIllum,1);
   WindowInterface->widgetMainControl1->linkToDevice(ControlLaserPower,2);
   WindowInterface->widgetMainControl1->linkToDevice(ControlAiming1,3);
   WindowInterface->widgetMainControl1->linkToDevice(ControlAiming2,4);
 
-  WindowInterface->widgetMainControl2->linkToDeviceRotary(ControlPlatform->ControlRotaryVel);
+  WindowInterface->widgetMainControl2->linkToDeviceRotary(ControlPlatform->ControlRotaryPos);
   WindowInterface->widgetMainControl2->linkToDevice(ControlLid,0);
   WindowInterface->widgetMainControl2->linkToDevice(ControlLaserIllum,1);
   WindowInterface->widgetMainControl2->linkToDevice(ControlLaserPower,2);
   WindowInterface->widgetMainControl2->linkToDevice(ControlAiming1,3);
   WindowInterface->widgetMainControl2->linkToDevice(ControlAiming2,4);
 
-  WindowInterface->widgetMainControl2->linkToDeviceRotary(ControlScanator->ControlRotaryPos);
+  //WindowInterface->widgetMainControl2->linkToDeviceRotary(ControlScanator->ControlRotaryPos);
   //==================================================================================================================
 
   //==================================================================================================================
@@ -480,11 +407,6 @@ int main(int argc, char* argv[])
 
                           WindowInterface->showMaximized();
                         //WindowInterface->showFullScreen();
-
-
-
-
-
   app.exec();
 }
 

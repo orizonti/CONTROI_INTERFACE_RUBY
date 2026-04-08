@@ -192,8 +192,13 @@ struct RequestAimingState
     float TrackParam3;
 };
 
-struct CommandCheckConnection  { uint8_t Connect  = 0xC5; uint8_t Connect2 = 0xC6; };
-struct CommandCloseConnection  { uint8_t Close1   = 0xC6; uint8_t Close2   = 0xC6; };
+struct CommandCloseConnection  { uint8_t Close1   = 0xC6; uint8_t Param = 0; };
+struct CommandCheckConnection  
+{ 
+  public:
+  uint8_t Connect  = 0xC5; uint8_t Param = 0; 
+  bool operator==(CommandCheckConnection command) { return (Connect == command.Connect && Param == command.Param); }
+};
 
 struct CommandCalibration
 {
