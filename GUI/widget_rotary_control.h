@@ -9,8 +9,9 @@
 #include <cmath>
 #include <QTimer>
 #include "device_generic_interface.h"
+#include "interface_node_synchronizer.h"
 
-class WidgetRotaryControl : public QWidget 
+class WidgetRotaryControl : public QWidget, public PassCoordClass<float> 
 {
     Q_OBJECT
 
@@ -19,13 +20,31 @@ public:
 
     WidgetRotaryControl(QWidget* parent = nullptr);
 
+
+	const QPair<float, float>& getOutput() 
+    { 
+        if(TypeWidget == 0) { PassCoordClass<float>::OutputCoord.first = angleRotationDeviceDegree; }
+        if(TypeWidget == 1) { PassCoordClass<float>::OutputCoord.second = angleRotationDeviceDegree; }
+        return OutputCoord;
+    };
+	void setInput(const QPair<float, float>& Coord) override 
+    { 
+        qDebug() << "[WIDGET ROTARY SYNCHRONIZE]" << Coord.first << Coord.second << "[ CHANNEL ]" << TypeWidget;
+        PassCoordClass<float>::OutputCoord = Coord;
+        if(TypeWidget == 0) { slotSetState(Coord.first); }
+        if(TypeWidget == 1) { slotSetState(Coord.second);}
+    };
+    NodeStateSynchronizer NodeSynchronizer{this};
+
     void linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device) { ControlRotary = Device; };
-    void synchronizePeer(WidgetRotaryControl* ControlDevice);
     void initWidget();
     void setType(TypeDraw Type);
 
     void drawObjects(QPainter* painter);
     void drawRotation();
+    void setNull(float Null);
+    void setNullDevice(float Null);
+    void calcStep();
 
     std::shared_ptr<DeviceGenericHandleControl> ControlRotary = nullptr;
     bool allowSignals = true;
@@ -34,17 +53,34 @@ public:
     //CURRENT ANGLE
     float angleRotation = 0;
     float angleRotationFuture = 0;
+    float angleRotationFutureRelative = 0;
     float angleRotationDegree = 0;
+    float angleRotationLastDegree = 0;
     float angleRotationFutureDegree = 0;
+    float angleRotationShiftedDegree = 0;
+    float angleRotationDeviceDegree = 0;
+    float angleRotationNull = 0;
+    float angleRotationDeviceNull = 70;
 
+    float angleRotationDegreeRelative = 0;
+    float angleRotationDegreeRelativeLast = 0;
+
+    float angleRotationDegreeStep = 0;
+    int StepDirection = 1;
+    private:
+    float angleRotationDegreeStep1 = 0;
+    float angleRotationDegreeStep2 = 0;
+
+    public:
     //=======================================================================
     //LIMITS
-    float angleRotationMinDegree = -20;
-    float angleRotationMaxDegree = 20;
+    float angleRotationMinDegree = -10;
+    float angleRotationMaxDegree = 30;
     float angleRotationMin = angleRotationMinDegree*M_PI/180;
     float angleRotationMax = angleRotationMaxDegree*M_PI/180;
     float angleSpanDegree = angleRotationMaxDegree - angleRotationMinDegree; 
     //=======================================================================
+    float angleOffsetDegree = 0;
 
     private:
     //==========================================
@@ -78,7 +114,6 @@ public:
            //QTimer timerCheckState;
 
 public slots:
-void slotSetAngle(float angleDegree);
 void updateAngle();
 void updateFutureAngle();
 void slotMoveStart(int Direction);
@@ -87,8 +122,8 @@ private slots:
 void slotMove();
 void slotCheckState();
 
-signals:
-void signalAngleChanged(float angleDegree);
+public slots:
+void slotSetState(float angleDegree);
 
 protected:
     void paintEvent(QPaintEvent* event) override { drawRotation(); }

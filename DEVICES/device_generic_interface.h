@@ -5,6 +5,8 @@
 #include <typeinfo>
 #include "engine_type_register.h"
 #include "engine_keyfilter.h"
+#include "message_command_structures.h"
+
 
 class DeviceGenericHandleControl
 {
@@ -20,6 +22,8 @@ class DeviceGenericHandleControl
 	virtual void setParam (uint16_t CommandID, float    CommandParam)    = 0;
 
 	virtual void setEnable(bool OnOff, uint16_t Number = 0) { setParam(Number,(uint32_t)OnOff);};
+
+	virtual float getParam (uint16_t CommandID) { return 0;} ;
 };
 
 
@@ -39,37 +43,47 @@ public:
 
 	void transmitMessage(const char* Message, int size, uint16_t param = 0) { ConnectionDevice->slotSendMessage(Message, size, param); }
 
-	void setParam (uint16_t CommandID, uint32_t CommandParam) override {};
-	void setParam (uint16_t CommandID, float    CommandParam) override {} ;
+	void  setParam (uint16_t CommandID, uint32_t CommandParam) override {};
+	void  setParam (uint16_t CommandID, float    CommandParam) override {} ;
+	float getParam (uint16_t CommandID) override { return 0;} ;
 
 	void sendCommand(QByteArray command) { ConnectionDevice->slotSendMessage(command); };
 
+
 	void sendCommand(T_COMMAND& commandToSend) 
 	{ 
-		//qDebug()<< TAG_NAME << "[ SEND COMMAND ]" << T_COMMAND::printDataType();
+		qDebug()<< TAG_NAME << "[ SEND COMMAND ]" << T_COMMAND::printDataType();
 				  Command = commandToSend;
 				  Command.dumpToByteArray(MessageOutputBuffer);
-
-		//qDebug() << "[ SEND COMMAND ]" << MessageOutputBuffer.toHex();
 		ConnectionDevice->slotSendMessage(MessageOutputBuffer);
-	                                      //MessageOutputBuffer = command.castToByteArray();
 	};
 
 	template<typename T> 
-	void sendCommand(const QPair<T,T>& data) { 
-		                         qDebug()<< TAG_NAME << "[ SEND COMMAND ]" << T_COMMAND::printDataType();
-								 Command.setData(data); 
-								 Command.dumpToByteArray(MessageOutputBuffer);
-		               qDebug() << "[ SEND COMMAND ]" << MessageOutputBuffer.toHex();
-			           ConnectionDevice->slotSendMessage(MessageOutputBuffer); };
+	void sendCommand(const QPair<T,T>& data) 
+	{ 
+		qDebug()<< TAG_NAME << "[ SEND SET PAIR COMMAND ]" << T_COMMAND::printDataType();
+		Command.setData(data); 
+		Command.dumpToByteArray(MessageOutputBuffer);
+		ConnectionDevice->slotSendMessage(MessageOutputBuffer);
+	};
 
 	template<typename T> 
-	void sendCommand(const QPair<T,T>& data, const QPair<T,T>& data2) { 
-		                         qDebug()<< TAG_NAME << "[ SEND COMMAND ]" << T_COMMAND::printDataType();
-								 Command.setData(data,data2); 
-								 Command.dumpToByteArray(MessageOutputBuffer);
-			           ConnectionDevice->slotSendMessage(MessageOutputBuffer); };
-	                   //MessageOutputBuffer = Message.castToByteArray();
+	void sendCommand(const QPair<T,T>& data, const QPair<T,T>& data2) 
+	{ 
+		qDebug()<< TAG_NAME << "[ SEND SET TWO PAIR COMMAND ]" << T_COMMAND::printDataType();
+		Command.setData(data,data2); 
+		Command.dumpToByteArray(MessageOutputBuffer);
+		ConnectionDevice->slotSendMessage(MessageOutputBuffer);
+	};
+
+	template<COMMAND_STANDART T_COMMAND>
+	void sendCommand(T_COMMAND& commandToSend) 
+	{ 
+		qDebug()<< TAG_NAME << "[ SEND STANDART COMMAND ]" << typeid(commandToSend).name();
+				  Command.DATA = commandToSend;
+		ConnectionDevice->slotSendMessage(Command.castToByteArray());
+	};
+
 	
 protected:
     std::shared_ptr<T_CONNECTION> ConnectionDevice = nullptr;
@@ -103,29 +117,18 @@ public:
 
 	};
 
-
-	void setParam (uint16_t CommandID, uint32_t CommandParam) override
-	{
-      qDebug() << "DEVICE SET PARAM: " << CommandParam;     
-	}
-	void setParam (uint16_t CommandID, float    CommandParam) override
-	{
-
-	}
-
 	QString TAG_NAME{"[ DEVICE_ANY ]"};
 	QString DISPLAY_NAME{"Устройство"};
 };
 //=========================================================
-template<int NUM> class CommandAiming;
 
-template<int NUM_DEVICE> class MessageAimingDevice : public MessageGenericExt<CommandAiming<NUM_DEVICE>   ,MESSAGE_HEADER_EXT> { public: };
 
-template<typename T_CONNECTION, int NUM_DEVICE>
-class DeviceGenericAiming : public DeviceGenericInterface<T_CONNECTION, MessageAimingDevice<NUM_DEVICE>, MessageAimingDevice<NUM_DEVICE>>
+using MessageAiming = MessageGenericExt<CommandAiming<0> ,MESSAGE_HEADER_EXT>; 
+template<typename T_CONNECTION>
+class DeviceGenericAiming : public DeviceGenericInterface<T_CONNECTION, MessageAiming, MessageAiming>
 {
 public:
-    using DEVICE_INTERFACE = DeviceGenericInterface<T_CONNECTION, MessageAimingDevice<NUM_DEVICE>, MessageAimingDevice<NUM_DEVICE>>; 
+    using DEVICE_INTERFACE = DeviceGenericInterface<T_CONNECTION, MessageAiming, MessageAiming>; 
     explicit DeviceGenericAiming(std::shared_ptr<T_CONNECTION> Connection, QString Name = "[ DEVICE ]") : DEVICE_INTERFACE(Connection, Name)
 	{
 	}
@@ -134,18 +137,18 @@ public:
 
 	QString DISPLAY_NAME{"Наведение"};
 	QPair<float,float> CoordAim;
-	QPair<float,float> CoordCorrection;
+	CommandAiming<0> Command;
 
 	void setPair(std::pair<float,float> Coord) override
     { 
+    if(!KeyboardFilter::isControlPressed()) { Command.CommandType = 0; CoordAim = Coord; } 
+    if( KeyboardFilter::isControlPressed()) { Command.CommandType = 1; CoordAim = Coord - CoordAim; } 
 
-    if(!KeyboardFilter::isControlPressed()) { CoordCorrection = QPair<float,float>(0,0); CoordAim = Coord; }
-    if( KeyboardFilter::isControlPressed())   CoordCorrection = CoordAim - Coord;
+    if(!KeyboardFilter::isControlPressed()) qDebug() << this->TAG_NAME << "[ COORD AIM ]"        << CoordAim.first << CoordAim.second ; 
+    if( KeyboardFilter::isControlPressed()) qDebug() << this->TAG_NAME << "[ COORD CORRECTION ]" << CoordAim.first << CoordAim.second ; 
 
-    qDebug() << this->TAG_NAME << "[ COORD AIM ]"      << CoordAim.first        << CoordAim.second  
-	                           << "[ SET CORRECTION ]" << CoordCorrection.first << CoordCorrection.second;
-
-    this->sendCommand(Coord, CoordCorrection);
+						  Command.Command = CoordAim;
+        this->sendCommand(Command);
     };
 
 	void setEnable(bool OnOff, uint16_t Number = 0) 

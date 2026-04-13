@@ -118,7 +118,7 @@ template<typename BufferType>
 class MessageDispatcher<MESSAGE_HEADER_GENERIC, BufferType> : public MessageDispatcherInterface
 {
 public:
-    MessageDispatcher() { CallList.resize(0x300); std::fill(CallList.begin(), CallList.end(), nullptr);}
+    MessageDispatcher() { CallList.resize(0xB002); std::fill(CallList.begin(), CallList.end(), nullptr);}
     using MessageCall   = std::function<void (MessageGeneric<void*, MESSAGE_HEADER_GENERIC>&)>;
 
    //   void DispatchMessages();

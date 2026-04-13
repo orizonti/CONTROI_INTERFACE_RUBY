@@ -91,6 +91,7 @@ UDPConnectionEngine::~UDPConnectionEngine()
 
 void UDPConnectionEngine::slotReadData()
 {
+    //qDebug() << OutputFilter::Filter(1000) << "READ DATA FROM: " << IPRemote << PortRemote;
    if(MessageStorage == nullptr) return;
    if(Socket->bytesAvailable() < MessageStorage->getMinMessageSize() ) return;
 

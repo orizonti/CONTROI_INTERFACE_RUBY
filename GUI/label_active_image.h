@@ -16,17 +16,16 @@ class LabelActiveImage : public LabelAdjustable
 public:
 	LabelActiveImage(QWidget *parent);
 	~LabelActiveImage();
-	int posX = 0;
-	int posY = 0;
-	std::pair<int,int> PosPicked;
-	std::pair<int,int> getPos() { return std::pair<int,int>(posX,posY); }
+	std::pair<float,float> PosPicked;
+	std::pair<float,float> PosPickedAbs;
+	std::pair<float,float> getPos() { return PosPicked; }
 
 protected:
 	void mousePressEvent(QMouseEvent * ev);
     void mouseDoubleClickEvent(QMouseEvent * ev);
 
 signals:
-	void signalPosPicked(QPair<int,int> Pos);
+	void signalPosPicked(QPair<float,float> Pos);
 	void signalLabelPicked();
 };
 

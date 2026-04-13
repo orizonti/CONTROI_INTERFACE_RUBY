@@ -13,8 +13,8 @@ LabelActiveImage::~LabelActiveImage()
 
 void LabelActiveImage::mouseDoubleClickEvent(QMouseEvent * ev)
 {
-	if(ev->button() != Qt::RightButton) return;
-	emit signalLabelPicked();
+	//if(ev->button() != Qt::RightButton) return;
+	//emit signalLabelPicked();
 }
 
 void LabelActiveImage::mousePressEvent(QMouseEvent * ev)
@@ -27,10 +27,15 @@ void LabelActiveImage::mousePressEvent(QMouseEvent * ev)
 
 	if(ev->button() == Qt::RightButton)
 	{
-		PosPicked.first  = ev->position().x()*2;
-		PosPicked.second = ev->position().y()*2;
-		qInfo() <<"[ LABEL ]"<< "[ POS PRESS ]" << PosPicked.first << PosPicked.second;
-	    emit signalPosPicked(PosPicked);
+		const auto& LabelSize = this->size();
+		PosPickedAbs.first  = ev->position().x();
+		PosPickedAbs.second = ev->position().y();
+
+		PosPicked.first  = PosPickedAbs.first/LabelSize.width();
+		PosPicked.second = PosPickedAbs.second/LabelSize.height();
+
+		if(ev->button() == Qt::LeftButton)  signalPosPicked(PosPicked);
+		if(ev->button() == Qt::RightButton) signalPosPicked(PosPicked);
 	}
 
 }

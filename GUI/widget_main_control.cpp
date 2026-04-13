@@ -85,6 +85,7 @@ WidgetMainControl::WidgetMainControl(int Scheme, QWidget* parent) : WidgetAdjust
 
     widgetElevation->setMaximumSize(110,110);
       widgetAzimuth->setMaximumSize(300,300);
+    widgetAzimuth->setNull(90);
 
     gridLayout.addWidget(&butRegimLaser ,1,1);
     gridLayout.addWidget(&butRegimIllum ,2,1);
@@ -185,8 +186,8 @@ void WidgetMainControl::synchronizePeer(WidgetMainControl* widget)
      widgetPeer = widget;
      widget->widgetPeer = this;
 
-     widgetAzimuth->synchronizePeer(widgetPeer->widgetAzimuth);
-   widgetElevation->synchronizePeer(widgetPeer->widgetElevation);
+//     widgetAzimuth->synchronizePeer(widgetPeer->widgetAzimuth);
+//   widgetElevation->synchronizePeer(widgetPeer->widgetElevation);
 
    connect(&widgetPeer->butRegimIllum, SIGNAL(toggled(bool)), this, SLOT(slotPeerChanged()));
    connect(&widgetPeer->butRegimLaser, SIGNAL(toggled(bool)), this, SLOT(slotPeerChanged()));

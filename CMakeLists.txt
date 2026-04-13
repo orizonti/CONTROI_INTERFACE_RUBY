@@ -96,6 +96,7 @@ add_executable (testCameraRTSP
         "./GUI/widget_complex_interface.ui"
 
         "./GUI/widget_device_control.cpp"
+        "./GUI/widget_device_control2.cpp"
 
         "./GUI/widget_main_control.cpp"
 
@@ -116,6 +117,8 @@ add_executable (testCameraRTSP
         "./UTILITIES/debug_output_filter.cpp"
         "./UTILITIES/sinus_generator_class.cpp"
         "./UTILITIES/engine_keyfilter.cpp"
+
+        "./COMMON/interface_node_synchronizer.cpp"
 
         "./UTILITIES/register_settings.cpp"
         "./CAMERA_RTSP_INTERFACE/interface_camera_rtsp.cpp"

@@ -16,29 +16,32 @@
 #include "interface_node_synchronizer.h"
 
 
-class WidgetDeviceControl : public WidgetAdjustable, public PassCoordClass<float>
+class WidgetDeviceControl2 : public WidgetAdjustable, public PassCoordClass<float>
 {
     Q_OBJECT
 public:
-    WidgetDeviceControl(QString name = "Устройство", Qt::Orientation orientation = Qt::Horizontal, QWidget* parent = nullptr);
-    ~WidgetDeviceControl();
+    WidgetDeviceControl2(QString name = "Устройство", Qt::Orientation orientation = Qt::Horizontal, QWidget* parent = nullptr);
+    ~WidgetDeviceControl2();
 
     Qt::Orientation orientationWidget = Qt::Horizontal;
     //================================================================
     std::pair<float,float> State;
 	const QPair<float, float>& getOutput() override { return State;};
-	void setInput(const QPair<float, float>& Coord) override { State = Coord; labelState->setText(QString("%1 %2").arg(State.first).arg(State.second)); };
+	void setInput(const QPair<float, float>& Coord) override 
+    { 
+        if(labelsState.isEmpty()) return;
+        State = Coord; labelsState[0]->setText(QString("%1 %2").arg(State.first).arg(State.second)); 
+    };
     NodeStateSynchronizer NodeSynchronizer{this};
-    void linkToWidget(WidgetDeviceControl* widget) { NodeSynchronizer.linkPeers(&widget->NodeSynchronizer);};
+    void linkToWidget(WidgetDeviceControl2* widget) { NodeSynchronizer.linkPeers(&widget->NodeSynchronizer);};
     //================================================================
 
-    void enableScheme(bool enableState, bool enableParam, bool enableLevels, bool enableOnOff, bool enableArrows, bool enableLabel = true);
-    void setScheme(int numberLevels, int numberDevice, int schemeArrows = 0);
+    void setScheme(int numberStates, int numberParams, int numberLevels, int numberDevice, int schemeArrows = 0);
+
     void setButtonsName(QVector<QString> names);
     void setLevelsName(QVector<QString> names);
     void setName(QString name);
     void setSizes();
-    
 
     void linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device);
     std::shared_ptr<DeviceGenericHandleControl> DeviceLinked = nullptr;
@@ -47,21 +50,18 @@ public:
     public:
     QTimer timerCheckDevice;
 
-      QLabel* labelName  = nullptr;
-      QLabel* labelState = nullptr;
-    QSpinBox* spinParam  = nullptr;
+    QLabel* labelName  = nullptr;
 
-    QPushButton* buttonLeft  = nullptr;
-    QPushButton* buttonRight = nullptr;
-    QPushButton* buttonUp    = nullptr;
-    QPushButton* buttonDown  = nullptr;
-
+    QVector<QLabel*>      labelsState;
+    QVector<QSpinBox*>    buttonsParam;
+    QVector<QPushButton*> buttonsDevice;
     QVector<QPushButton*> buttonsLevel;
-    QVector<QPushButton*> buttonsOnOff;
     QVector<QPushButton*> buttonsArrow;
 
+    QGroupBox* groupLabelsState = nullptr;
+    QGroupBox* groupButtonsParam = nullptr;
     QGroupBox* groupButtonsLevel = nullptr;
-    QGroupBox* groupButtonsOnOff = nullptr;
+    QGroupBox* groupButtonsDevice = nullptr;
     QGroupBox* groupArrows = nullptr;
 
     int schemeArrowsControl = 0;

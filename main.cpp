@@ -47,10 +47,12 @@
 #include <QPainter>
 #include "widget_line_graph.h"
 #include "engine_keyfilter.h"
+#include "interface_node_synchronizer.h"
 
 QStringList LoadCameraLinks();
 //#include "message_command_id.h"
 #include "engine_statistics_track.h"
+#include "widget_device_control2.h"
 
 //=================================================
 //COMMAND TO INTERRACT WITH DEVICES VIA PROCESSOR MODULE 
@@ -62,16 +64,18 @@ template<> constinit const int TypeRegister<RequestPosScanator>       ::TYPE_ID{
 template<> constinit const int TypeRegister<CommandAiming1>           ::TYPE_ID{4 };
 template<> constinit const int TypeRegister<CommandAiming2>           ::TYPE_ID{5 };
 template<> constinit const int TypeRegister<RequestAiming >           ::TYPE_ID{6 };
+
 template<> constinit const int TypeRegister<CommandDeviceLaserPointer>::TYPE_ID{0x110};
 template<> constinit const int TypeRegister<CommandDeviceLaserPower  >::TYPE_ID{0x120};
 template<> constinit const int TypeRegister<CommandDeviceFocusator   >::TYPE_ID{0x130};
 template<> constinit const int TypeRegister<RequestDeviceLaserPointer>::TYPE_ID{0x210};
 template<> constinit const int TypeRegister<RequestDeviceLaserPower  >::TYPE_ID{0x220};
 template<> constinit const int TypeRegister<CommandCheckConnection   >::TYPE_ID{0x230};
-template<> constinit const int TypeRegister<SystemState>              ::TYPE_ID{22}; 
-template<> constinit const int TypeRegister<ControlTX  >              ::TYPE_ID{32};
-template<> constinit const int TypeRegister<ControlRX  >              ::TYPE_ID{42};
-template<> constinit const int TypeRegister<MessageRotaryStateJson >  ::TYPE_ID{100};
+
+template<> constinit const int TypeRegister<SystemState>              ::TYPE_ID{0xA001}; 
+template<> constinit const int TypeRegister<ControlRX  >              ::TYPE_ID{0xA002};
+template<> constinit const int TypeRegister<ControlTX  >              ::TYPE_ID{0xB001};
+template<> constinit const int TypeRegister<MessageRotaryStateJson >  ::TYPE_ID{0x7B22};
 
 template<> class TypeRegisterSizes<sizeof(MESSAGE_HEADER_GENERIC)>
 {
@@ -103,13 +107,16 @@ template<> class TypeRegisterSizes<sizeof(MESSAGE_HEADER_GENERIC)>
 int main(int argc, char* argv[])
 {
   QApplication app(argc,argv);
+  //WidgetDeviceControl2 wid; wid.setScheme(2,2,2,2,0);
+  //wid.show();
+  //return app.exec();
 
   TypeRegister<CommandSetPosRotary  >    ::registerType("SET_POS_ROTARY"); 
   TypeRegister<CommandSetPosScanator>    ::registerType("SET_POS_SCANATOR");
   TypeRegister<RequestPosRotary  >       ::registerType("REQUEST_POS_SCANATOR");
   TypeRegister<RequestPosScanator>       ::registerType("REQUEST_POS_SCANATOR");
-  TypeRegister<CommandAiming1>           ::registerType("COMMAND_AIMING1");
-  TypeRegister<CommandAiming2>           ::registerType("COMMAND_AIMING2");
+  TypeRegister<CommandAiming1>           ::registerType("COMMAND_AIMING_1");
+  TypeRegister<CommandAiming2>           ::registerType("COMMAND_AIMING_2");
   TypeRegister<RequestAiming >           ::registerType("REQUEST_AIMING");
   TypeRegister<CommandDeviceLaserPower  >::registerType("COMMAND_LASER_POWER");
   TypeRegister<CommandDeviceLaserPointer>::registerType("COMMAND_LASER_POINTER");
@@ -219,7 +226,7 @@ int main(int argc, char* argv[])
 
   std::shared_ptr<UDPConnectionEngine> ConnectionInterface5 = std::make_shared<UDPConnectionEngine>();
 
-  QString ip_terminal = "192.168.1.121";
+  QString ip_terminal = "192.168.1.200";
   QString ip_proc_module1 = "192.168.1.57";
   QString ip_proc_module2 = "192.168.1.75";
   QString ip_proc_module3 = "192.168.1.59";
@@ -267,7 +274,7 @@ int main(int argc, char* argv[])
     Dispatcher2_1->AppendCallback<ControlRX> ( [](MessageType2& Message) 
     {
         auto data = DispatcherType2::ExtractData<ControlRX>(&Message);
-        qDebug() <<  OutputFilter::Filter(1000) << "[ GET CONTROL RX ]" << data->value0.position << data->value1.position;;
+        //qDebug() <<  OutputFilter::Filter(1000) << "[ GET CONTROL RX ]" << data->value0.position << data->value1.position;;
     });
 
                                   MessageRotaryStateJson receiver; 
@@ -278,9 +285,6 @@ int main(int argc, char* argv[])
 
   //=====================================================================================================
   //DEVICES
-  using DeviceAiming1 = DeviceGenericAiming<UDPConnectionEngine, 0>;
-  using DeviceAiming2 = DeviceGenericAiming<UDPConnectionEngine, 1>;
-
   using DeviceLaserPower = DeviceLaserInterface      <UDPConnectionEngine,0>; 
   using DeviceLaserIllum = DeviceLaserInterface      <UDPConnectionEngine,1>; 
   using DeviceFocusator  = DeviceFocusRangerInterface<UDPConnectionEngine,2> ; 
@@ -307,19 +311,35 @@ int main(int argc, char* argv[])
   std::shared_ptr<DeviceScanator> ControlScanator = std::make_shared<DeviceScanator>(ConnectionInterface2, CONTROL_PARAM::POS, "[SCANATOR]");
   std::shared_ptr<DevicePlatform> ControlPlatform = std::make_shared<DevicePlatform>(ConnectionInterface4, CONTROL_PARAM::POS, "[PLATFORM]");
 
-  std::shared_ptr<DeviceGenericHandleControl> ControlAiming1 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine, 0>>(ConnectionInterface1, "[AIMING1]");
-  std::shared_ptr<DeviceGenericHandleControl> ControlAiming2 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine, 1>>(ConnectionInterface2, "[AIMING2]");
+  std::shared_ptr<DeviceGenericHandleControl> ControlAiming1 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine>>(ConnectionInterface1, "[AIMING1]");
+  std::shared_ptr<DeviceGenericHandleControl> ControlAiming2 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine>>(ConnectionInterface2, "[AIMING2]");
 
-    ControlScanator->setNull(QPair<float,float>(0,0));
     ControlScanator->setLimits(CONTROL_PARAM::POS,30000,30000);
 
-    ControlPlatform->setLimits(CONTROL_PARAM::POS,180,180); 
-    //ControlPlatform->setNull(QPair<float,float>(0,72));
+    ControlPlatform->setLimits(CONTROL_PARAM::POS,360,20); 
+    ControlPlatform->setNull(QPair<float,float>(73.48,-2.57));
+
+    WindowInterface->widgetMainControl1->widgetAzimuth->setNullDevice(73.48);
+    WindowInterface->widgetMainControl1->widgetElevation->setNullDevice(-2.57);
+
+    WindowInterface->widgetMainControl2->widgetAzimuth->setNullDevice(73.48);
+    WindowInterface->widgetMainControl2->widgetElevation->setNullDevice(-2.57);
+
 
   WindowInterface->widgetLidControl->linkToDevice(ControlLid);
 
   WindowInterface->widgetControlPlatform->linkToDevice(ControlPlatform->ControlRotaryVel);
   WindowInterface->widgetControlScanator->linkToDevice(ControlScanator->ControlRotaryVel);
+
+  linkPeers(WindowInterface->widgetControlPlatform, WindowInterface->widgetMainControl1->widgetAzimuth);
+  linkPeers(WindowInterface->widgetControlPlatform, WindowInterface->widgetMainControl1->widgetElevation);
+
+  linkPeers(WindowInterface->widgetControlPlatform, WindowInterface->widgetMainControl2->widgetAzimuth);
+  linkPeers(WindowInterface->widgetControlPlatform, WindowInterface->widgetMainControl2->widgetElevation);
+
+  //linkPeers(WindowInterface->widgetMainControl1->widgetAzimuth, WindowInterface->widgetMainControl1->widgetElevation);
+  //linkPeers(WindowInterface->widgetMainControl2->widgetAzimuth, WindowInterface->widgetMainControl2->widgetElevation);
+
 
   WindowInterface->widgetControlLaserPower->linkToDevice(ControlLaserPower);
   WindowInterface->widgetControlLaserIllum->linkToDevice(ControlLaserIllum);
@@ -341,24 +361,22 @@ int main(int argc, char* argv[])
   WindowInterface->widgetMainControl2->linkToDevice(ControlAiming1,3);
   WindowInterface->widgetMainControl2->linkToDevice(ControlAiming2,4);
 
-  //WindowInterface->widgetMainControl2->linkToDeviceRotary(ControlScanator->ControlRotaryPos);
   //==================================================================================================================
 
   //==================================================================================================================
   //CAMERAS
   QStringList links; //links = LoadCameraLinks();
   links.resize(10);
-  //links[0] = "rtsp://192.168.1.31:554/user=admin_password=_channel=1_stream=0.sdp";
-  //links[0] = "rtspsrc location=rtsp://admin:123456@192.168.1.247/live/video is-live=true latency=1 buffer-mode=auto ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! video/x-raw,format=RGB ! appsink name=sink_node drop=1 sync=0 max-buffers=1 async=1";
+  links[0] = "rtspsrc location=rtsp://192.168.1.59:8554/test latency=10 drop-on-latency=true is-live=true buffer-mode=auto ! queue ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! appsink drop=1 sync=0 max-buffers=1 async=1";
+  links[1] = "rtspsrc location=rtsp://192.168.1.108:554/stream3 latency=10 drop-on-latency=true is-live=true buffer-mode=auto! queue ! rtpjpegdepay ! jpegparse ! jpegdec ! videoconvert ! appsink name=sink_node drop=1 sync=0 max-buffers=1 async=1";
   links[2] = "udpsrc port=5000 ! application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=(int)96 ! rtph264depay ! h264parse ! openh264dec ! videoconvert n-threads=3 ! video/x-raw,format=RGB ! appsink name=sink_node drop=1 async=false sync=true max-buffers=1";
 
+  //links[0] = "rtsp://192.168.1.31:554/user=admin_password=_channel=1_stream=0.sdp";
+  //links[0] = "rtspsrc location=rtsp://admin:123456@192.168.1.247/live/video is-live=true latency=1 buffer-mode=auto ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! video/x-raw,format=RGB ! appsink name=sink_node drop=1 sync=0 max-buffers=1 async=1";
   //links[0] = "rtspsrc location=rtsp://192.168.1.31:554/user=admin_password=_channel=1_stream=0.sdp drop-on-latency=true is-live=1 latency=10 buffer-mode=auto ! queue ! rtph264depay ! h264parse ! openh264dec ! videoconvert n-threads=1 primaries-mode=fast ! video/x-raw,format=RGB ! appsink name=sink_node drop=1 sync=0 async=1 max-buffers=1";
-  links[1] = "rtspsrc location=rtsp://192.168.1.108:554/stream3 latency=10 drop-on-latency=true is-live=true buffer-mode=auto! queue ! rtpjpegdepay ! jpegparse ! jpegdec ! videoconvert ! appsink name=sink_node drop=1 sync=0 max-buffers=1 async=1";
   //links[0] = "rtspsrc location=rtsp://192.168.1.59:8554/test latency=10 drop-on-latency=true is-live=true buffer-mode=auto ! queue ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! appsink name=sink_node drop=1 sync=0 max-buffers=1 async=1";
-  links[0] = "rtspsrc location=rtsp://192.168.1.59:8554/test latency=10 drop-on-latency=true is-live=true buffer-mode=auto ! queue ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! appsink drop=1 sync=0 max-buffers=1 async=1";
   //links[2] = "rtspsrc location=rtsp://192.168.1.31:554/user=admin_password=_channel=1_stream=0.sdp latency=1 ! queue ! rtph265depay ! h265parse ! d3d11h265dec ! videoconvert ! appsink";
   //links[2] = "rtsp://192.168.1.38:8554/test";
-
   //links[0] = "videotestsrc pattern=snow ! video/x-raw,format=BGR,width=640,height=480 ! queue ! videoconvert ! appsink name=sink_node";
   //links[1] = "videotestsrc pattern=ball ! video/x-raw,format=BGR,width=640,height=480 ! queue ! videoconvert ! appsink name=sink_node";
   //links[2] = "videotestsrc ! video/x-raw,format=BGR,width=640,height=480 ! queue ! videoconvert ! appsink name=sink_node";

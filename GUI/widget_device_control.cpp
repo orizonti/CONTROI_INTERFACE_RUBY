@@ -288,6 +288,7 @@ void WidgetDeviceControl::setLevelsName(QVector<QString> names)
 
 void WidgetDeviceControl::setName(QString name) { labelName->setText(name); }
 
+
 void WidgetDeviceControl::linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device)
 {
    DeviceLinked = Device; 
@@ -336,11 +337,11 @@ void WidgetDeviceControl::linkSignals()
         QObject::connect(button, &QPushButton::released, [this     ]()      { DeviceLinked->setEnable(false);  timerCheckDevice.stop(); });
         }
 
-                                            std::pair<float,float> Position;
-        QObject::connect(&timerCheckDevice, &QTimer::timeout, [this, Position]() mutable
+        QObject::connect(&timerCheckDevice, &QTimer::timeout, [this]() mutable
         {
-            Position = DeviceLinked->getPair(); 
-            labelState->setText(QString("%1 %2").arg(Position.first).arg(Position.second));
+            NodeSynchronizer.synchronizePeers();
+            State = DeviceLinked->getPair(); 
+            labelState->setText(QString("%1\n%2").arg(State.first).arg(State.second));
         });
     }
 
@@ -367,7 +368,7 @@ void WidgetDeviceControl::linkSignals()
         QObject::connect(&timerCheckDevice, &QTimer::timeout, [this, Position]() mutable
         {
             Position = DeviceLinked->getPair(); 
-            labelState->setText(QString("%1 %2").arg(Position.first).arg(Position.second));
+            labelState->setText(QString("%1\n%2").arg(Position.first).arg(Position.second));
         });
 
 }

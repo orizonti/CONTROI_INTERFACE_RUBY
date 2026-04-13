@@ -44,7 +44,7 @@ public:
        // DEVICE_INTERFACE::sendCommand(this->Message);
     };
 
-	float getDistance() { return (float)requestMessage.Param; };
+	float getDistance() { return (float)requestMessage.Param1; };
 	float getValue() override { return getDistance(); };
     void putMessage(REQUEST_TYPE Message) { };
 

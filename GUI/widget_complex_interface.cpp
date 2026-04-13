@@ -143,6 +143,7 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
     //slotSetHandleMode();
     //slotSetControlPanelMode();
     this->grabKeyboard();
+
 }
 
 void WidgetComplexInterface::keyPressEvent(QKeyEvent *event)

@@ -84,7 +84,7 @@ void DeviceLaserInterface<T_CONNECTION, NUM_DEVICE>::setParam(uint16_t ID, uint3
 {
 	uint8_t param = Value > 0 ? 1 : 0;  
 	Command.DATA.Command = ID_PARAM_KEY[ID][param];
-	Command.DATA.Param    = Value;
+	Command.DATA.Param1    = Value;
     this->sendCommand(Command);
 }
 
@@ -92,7 +92,7 @@ template<typename T_CONNECTION, int NUM_DEVICE>
 void DeviceLaserInterface<T_CONNECTION, NUM_DEVICE>::setCheckProcedure()
 {
 	Command.DATA.Command  = 0x20;
-	Command.DATA.Param    = 0;
+	Command.DATA.Param1    = 0;
 	this->sendCommand(Command);
 }
 
