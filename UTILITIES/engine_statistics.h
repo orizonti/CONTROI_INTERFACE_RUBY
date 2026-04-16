@@ -8,6 +8,7 @@
 #include <QQueue>
 #include <QDebug>
 #include "debug_output_filter.h"
+#include <limits>
 static OutputFilter MessageFilter{20};
 static OutputFilter MessageFilter2{40};
 
@@ -29,8 +30,9 @@ public:
 	decltype(StatSample.begin()) CurrentElement = StatSample.begin();
 	decltype(StatSample.begin()) EndPos = StatSample.end();
 
-	T ValueMax = 0;
-	T ValueMin = 0;
+	T ValueMax = -std::numeric_limits<T>::max();
+	T ValueMin = std::numeric_limits<T>::max();
+
 	T ValueAvarage = 0;
 	T ValueDispersion = 0;
 
@@ -38,22 +40,27 @@ public:
 	bool isStatLoaded = false;
 	bool isModeSingle = false;
 
-    void reset(){CurrentElement = StatSample.begin(); isStatLoaded = false;};
+    void reset()
+	{ ValueMax = -std::numeric_limits<T>::max();
+	  ValueMin =  std::numeric_limits<T>::max();
+	  CurrentElement = StatSample.begin(); isStatLoaded = false;};
 
-    void clear(){ ValueMax = 0; ValueMin = 0; ValueAvarage = 0; ValueDispersion = 0; 
-				  std::fill(StatSample.begin(), StatSample.end(),0); 
+    void clear(){ std::fill(StatSample.begin(), StatSample.end(),0); 
 				  CurrentElement = StatSample.begin(); isStatLoaded = false; };
 
 
 	void setModeSingle(bool OnOff) { isModeSingle = OnOff; }
 	bool isLoaded() { return isStatLoaded;};
-	bool isValueRising();
+	bool isValueRising() { return false;};
 
 	    void setValue(T Input) override;
 	const T& getValue() override { return ValueAvarage;}
 
 	const T& GetDispersionValue() { return ValueDispersion;};
 	const T& GetAvarageValue() {    return ValueAvarage;};
+	const T& GetMinValue() {    return ValueMin;};
+	const T& GetMaxValue() {    return ValueMax;};
+	const T& GetRange() {    return ValueMax - ValueMin;};
 
 	void CalcDispersion();
 };
@@ -70,8 +77,8 @@ public:
 	decltype(StatSample.begin()) CurrentElement = StatSample.begin();
 	decltype(StatSample.begin()) EndPos = StatSample.end();
 
-	QPair<T,T> CoordMax{0,0};
-	QPair<T,T> CoordMin{0,0};
+	QPair<T,T> CoordMax{-std::numeric_limits<T>::max(),-std::numeric_limits<T>::max()};
+	QPair<T,T> CoordMin{std::numeric_limits<T>::max(),std::numeric_limits<T>::max()};
 	QPair<T,T> CoordAvarage{0,0};
 	QPair<T,T> CoordDispersion{0,0};
 	
@@ -94,11 +101,19 @@ public:
 									   std::fill(StatSample.begin(), StatSample.end(),Null); 
 									   CurrentElement = StatSample.begin(); isStatLoaded = false; };
 
-    void reset(){ CurrentElement = StatSample.begin(); isStatLoaded = false; };
+    void reset()
+	{ 
+         CoordMax.first  = -std::numeric_limits<T>::max(); CoordAvarage.first = 0; CoordAvarage.second = 0; 
+         CoordMax.second = -std::numeric_limits<T>::max();
+
+         CoordMin.first  = std::numeric_limits<T>::max();
+         CoordMin.second = std::numeric_limits<T>::max();
+
+		CurrentElement = StatSample.begin(); isStatLoaded = false; };
 
 	bool isLoaded() { return isStatLoaded;};
 
-	bool isValueRising();
+	bool isValueRising() {return false;};
 
 	             void setInput(const QPair<T,T>& Input);
 	const QPair<T,T>& getOutput() { return CoordAvarage;};
@@ -112,14 +127,14 @@ public:
 	const QPair<T, T>& GetDispersionCoord() { return CoordDispersion;};
 	               T   GetDispersionNorm() { return Norm(CoordDispersion);};
 
-		T GetMaxDeviation() { return DeviationMax; };
+		T GetMaxDeviation()     { return DeviationMax; };
 		T GetAvarageDeviation() { return DeviationAvarage; }
 	
 	void CalcDispersion();
 };
 
 template<typename T = float>
-class StatisticNode : public PassValueClass<T>, public PassCoordClass<T>
+class StatisticNode : public PassCoordClass<T>
 {
 	public:
 	StatisticNode() { };
@@ -133,7 +148,7 @@ class StatisticNode : public PassValueClass<T>, public PassCoordClass<T>
 	                void setInput(const QPair<T, T>& Coord) override  { Coord >> NodeCoord;};
 
 	 const T& getValue() override              { return NodeValue.getValue();};
-	     void setValue(T InputValue) override  { InputValue >> NodeValue; };
+	     void setValue(const T& InputValue) override  { InputValue >> NodeValue; };
 
 	 const T& GetAvarageValue()           { return NodeValue.GetAvarageValue();}
 	 const QPair<T, T>& GetAvarageCoord() { return NodeCoord.GetAvarageCoord();}
@@ -156,7 +171,6 @@ void StatisticValue<T>::setValue(T Input)
 
 	if (ValueMin > Input) ValueMin = Input;
 	if (ValueMax < Input) ValueMax = Input;
-	if (ValueMin == 0)    ValueMin = Input;
 
 	ValueAvarage += Input / Size;
 	ValueAvarage -= *CurrentElement / Size; 
@@ -183,6 +197,12 @@ template<typename T>
 void StatisticCoord<T>::setInput(const QPair<T,T>& Input)
 {
 	if(isStatLoaded && isModeSingle ) return;
+
+	if (CoordMin.first  > Input.first)  CoordMin.first  = Input.first;
+	if (CoordMin.second > Input.second) CoordMin.second = Input.second;
+
+	if (CoordMax.first  < Input.first)  CoordMax.first  = Input.first;
+	if (CoordMax.second < Input.second) CoordMax.second = Input.second;
 
      CoordAvarage.first -= CurrentElement->first/Size;
     CoordAvarage.second -= CurrentElement->second/Size; 

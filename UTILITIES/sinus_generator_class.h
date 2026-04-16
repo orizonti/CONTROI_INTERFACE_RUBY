@@ -4,6 +4,7 @@
 #include <QTime>
 #include <chrono>
 #include <QChronoTimer>
+#include "module_period_measure.h"
 
 class SinusGeneratorClass : public QObject, public PassCoordClass<float>
 {
@@ -17,6 +18,9 @@ public:
 	PassCoordClass<float>* LinkedReceiver = 0;
 	void linkToDevice(PassCoordClass<float>& Receiver) { LinkedReceiver = &Receiver;}
 	bool isActive() { return TimerGenerateSinus->isActive(); }
+	void setPeriod(int Period) { TimerPeriod = Period; this->TimerGenerateSinus->setInterval(std::chrono::nanoseconds(TimerPeriod*1000000)); }
+
+    MeasurePeriodNode MeasurePeriod;
 
 	int TimerPeriod = 10;
 	QChronoTimer* TimerGenerateSinus;

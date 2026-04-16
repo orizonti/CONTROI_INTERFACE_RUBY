@@ -16,8 +16,10 @@ public:
     QPair<V,V> OutputCoord{0,0};
     bool PassBlocked = false;
 
-	virtual const QPair<V, V>& getOutput() { return OutputCoord;};
+	virtual const V& getValue() { return OutputCoord.first;};
+	virtual void setValue(const V& Value) {OutputCoord.first = Value; passCoord();};
 
+	virtual const QPair<V, V>& getOutput() { return OutputCoord;};
 	virtual void setInput(const QPair<V, V>& Coord) {OutputCoord = Coord; passCoord();};
 
 	void passCoord() { if(!isLinked() || PassBlocked) return; for(auto& link: NodesLinked) {*this >> *link;} }
@@ -27,6 +29,15 @@ public:
     virtual void setLink(PassValueClass<V>* NewLink) { }
     friend PassValueClass<V>& operator | (PassCoordClass<V>& Sender, PassValueClass<V>& Reciever)
     { Sender.setLink(&Reciever); return Reciever; }
+
+    PassValueClass<V>& operator >>(PassValueClass<V>& Reciever) { Reciever.setValue(getValue());  return Reciever; }
+              const V& operator >>(V& Output)                 { Output = getValue();  return Output; }
+
+	friend PassCoordClass& operator >>(const V&  Value, PassCoordClass& Reciever)
+    { Reciever.setValue(Value); return Reciever; } 
+
+    friend PassCoordClass& operator >> (PassValueClass<V>& Sender, PassCoordClass& Reciever)
+    { Reciever.setValue(Sender.getValue()); return Reciever; }
     //=======================================================
 	
 	virtual QPair<V,V>& operator >>(QPair<V, V>& Coord) { Coord = getOutput(); return Coord;}
@@ -58,6 +69,10 @@ template<typename T, typename V>
 QPair<V, V> operator*(QPair<V, V> x, const QPair<T, T>& y) { x.first *= y.first; x.second *= y.second; return x;}
 
 template<typename T> QPair<T, T> operator*(QPair<T, T> x, const T& Scale)   { x.first *= Scale; x.second *= Scale ; return x; }
+
+template<typename T, typename V> QPair<T, T> operator*(QPair<T, T> x, const V& Scale)   
+{ x.first *= Scale; x.second *= Scale ; return x; }
+
 template<typename T> QPair<T, T> operator+(QPair<T, T> x, const T& addition){ x.first += addition; x.second += addition;  return x; }
 
 template<typename T> QPair<T, T> operator/(QPair<T, T> x, const T& Scale)   { x.first /= Scale; x.second /= Scale ; return x; }

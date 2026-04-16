@@ -3,7 +3,7 @@
 #include <vector>
 
 
-template<typename V = double>
+template<typename V = float>
 class PassValueClass
 {
 public:

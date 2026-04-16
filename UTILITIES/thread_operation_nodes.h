@@ -47,6 +47,7 @@ public:
   std::vector<QPair<T,T>> InputCoords{QPair<T,T>(0,0), QPair<T,T>(0,0)};
 
 	int InputCount = 0;
+  int Inversion = 1;
 
 	 const QPair<T,T>& getOutput() override { return PassCoordClass<float>::OutputCoord;}
 
@@ -59,6 +60,7 @@ public:
           PassCoordClass<T>::OutputCoord = InputCoords[0] - InputCoords[1]; PassCoordClass<T>::passCoord(); }
 
 	 }
+   
 
 };
 
@@ -364,6 +366,19 @@ class NodeCoordRandomizer : public PassCoordClass<T>
 };
 
 template<typename T = float>
+class NodeCoordSwap : public PassCoordClass<T>
+{
+	public:
+
+	void setInput(const QPair<T,T>& Coord) override
+	{
+    PassCoordClass<T>::OutputCoord.first = Coord.second ;
+    PassCoordClass<T>::OutputCoord.second = Coord.first;
+    PassCoordClass<T>::passCoord();
+	};
+};
+
+template<typename T = float>
 class NodeCoordSplitToTime : public PassCoordClass<T>
 {
 	public:
@@ -374,19 +389,23 @@ class NodeCoordSplitToTime : public PassCoordClass<T>
   std::pair<T,T> coordOutput2;
   int channel_active = 0;
   int counter = 0;
-  int counter_limit = 100;
+  int counter_limit = -1;
+  float timePoint = 0;
+  float timeScale = 0.02;
 
   void setResetCounter(int value ) { counter_limit = value; qDebug() << "RESET COUNTER LIMIT: " << value;};
 	void setInput(const QPair<T,T>& Coord) override
 	{
-    MeasurePeriod++;
+    MeasurePeriod++; timePoint += MeasurePeriod.getMilliseconds();
+    //qDebug()  << OutputFilter::Filter(10) << "TIME: " << timePoint << "COUNTER: " << counter;
     coordOutput1.second = Coord.first;
     coordOutput2.second = Coord.second;
-    coordOutput1.first = 0.5*counter;
-    coordOutput2.first = 0.5*counter; counter++; if(counter > counter_limit) counter = 0;
-    if(channel_active == 1) PassCoordClass<T>::OutputCoord = coordOutput2; else PassCoordClass<T>::OutputCoord = coordOutput1;
+    coordOutput1.first = timePoint*timeScale;
+    coordOutput2.first = timePoint*timeScale; counter++; if(counter > counter_limit && counter_limit != -1) { counter = 0; timePoint = 0; }
     PassCoordClass<T>::passCoord();
 	};
+
+	const QPair<T, T>& getOutput() { if(channel_active == 0) return coordOutput1; return coordOutput2; };
 
 	NodeCoordSplitToTime<T>& operator()(int num) { channel_active = num; return *this; }
 };
@@ -420,17 +439,46 @@ class NodeCoordPassValue : public PassCoordClass<T>
 
 	void passValue() { if(NodesValueLinked.empty()) return; for(auto& link: NodesValueLinked) {*this >> *link;} }
 
-	void setInput(const QPair<T, T>& Coord) override { PassCoordClass<T>::OutputCoord = Coord; passValue();};
+	void setInput(const QPair<T, T>& Coord) override 
+  { 
+    if(channel == 0) { this->OutputCoord.first = Coord.first;  passValue(); return; }
+                       this->OutputCoord.first = Coord.second; passValue(); 
+  };
 
-  PassValueClass<T>& operator>>(PassValueClass<float>& dst )
-	{
-    if(channel == 0) dst.setValue(this->OutputCoord.first);
-    if(channel == 1) dst.setValue(this->OutputCoord.second);
-    return dst;
-	};
-
+	const T& getValue() override 
+  { 
+    return this->OutputCoord.first;
+  };
 
 };
+
+template<typename T = float>
+class NodeCoordJoinValue : public PassCoordClass<T>
+{
+	public:
+  int channel_active = 0;
+
+	void setValue(const T& InputValue) override 
+  {
+    if(channel_active == 0)   PassCoordClass<T>::OutputCoord.first  = InputValue;
+    if(channel_active == 1) { PassCoordClass<T>::OutputCoord.second = InputValue; }
+       channel_active++; if(channel_active >= 2) channel_active = 0;
+  };
+
+	void setInput(const QPair<T, T>& Coord) override
+  { 
+    if(channel_active == 0)   PassCoordClass<T>::OutputCoord.first  = Coord.first;
+    if(channel_active == 1) { PassCoordClass<T>::OutputCoord.second = Coord.first; }
+       channel_active++; if(channel_active >= 2) channel_active = 0;
+  };
+
+	const QPair<T, T>& getOutput() 
+  { 
+    //qDebug() << "JOIN OUTPUT: " << this->OutputCoord.first << this->OutputCoord.second;
+    return this->OutputCoord;
+  };
+};
+
 
 
 template<typename T>
@@ -860,6 +908,23 @@ class NodeValueDifference : public PassValueClass<T>
     if(EnablePass)  { PassValueClass<T>::getValue() >> Receiver; return Receiver; }
     return NodeNop;
   };
+};
+
+template< typename T = float>
+class NodeValueSubstract : public PassValueClass<T>
+{
+  public:
+  T ValueLast;
+
+	const T& getValue() {enablePass = false; return PassValueClass<T>::Value;};
+
+  void setValue(T NewValue) 
+  {  
+       if(enablePass) PassValueClass<T>::Value = ValueLast - NewValue;
+       ValueLast = NewValue; enablePass = true; 
+  }
+  bool enablePass = false;
+
 };
 
 template <class T = float>

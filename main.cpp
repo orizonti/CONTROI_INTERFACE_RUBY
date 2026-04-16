@@ -53,6 +53,7 @@ QStringList LoadCameraLinks();
 //#include "message_command_id.h"
 #include "engine_statistics_track.h"
 #include "widget_device_control2.h"
+#include "engine_statistics_track.h"
 
 //=================================================
 //COMMAND TO INTERRACT WITH DEVICES VIA PROCESSOR MODULE 
@@ -134,9 +135,11 @@ int main(int argc, char* argv[])
 
   //=====================================================================================
   //TEST TRACK APPROXIMATION DYNAMIC
-  //SinusGeneratorClass SinusGenerator; SinusGenerator.slotSetAmplitude(200); SinusGenerator.slotSetFrequency(0.10);
-  //                                    SinusGenerator.slotSetOffset(240,240);
-  //WidgetLineGraph graphWidget; graphWidget.setSize(500); graphWidget.show();
+  SinusGeneratorClass SinusGenerator; SinusGenerator.setPeriod(3);
+                                      SinusGenerator.slotSetAmplitude(200); 
+                                      SinusGenerator.slotSetFrequency(0.1);
+                                      SinusGenerator.slotSetOffset(240,240);
+  WidgetLineGraph graphWidget; graphWidget.setSize(500); graphWidget.show();
 
             //  DetectorTrackHold ProcessorTrack;
             //  NodeCoordRandomizer<float> Randomizer{12};
@@ -152,14 +155,25 @@ int main(int argc, char* argv[])
       //                graphWidget.GraphPointsStorage->setPoints(Test1.TrackApprox);
       //                graphWidget.GraphPointsStorage2->setPoints(Test1.TrackNoize);
 
+  NodeCoordSplitToTime<float> SplitToTime; 
+  NodeCoordRandomizer<float> Randomize{20,2};
+  NodeCoordRandomizer<float> Randomize2{0,2};
+
   //PolynomApproximationDynamicTest<3> Test2;
-  //NodeCoordSplitToTime SplitToTime; 
-  //                     SplitToTime.setResetCounter(SinusGenerator.Period.first);
-  //SinusGenerator | SplitToTime(0) | Test2;
-  //                                  Test2.linkToGraph(graphWidget.GraphPointsStorage );
-  //                                  Test2.linkToGraph(graphWidget.GraphPointsStorage2);
-  //SinusGenerator.slotStartGenerate(true);
-  //return app.exec();
+  //NodeCoordSwap SwapCoord; 
+//                       SplitToTime.setResetCounter(SinusGenerator.Period.first);
+  //SinusGenerator | SplitToTime(1) | Test2;
+                   //SinusGenerator | Test2;
+                   //                 Test2.linkToGraph(graphWidget.GraphPointsStorage );
+                   //                 Test2.linkToGraph(graphWidget.GraphPointsStorage2);
+  //DetectorTrackHold TrackStat;
+  StatisticCoordSpan CoordSpan(10);
+  //SinusGenerator | Randomize | TrackStat;
+  SinusGenerator | Randomize | CoordSpan;
+  SinusGenerator.slotStartGenerate(true);
+
+
+  return app.exec();
   //=====================================================================================
   
   //TypeRegister<>::printRegisteredTypes();
@@ -216,10 +230,10 @@ int main(int argc, char* argv[])
                                       *ConnectionInterface1 | RingBuffer1_1 | Dispatcher1_1;
 
   std::shared_ptr<UDPConnectionEngine> ConnectionInterface2 = std::make_shared<UDPConnectionEngine>();
-                                      *ConnectionInterface2 | RingBuffer2_1 | Dispatcher2_1;
+                                      *ConnectionInterface2 | RingBuffer1_2 | Dispatcher1_2;
 
   std::shared_ptr<UDPConnectionEngine> ConnectionInterface3 = std::make_shared<UDPConnectionEngine>();
-                                      *ConnectionInterface3 | RingBuffer3_1 | Dispatcher3_1;
+                                      *ConnectionInterface3 | RingBuffer1_3 | Dispatcher1_3;
 
   std::shared_ptr<UDPConnectionEngine> ConnectionInterface4 = std::make_shared<UDPConnectionEngine>();
                                       *ConnectionInterface4 | RingBuffer2_1 | Dispatcher2_1;
@@ -251,25 +265,27 @@ int main(int argc, char* argv[])
 
   //==========================================================================================
   //MESSAGE PROCESSING
-    Dispatcher1_1->AppendCallback<CommandSetPair<0>> ( [WindowInterface](MessageType1& Message)
+    Dispatcher1_1->AppendCallback<CommandAiming<0>> ( [WindowInterface](MessageType1& Message)
     {
-     auto data = DispatcherType1::ExtractData<CommandSetPair<0>>(&Message);
+     auto data = DispatcherType1::ExtractData<CommandAiming<0>>(&Message);
      qDebug() << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 1;
      WindowInterface->outputVideo1->setCoordPaint(data->Command);
     });
 
-    Dispatcher1_1->AppendCallback<CommandSetPair<1>> ( [](MessageType1& Message)
+    Dispatcher1_2->AppendCallback<CommandAiming<0>> ( [WindowInterface](MessageType1& Message)
     {
-     auto data = DispatcherType1::ExtractData<CommandSetPair<1>>(&Message);
-     qDebug() << "GET COMMAND: " << data->Command.first << data->Command.second;
-    });
-
-    Dispatcher1_2->AppendCallback<CommandSetPair<1>> ( [WindowInterface](MessageType1& Message)
-    {
-     auto data = DispatcherType1::ExtractData<CommandSetPair<1>>(&Message);
+     auto data = DispatcherType1::ExtractData<CommandAiming<0>>(&Message);
      qDebug() << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 2;
      WindowInterface->outputVideo2->setCoordPaint(data->Command);
     });
+
+    Dispatcher1_3->AppendCallback<CommandAiming<0>> ( [WindowInterface](MessageType1& Message)
+    {
+     auto data = DispatcherType1::ExtractData<CommandAiming<0>>(&Message);
+     qDebug() << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 3;
+     WindowInterface->outputVideo3->setCoordPaint(data->Command);
+    });
+
            
     Dispatcher2_1->AppendCallback<ControlRX> ( [](MessageType2& Message) 
     {

@@ -8,28 +8,45 @@ template<int NUM_PARAM>
 class PolynomApproximationDynamicTest: public PassCoordClass<float>
 {
   public:
+
   PolynomApproximationDynamicTest()
   {
     CoordStorage1.setContinousMode(true);
+    CoordStorage2.setContinousMode(true);
+    SplitToTime1.setResetCounter(800000);
+    SplitToTime2.setResetCounter(800000);
   };
   int NumberPoints = 140;
-  PolynomApproximation<NUM_PARAM> trackApproximation{NumberPoints};
+  PolynomApproximation<NUM_PARAM> trackApproximation1{NumberPoints};
+  PolynomApproximation<NUM_PARAM> trackApproximation2{NumberPoints};
+  NodeCoordStorage<float> CoordStorage1{NumberPoints};
+  NodeCoordStorage<float> CoordStorage2{NumberPoints};
 
-  NodeCoordRandomizer<float> Randomize{0,20};
+  NodeCoordPassValue<float> PickValue;
+  NodeCoordJoinValue<float> JoinValue;
+  NodeCoordSplitToTime<float> SplitToTime1; 
+  NodeCoordSplitToTime<float> SplitToTime2; 
+  NodeCoordRandomizer<float> Randomize1{14,14};
+  NodeCoordRandomizer<float> Randomize2{14,14};
 
 	void setInput(const QPair<float, float>& Coord) 
   { 
-    Coord >> Randomize >> trackApproximation >> CoordStorage1;
 
-    if(trackApproximation.isLoaded()) { 
+    Coord >> Randomize1 >> SplitToTime1(0) >> trackApproximation1 >> PickValue(1) >> JoinValue;
+                           SplitToTime1(1) >> trackApproximation2 >> PickValue(1) >> JoinValue >> CoordStorage1;
+
+    Coord >> Randomize2 >> SplitToTime2(0) >> PickValue(1) >> JoinValue;
+                           SplitToTime2(1) >> PickValue(1) >> JoinValue >> CoordStorage2;
+
+    if(trackApproximation2.isLoaded()) { 
                                    //qDebug() << "STORE FUTURE: "  << CoordStorage1.getAvailable();
-                                   if(displayGraph1) displayGraph1->setPoints(trackApproximation.TrackInput); 
+                                   //if(displayGraph1) displayGraph1->setPoints(trackApproximation1.TrackInput); 
                                    //if(displayGraph2) displayGraph2->setPoints(trackApproximation.TrackFuture); 
-                                   if(displayGraph2) displayGraph2->setPoints(CoordStorage1); 
+                                   if(displayGraph1) displayGraph1->setPoints(CoordStorage1); 
+                                   if(displayGraph2) displayGraph2->setPoints(CoordStorage2); 
                                     // trackApproximation.flushTrack();
                                       }
   };
-  NodeCoordStorage<float> CoordStorage1{NumberPoints};
 
   void linkToGraph(std::shared_ptr<GraphDisplayInterface> graph) { if(displayGraph1 == nullptr) displayGraph1 = graph;
                                                                    else if(displayGraph2 == nullptr) displayGraph2 = graph;}

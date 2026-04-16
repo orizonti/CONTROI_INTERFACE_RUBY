@@ -89,9 +89,10 @@ void SinusGeneratorClass::slotCalculateValue()
      std::chrono::duration<double> Dur = std::chrono::high_resolution_clock::now() - TimePoint; //DURATION SECONDS
      auto PeriodMeasure2 = std::chrono::duration_cast<std::chrono::milliseconds>(Dur).count(); //DURATION MILLISECONDS
      TimePoint = std::chrono::high_resolution_clock::now();
+     MeasurePeriod++;
 
-    //qDebug() << OutputFilter::Filter(100) << "SINUS  : " << CurrentOutput.first 
-    //         << "COUNTER: " << CounterStep.first<< "PERIOD: " << PeriodMeasure2;
+    //qDebug() << OutputFilter::Filter(10) << "SINUS  : " << CurrentOutput.first 
+    //         << "COUNTER: " << CounterStep.first<< "PERIOD: " << PeriodMeasure2 << "[ PERIOD NODE ]" << MeasurePeriod.getMilliseconds();
 
 
     CounterStep.first++ ; if(CounterStep.first  > Period.first ) CounterStep.first  = 0;
