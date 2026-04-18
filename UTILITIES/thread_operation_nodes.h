@@ -19,12 +19,28 @@ template<typename T> class QQueue;
 template<typename T> class passValueVoid;
 
 template<typename T = float> 
+class NodeValueNop : public PassValueClass<T>
+{
+  public: 
+    T& operator>>(T& Output) { return Output; };
+    PassValueClass<T>& operator>>(PassValueClass<T>& Output) override { return *this;} 
+};
+//qDebug() << "[ PASS VALUE NOP ]"; 
+
+template<typename T = float> 
 class NodeCoordPassNop : public PassCoordClass<T>
 {
   public: 
+  NodeValueNop<T> NopValue;
   QPair<T,T>& operator>>(QPair<T, T>& Coord)     override { return Coord;}
 
-  PassCoordClass<T>& operator>>(PassCoordClass<T>& Reciever) override {qDebug() << "PASS NOP"; return *this;}
+  const T& operator >>(T& Output) override { return Output; }
+  PassValueClass<T>& operator >>(PassValueClass<T>& Reciever)  override { return NopValue; }
+
+  PassCoordClass<T>& operator>>(PassCoordClass<T>& Reciever) override 
+  {
+    //qDebug() << "[ COORD PASS NOP ]"; 
+    return *this;}
 };
 
 template<typename T = float> 
@@ -370,7 +386,9 @@ class NodeCoordPassThinning : public PassCoordClass<T>
 	};
 
   PassCoordClass<T>& operator>>(PassCoordClass<T>& Receiver) override 
-                         { if(!FilterOpened) return NopNode; PassCoordClass<T>::OutputCoord >> Receiver; return Receiver; }
+  { 
+    if(!FilterOpened) { return NopNode; } 
+    PassCoordClass<T>::OutputCoord >> Receiver; return Receiver; }
 
   QPair<T,T>& operator>>(QPair<T,T>& Receiver) override  
                          { if(FilterOpened) Receiver = PassCoordClass<T>::OutputCoord; return Receiver; };
@@ -506,6 +524,7 @@ class NodeCoordPassNorm : public PassCoordClass<T>
   };
 
 	const T& getValue() override { return this->OutputCoord.first; };
+
 
 };
 
@@ -931,14 +950,6 @@ class TestNodeCoordStorage
 };
 
 //======================================================================
-template<typename T = float> 
-class NodeValueNop : public PassValueClass<T>
-{
-  public: 
-    T& operator>>(T& Output) { return Output; };
-    template<typename V> V& operator >>(V& Output) { return Output;}
-    PassValueClass<T>& operator>>(PassValueClass<T>& Output) override { qDebug() << "PASS VALUE NOP"; return *this;}
-};
 //===========================================================================
 template< typename T = float>
 class NodeValueDifference : public PassValueClass<T>
@@ -1015,6 +1026,7 @@ class NodeValueAvarageStep: public PassValueClass<T>
 
 	void setValue(T Value) override  
   {
+    //qDebug() << "INPUT: " << Value;
     ValueStep = Value - ValueLast; ValueLast = Value;
     ValueStep >> Statistic; 
               if(Statistic.isLoaded()) PassValueClass<T>::Value = Statistic.GetAvarageValue();
@@ -1201,6 +1213,9 @@ template<typename T = float>
 class NodeValueCategorizer : public PassValueClass<T>
 {
   public:
+  NodeValueCategorizer() {}; 
+  NodeValueCategorizer(double Limit, int Count) { LimitValue = Limit; GroupCount = Count; GroupSpan = LimitValue/Count; }
+
   double LimitValue = 100;
   int    GroupCount = 10;   
   double GroupSpan = LimitValue/GroupCount;
@@ -1354,7 +1369,7 @@ class NodeValueThinning : public PassValueClass<V>
       if(!isOpen()) return PassNop;  PassValueClass<V>::getValue() >> Receiver; return Receiver; 
     };
 
-    void operator>>(V& Receiver) { if(isOpen())  { Receiver = PassValueClass<V>::Value; } };
+    V& operator>>(V& Output) { if(isOpen())  { Output = PassValueClass<V>::Value; } return Output; };
 
     bool isOpen(){ return counter >= peak;}
     virtual void operator++(int) { counter++; if(counter > peak) counter = 0; }

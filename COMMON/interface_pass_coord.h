@@ -30,8 +30,8 @@ public:
     friend PassValueClass<V>& operator | (PassCoordClass<V>& Sender, PassValueClass<V>& Reciever)
     { Sender.setLink(&Reciever); return Reciever; }
 
-              const V& operator >>(V& Output)                   { Output = getValue();  return Output; }
-    PassValueClass<V>& operator >>(PassValueClass<V>& Reciever) { Reciever.setValue(getValue());  return Reciever; }
+    virtual const V& operator >>(V& Output)                   { Output = getValue();  return Output; }
+    virtual PassValueClass<V>& operator >>(PassValueClass<V>& Reciever) { Reciever.setValue(getValue());  return Reciever; }
 
 	friend PassCoordClass& operator >>(const V&  Value, PassCoordClass& Reciever)
     { Reciever.setValue(Value); return Reciever; } 

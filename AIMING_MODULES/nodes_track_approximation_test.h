@@ -68,8 +68,8 @@ class PolynomApproximationDynamicTest: public PassCoordClass<float>
                                          SplitToTime1(1) >> trackApproximation2 >> PickValue(1) >> JoinValue >> CoordStorage1;
                            CoordNoize >> NodeAvarageStep >> Abs >> CoordAvarageStep;
                                          NodeAvarageStep >> ValueAvarageStep;
-    qDebug() << OutputFilter::Filter(50) << "AVARAGE STEP : " << CoordAvarageStep.first 
-                                                              << CoordAvarageStep.second << "NORM: " << 100*ValueAvarageStep;          
+    //qDebug() << OutputFilter::Filter(50) << "AVARAGE STEP : " << CoordAvarageStep.first 
+    //                                                          << CoordAvarageStep.second << "NORM: " << 100*ValueAvarageStep;          
     
 
     Coord >> Randomize2 >> SplitToTime2(0) >> PickValue(1) >> JoinValue;

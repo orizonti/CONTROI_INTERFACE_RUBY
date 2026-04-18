@@ -135,14 +135,14 @@ int main(int argc, char* argv[])
 
   //=====================================================================================
   //TEST TRACK APPROXIMATION 
-  SinusGeneratorClass SinusGenerator; SinusGenerator.setPeriod(3);
+  SinusGeneratorClass SinusGenerator; SinusGenerator.setPeriod(10);
                                       SinusGenerator.slotSetAmplitude(200); 
-                                      SinusGenerator.slotSetFrequency(0.001);
+                                      SinusGenerator.slotSetFrequency(0.3);
                                       SinusGenerator.slotSetOffset(240,240);
   WidgetLineGraph graphWidget; graphWidget.setSize(500); graphWidget.show();
   
   NodeCoordSplitToTime<float> SplitToTime; 
-  NodeCoordRandomizer<float> Randomize{10,4};
+  NodeCoordRandomizer<float> Randomize{20,10};
   NodeCoordRandomizer<float> Randomize2{0,2};
   NodeCoordPassNorm<float> Norm;
   NodeCoordSwap SwapCoord; 
@@ -157,14 +157,14 @@ int main(int argc, char* argv[])
 
             //======================================================================================
             //DYNAMIC TEST
-            PolynomApproximationDynamicTest<3> Test2{100,10,4};
-                                SplitToTime.setResetCounter(SinusGenerator.Period.first);
-                                SinusGenerator | Test2;
-                                                  Test2.linkToGraph(graphWidget.GraphPointsStorage2);
-                                                  Test2.linkToGraph(graphWidget.GraphPointsStorage );
+            //PolynomApproximationDynamicTest<3> Test2{100,10,4};
+            //                    SplitToTime.setResetCounter(SinusGenerator.Period.first);
+            //                    SinusGenerator | Test2;
+            //                                      Test2.linkToGraph(graphWidget.GraphPointsStorage2);
+            //                                      Test2.linkToGraph(graphWidget.GraphPointsStorage );
             //======================================================================================
 
-            //  DetectorTrackHold ProcessorTrack;
+            //  StatisticMovingParam ProcessorTrack;
             //  NodeCoordRandomizer<float> Randomizer{12};
             //  NodeCoordPassValue<float> PassValue;
             //  NodeCoordPassValue<float> PassValue2;
@@ -175,14 +175,16 @@ int main(int argc, char* argv[])
             //
             //=====================================================================================
             //DISPERSION ESTIMATE BY SPAN
-            //StatisticCoordSpan<float,2> CoordSpan2(10);
-            //StatisticCoordSpan<float,1> CoordSpan1(10);
+            StatisticDispersionSpan<float,2> CoordSpan2(10);
+            StatisticDispersionSpan<float,1> CoordSpan1(10);
+            EstimatorObjectVelocity<float> VelEstimator;
             //SinusGenerator | Randomize | CoordSpan2;
             //SinusGenerator | Randomize | Norm | CoordSpan1;
             //=====================================================================================
             //DISPERSION ESTIMATE BY APPROXIMATION
-//                        DetectorTrackHold TrackStat;
-//             SinusGenerator | Randomize | TrackStat;
+                        StatisticMovingParam TrackStat;
+             //SinusGenerator | Randomize | TrackStat;
+             SinusGenerator | Randomize | VelEstimator;
             //=====================================================================================
 
             SinusGenerator.slotStartGenerate(true);

@@ -19,10 +19,10 @@
 #include "module_period_measure.h"
 
 template<typename T = float, int type=2>
-class StatisticCoordSpan: public PassCoordClass<T>
+class StatisticDispersionSpan: public PassCoordClass<T>
 {
   public:
-  StatisticCoordSpan(int SizeWindow) { };
+  StatisticDispersionSpan(int SizeWindow) { };
 
   QPair<T,T> CoordSlowed{0,0};
 
@@ -89,10 +89,10 @@ class StatisticCoordSpan: public PassCoordClass<T>
 };
 
 template<typename T>
-class StatisticCoordSpan<T,1>: public PassValueClass<T>
+class StatisticDispersionSpan<T,1>: public PassValueClass<T>
 {
   public:
-  StatisticCoordSpan(int SizeWindow) { };
+  StatisticDispersionSpan(int SizeWindow) { };
 
   T ValueSlowed{0};
 
@@ -151,10 +151,49 @@ class StatisticCoordSpan<T,1>: public PassValueClass<T>
   };
 };
 
-class DetectorTrackHold: public PassCoordClass<float>
+template<typename T = float>
+class EstimatorObjectVelocity: public PassCoordClass<T>
 {
   public:
-    DetectorTrackHold() 
+   EstimatorObjectVelocity() { }
+
+	void setInput(const QPair<T,T>& Coord) override  
+  {
+
+    Coord >> Thinning1(2)  >> NodeAvarageStep1 >> Norm >> Velocity1 >> Categorizer1;
+    Coord >> Thinning2(6)  >> NodeAvarageStep2 >> Norm >> Velocity2 >> Categorizer2;
+    Coord >> Thinning3(12) >> NodeAvarageStep3 >> Norm >> Velocity3 >> Categorizer3;
+
+    qDebug() << OutputFilter::Filter(20) << "[ VELOCITY ESTIMATOR ]" << Velocity1 << Velocity2 << Velocity3 
+                                         << "[CAT]" << Categorizer1.getValue() 
+                                                    << Categorizer2.getValue()
+                                                    << Categorizer3.getValue();
+  }
+    T Velocity1{0};
+    T Velocity2{0};
+    T Velocity3{0};
+
+    NodeCoordDifference<T> Substract;
+    NodeCoordPassNorm<T> Norm;
+    NodeValueAbsolutization<T> Abs;
+
+    NodeCoordPassThinning<T> Thinning1{2};
+    NodeCoordPassThinning<T> Thinning2{4};
+    NodeCoordPassThinning<T> Thinning3{10};
+
+    NodeValueCategorizer<T> Categorizer1{10,10};
+    NodeValueCategorizer<T> Categorizer2{50,10};
+    NodeValueCategorizer<T> Categorizer3{100,10};
+
+    NodeCoordAvarageStep<T> NodeAvarageStep1{10};
+    NodeCoordAvarageStep<T> NodeAvarageStep2{10};
+    NodeCoordAvarageStep<T> NodeAvarageStep3{10};
+};
+
+class StatisticMovingParam: public PassCoordClass<float>
+{
+  public:
+    StatisticMovingParam() 
     { 
       Statistic1.setModeSingle(true);
       Statistic2.setModeSingle(true);
@@ -165,40 +204,31 @@ class DetectorTrackHold: public PassCoordClass<float>
     QPair<float,float> CoordProlong{0,0};
     QPair<float,float> CoordAvarage{0,0};
 
+    StatisticCoord<float> Statistic1{10};  
+    StatisticCoord<float> Statistic2{30}; 
+    StatisticCoord<float> Statistic3{100}; 
+    StatisticCoord<float> Statistic4{10};  
+    StatisticDispersionSpan<float,1> StatisticSpan{10};
+
+      NodeCoordDifference<float> Substract;
+        NodeCoordAbsolute<float> Abs;
+        NodeCoordPassNorm<float> Norm;
+       NodeCoordPassValue<float> PickValue;
+       NodeCoordJoinValue<float> JoinValue;
+     NodeCoordSplitToTime<float> SplitToTime; 
+
     NodeCoordVelocity<float> NodeVelocity;
     NodeCoordVelocity<float> NodeAcceleration;
 
-    StatisticCoord<float> Statistic1{10};  //COORD 
-    StatisticCoord<float> Statistic2{30}; //VELOCITY 
-    StatisticCoord<float> Statistic3{100}; //ACCELERATIOn
-    StatisticCoord<float> Statistic4{10};  //COORD RELATION
-
-      NodeCoordDifference<float> Substract;
-    NodeCoordSplitToTime<float> SplitToTime; 
-
-     NodeCoordRelation<float> NodeRelation;
-         NodeCoordGain<float> Gain;
-       NodeCoordOffset<float> Offset;
-     NodeCoordAbsolute<float> Abs;
-    NodeCoordPassValue<float> PickValue;
-    NodeCoordJoinValue<float> JoinValue;
-
-           MeasurePeriodNode MeasurePeriod;
-
     PolynomApproximation<3> trackApprox1{100,10,2};
     PolynomApproximation<3> trackApprox2{100,10,2};
+               MeasurePeriodNode MeasurePeriod;
 
     QPair<float,float> Velocity; 
     QPair<float,float> Acceleration; 
-
-    float VelocityNorm = 0; 
-    float AccelerationNorm = 0; 
-    float DispersionCoord = 0; 
-
-  bool isTrackHold() { return false; };
-
-  double SignalThreshold     = 0.9; 
-     int DispersionThreshold = 20; 
+                float  VelocityNorm = 0; 
+                float  AccelerationNorm = 0; 
+                float  DispersionCoord = 0; 
 
   void reset() { }
 
@@ -209,13 +239,14 @@ class DetectorTrackHold: public PassCoordClass<float>
      Coord >> SplitToTime(0) >> trackApprox1 >>  PickValue(1) >> JoinValue >> CoordProlong; 
               SplitToTime(1) >> trackApprox2 >>  PickValue(1) >> JoinValue >> Substract;
                                                                      Coord >> Substract >> Statistic1;
+     Coord >> Norm >> StatisticSpan;
 
      CoordProlong >> NodeVelocity >> Statistic2; 
                      NodeVelocity >> NodeAcceleration >> Statistic3;
 
       if(!Statistic1.isLoaded()) return;
 
-       if(Statistic1.isLoaded()){ DispersionCoord = Statistic1.GetDispersionNorm(); 
+       if(Statistic1.isLoaded()){ DispersionCoord = 0.5*Statistic1.GetDispersionNorm() + 0.5*StatisticSpan.getValue(); 
                                      CoordAvarage = Statistic1.GetAvarageCoord();   Statistic1.reset(); }
        if(Statistic2.isLoaded()){        Velocity = Statistic2.GetAvarageCoord();                       }
        if(Statistic2.isLoaded()){    VelocityNorm = Statistic2.GetDispersionNorm();  Statistic2.reset();}
