@@ -3,7 +3,7 @@
 
 void PolynomApproximation<2>::setInput(const QPair<float,float>& Coord) 
 {
-              Coord >> TrackInput; 
+              Coord >> TrackInput; Coord.first >> NodeAvarageStep >> StepTimeScale;
     posLast = Coord;
     if(isLoaded()) reset();
 
@@ -12,18 +12,24 @@ void PolynomApproximation<2>::setInput(const QPair<float,float>& Coord)
     sums[2] += Coord.first * Coord.second;
     sums[3] += Coord.first * Coord.first; IndexInput++; if(!isLoaded()) return;
 
+    trackPolynom[2] = 0;
     trackPolynom[1] = (SizeWindow * sums[2] - sums[0] * sums[1]) / (SizeWindow * sums[3] - sums[0] * sums[0]);
     trackPolynom[0] = (sums[1] - trackPolynom[1] * sums[0]) / SizeWindow;
 
     getFuture();
 }
 
+//Coord.first  = n*Step*Direction + CoordStart.first; 
+//Coord.second = std::pow(Coord.first,3)*C3 + std::pow(Coord.first,2)*C2 + Coord.first*C1 + C0;
+
+
 template<>
 void PolynomApproximation<2>::reset()
 {
     //================================================
-    TrackInput.rollbackStore(SizeWindow - 20);
-    IndexInput = 0;
+    TrackInput.rollbackStore(SizeWindow - StepsRollback);
+    IndexInput = 0; 
+    sums[0] = 0; sums[1] = 0; sums[2] = 0; sums[3] = 0; 
     for(auto& coord_last: TrackInput)
     {
         sums[0] += coord_last.first;
@@ -77,7 +83,7 @@ std::vector<float> PolynomApproximation<2>::getApproximation(std::span<std::pair
 //=====================================================================================
 void PolynomApproximation<3>::setInput(const QPair<float,float>& Coord) 
 {
-              Coord >> TrackInput;
+              Coord >> TrackInput; Coord.first >> NodeAvarageStep >> StepTimeScale;
     posLast = Coord;
     if(isLoaded()) reset();
 
@@ -88,6 +94,7 @@ void PolynomApproximation<3>::setInput(const QPair<float,float>& Coord)
      Y_VEC(IndexInput) = Coord.second;   IndexInput++; 
     if(!isLoaded()) return; 
 
+                                                           //MeasurePeriod++;
     //qDebug() << "===============================";
     Eigen::Vector3d RESULT = A_MAT3.colPivHouseholderQr().solve(Y_VEC);
     if (!RESULT.allFinite()) { isResultValid = false; qDebug() << "APPROX FAIL"; return; } // Check for numerical issues (optional but good practice)
@@ -95,16 +102,19 @@ void PolynomApproximation<3>::setInput(const QPair<float,float>& Coord)
     trackPolynom[0] = RESULT(2);
     trackPolynom[1] = RESULT(1);
     trackPolynom[2] = RESULT(0); getFuture(); 
-    //qDebug() << "GET APPOROX :" << trackPolynom[0] << trackPolynom[1] << trackPolynom[2];
 
+                                                            //MeasurePeriod++;
+    //qDebug() << OutputFilter::Filter(10) << "[ GET APPOROX TIME]" << StepTimeScale;
+    //qDebug() << "[ GET APPOROX ]" << trackPolynom[0] << trackPolynom[1] << trackPolynom[2] << "INDEX: " <<  IndexInput << "TIME: " << MeasurePeriod.getMicroseconds();
 }
 
 template<>
 void PolynomApproximation<3>::reset()
 {
     //================================================
-    TrackInput.rollbackStore(SizeWindow - 20);
+    TrackInput.rollbackStore(SizeWindow - StepsRollback);
            IndexInput = 0;
+
     for(auto& coord_last: TrackInput)
     {
     A_MAT3(IndexInput, 0) = coord_last.first * coord_last.first;
@@ -115,9 +125,6 @@ void PolynomApproximation<3>::reset()
     //================================================
 }
 
-    //MeasurePeriod++;
-    //MeasurePeriod++;
-    //qDebug() << "[ GET APPROX ]" << RESULT(0) << RESULT(1) << RESULT(2) << "TIME: " << MeasurePeriod.getMicroseconds();
 
 template<>
 std::vector<float> PolynomApproximation<3>::getApproximation(NodeCoordStorage<float>& track)   

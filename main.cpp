@@ -134,12 +134,35 @@ int main(int argc, char* argv[])
   MeasurePeriodNode periodMeasure;
 
   //=====================================================================================
-  //TEST TRACK APPROXIMATION DYNAMIC
+  //TEST TRACK APPROXIMATION 
   SinusGeneratorClass SinusGenerator; SinusGenerator.setPeriod(3);
                                       SinusGenerator.slotSetAmplitude(200); 
-                                      SinusGenerator.slotSetFrequency(0.1);
+                                      SinusGenerator.slotSetFrequency(0.001);
                                       SinusGenerator.slotSetOffset(240,240);
   WidgetLineGraph graphWidget; graphWidget.setSize(500); graphWidget.show();
+  
+  NodeCoordSplitToTime<float> SplitToTime; 
+  NodeCoordRandomizer<float> Randomize{10,4};
+  NodeCoordRandomizer<float> Randomize2{0,2};
+  NodeCoordPassNorm<float> Norm;
+  NodeCoordSwap SwapCoord; 
+
+            //======================================================================================
+            //STATIC TEST
+            //PolynomApproximationTest<3> Test1(12,0.0001,0.002,0);
+            //PolynomApproximationTest<2> Test1(2,1.2,0.000,0);
+            //                graphWidget.GraphPointsStorage2->setPoints(Test1.TrackApprox);
+            //                graphWidget.GraphPointsStorage->setPoints(Test1.TrackNoize);
+
+
+            //======================================================================================
+            //DYNAMIC TEST
+            PolynomApproximationDynamicTest<3> Test2{100,10,4};
+                                SplitToTime.setResetCounter(SinusGenerator.Period.first);
+                                SinusGenerator | Test2;
+                                                  Test2.linkToGraph(graphWidget.GraphPointsStorage2);
+                                                  Test2.linkToGraph(graphWidget.GraphPointsStorage );
+            //======================================================================================
 
             //  DetectorTrackHold ProcessorTrack;
             //  NodeCoordRandomizer<float> Randomizer{12};
@@ -150,27 +173,19 @@ int main(int argc, char* argv[])
             //
             //  SinusGenerator.slotStartGenerate(true);
             //
+            //=====================================================================================
+            //DISPERSION ESTIMATE BY SPAN
+            //StatisticCoordSpan<float,2> CoordSpan2(10);
+            //StatisticCoordSpan<float,1> CoordSpan1(10);
+            //SinusGenerator | Randomize | CoordSpan2;
+            //SinusGenerator | Randomize | Norm | CoordSpan1;
+            //=====================================================================================
+            //DISPERSION ESTIMATE BY APPROXIMATION
+//                        DetectorTrackHold TrackStat;
+//             SinusGenerator | Randomize | TrackStat;
+            //=====================================================================================
 
-      //PolynomApproximationTest<3> Test1(12,0.0001,0.002,0);
-      //                graphWidget.GraphPointsStorage->setPoints(Test1.TrackApprox);
-      //                graphWidget.GraphPointsStorage2->setPoints(Test1.TrackNoize);
-
-  NodeCoordSplitToTime<float> SplitToTime; 
-  NodeCoordRandomizer<float> Randomize{20,2};
-  NodeCoordRandomizer<float> Randomize2{0,2};
-
-  //PolynomApproximationDynamicTest<3> Test2;
-  //NodeCoordSwap SwapCoord; 
-//                       SplitToTime.setResetCounter(SinusGenerator.Period.first);
-  //SinusGenerator | SplitToTime(1) | Test2;
-                   //SinusGenerator | Test2;
-                   //                 Test2.linkToGraph(graphWidget.GraphPointsStorage );
-                   //                 Test2.linkToGraph(graphWidget.GraphPointsStorage2);
-  //DetectorTrackHold TrackStat;
-  StatisticCoordSpan CoordSpan(10);
-  //SinusGenerator | Randomize | TrackStat;
-  SinusGenerator | Randomize | CoordSpan;
-  SinusGenerator.slotStartGenerate(true);
+            SinusGenerator.slotStartGenerate(true);
 
 
   return app.exec();
@@ -268,22 +283,25 @@ int main(int argc, char* argv[])
     Dispatcher1_1->AppendCallback<CommandAiming<0>> ( [WindowInterface](MessageType1& Message)
     {
      auto data = DispatcherType1::ExtractData<CommandAiming<0>>(&Message);
-     qDebug() << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 1;
-     WindowInterface->outputVideo1->setCoordPaint(data->Command);
+     //qDebug() << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 1;
+     WindowInterface->outputVideo1->enablePlot(true);
+     WindowInterface->outputVideo1->setCoordPaint(data->Command,0);
     });
 
     Dispatcher1_2->AppendCallback<CommandAiming<0>> ( [WindowInterface](MessageType1& Message)
     {
      auto data = DispatcherType1::ExtractData<CommandAiming<0>>(&Message);
-     qDebug() << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 2;
-     WindowInterface->outputVideo2->setCoordPaint(data->Command);
+     //qDebug() << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 2;
+     WindowInterface->outputVideo2->enablePlot(true);
+     WindowInterface->outputVideo2->setCoordPaint(data->Command,0);
     });
 
     Dispatcher1_3->AppendCallback<CommandAiming<0>> ( [WindowInterface](MessageType1& Message)
     {
      auto data = DispatcherType1::ExtractData<CommandAiming<0>>(&Message);
-     qDebug() << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 3;
-     WindowInterface->outputVideo3->setCoordPaint(data->Command);
+     //qDebug() << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 3;
+     WindowInterface->outputVideo3->enablePlot(true);
+     WindowInterface->outputVideo3->setCoordPaint(data->Command,0);
     });
 
            
@@ -327,8 +345,8 @@ int main(int argc, char* argv[])
   std::shared_ptr<DeviceScanator> ControlScanator = std::make_shared<DeviceScanator>(ConnectionInterface2, CONTROL_PARAM::POS, "[SCANATOR]");
   std::shared_ptr<DevicePlatform> ControlPlatform = std::make_shared<DevicePlatform>(ConnectionInterface4, CONTROL_PARAM::POS, "[PLATFORM]");
 
-  std::shared_ptr<DeviceGenericHandleControl> ControlAiming1 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine>>(ConnectionInterface1, "[AIMING1]");
-  std::shared_ptr<DeviceGenericHandleControl> ControlAiming2 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine>>(ConnectionInterface2, "[AIMING2]");
+  std::shared_ptr<DeviceGenericHandleControl> ControlAiming1 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine>>(ConnectionInterface3, "[AIMING1]");
+  std::shared_ptr<DeviceGenericHandleControl> ControlAiming2 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine>>(ConnectionInterface3, "[AIMING2]");
 
     ControlScanator->setLimits(CONTROL_PARAM::POS,30000,30000);
 

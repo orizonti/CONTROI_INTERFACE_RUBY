@@ -26,12 +26,12 @@ public:
 
             void setLink(PassCoordClass<V>* NewLink) { NodesLinked.push_back(NewLink); }
     //=======================================================
-    virtual void setLink(PassValueClass<V>* NewLink) { }
+    virtual void setLink(PassValueClass<V>* NewLink) { qDebug() << "[ SET NO LINK ]"; }
     friend PassValueClass<V>& operator | (PassCoordClass<V>& Sender, PassValueClass<V>& Reciever)
     { Sender.setLink(&Reciever); return Reciever; }
 
+              const V& operator >>(V& Output)                   { Output = getValue();  return Output; }
     PassValueClass<V>& operator >>(PassValueClass<V>& Reciever) { Reciever.setValue(getValue());  return Reciever; }
-              const V& operator >>(V& Output)                 { Output = getValue();  return Output; }
 
 	friend PassCoordClass& operator >>(const V&  Value, PassCoordClass& Reciever)
     { Reciever.setValue(Value); return Reciever; } 
@@ -72,6 +72,9 @@ template<typename T> QPair<T, T> operator*(QPair<T, T> x, const T& Scale)   { x.
 
 template<typename T, typename V> QPair<T, T> operator*(QPair<T, T> x, const V& Scale)   
 { x.first *= Scale; x.second *= Scale ; return x; }
+
+template<typename T, typename V> QPair<T, T> operator+(QPair<T, T> x, const V& Add)   
+{ x.first += Add; x.second += Add ; return x; }
 
 template<typename T> QPair<T, T> operator+(QPair<T, T> x, const T& addition){ x.first += addition; x.second += addition;  return x; }
 

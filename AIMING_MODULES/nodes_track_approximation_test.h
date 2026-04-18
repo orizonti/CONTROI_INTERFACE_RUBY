@@ -9,36 +9,74 @@ class PolynomApproximationDynamicTest: public PassCoordClass<float>
 {
   public:
 
-  PolynomApproximationDynamicTest()
+  PolynomApproximationDynamicTest(int size1, int size2, int size3) : trackApproximation1(size1, size2, size3), 
+                                                                     trackApproximation2(size1, size2, size3),
+                                                                     CoordStorage1(size1),
+                                                                     CoordStorage2(size1)
+  {
+    CoordStorage1.setContinousMode(true);
+    CoordStorage2.setContinousMode(true);
+    SplitToTime1.setResetCounter(800000);
+    SplitToTime2.setResetCounter(800000);
+
+    NumberPoints = size1;
+    NumberReroll = size2;
+    NumberForecast = size3;
+  };
+
+  PolynomApproximationDynamicTest() : trackApproximation1(NumberPoints,NumberReroll,NumberForecast),
+                                      trackApproximation2(NumberPoints,NumberReroll,NumberForecast),
+                                      CoordStorage1(NumberPoints),
+                                      CoordStorage2(NumberPoints)
   {
     CoordStorage1.setContinousMode(true);
     CoordStorage2.setContinousMode(true);
     SplitToTime1.setResetCounter(800000);
     SplitToTime2.setResetCounter(800000);
   };
-  int NumberPoints = 140;
-  PolynomApproximation<NUM_PARAM> trackApproximation1{NumberPoints};
-  PolynomApproximation<NUM_PARAM> trackApproximation2{NumberPoints};
-  NodeCoordStorage<float> CoordStorage1{NumberPoints};
-  NodeCoordStorage<float> CoordStorage2{NumberPoints};
 
+  int NumberPoints = 100;
+  int NumberReroll = 10;
+  int NumberForecast = 5;
+
+  PolynomApproximation<NUM_PARAM> trackApproximation1;
+  PolynomApproximation<NUM_PARAM> trackApproximation2;
+  NodeCoordStorage<float> CoordStorage1;
+  NodeCoordStorage<float> CoordStorage2;
+
+  NodeCoordAbsolute<float> Abs;
   NodeCoordPassValue<float> PickValue;
   NodeCoordJoinValue<float> JoinValue;
   NodeCoordSplitToTime<float> SplitToTime1; 
   NodeCoordSplitToTime<float> SplitToTime2; 
-  NodeCoordRandomizer<float> Randomize1{14,14};
-  NodeCoordRandomizer<float> Randomize2{14,14};
+  NodeCoordRandomizer<float> Randomize1{4,4};
+  NodeCoordRandomizer<float> Randomize2{4,4};
+  NodeCoordAvarageStep<float> NodeAvarageStep{40};
+  std::pair<float,float> CoordAvarageStep{0,0};
+                  float  ValueAvarageStep{0};
+  std::pair<float,float> CoordNoize;
+  
 
 	void setInput(const QPair<float, float>& Coord) 
   { 
 
-    Coord >> Randomize1 >> SplitToTime1(0) >> trackApproximation1 >> PickValue(1) >> JoinValue;
-                           SplitToTime1(1) >> trackApproximation2 >> PickValue(1) >> JoinValue >> CoordStorage1;
+    //=========================================================================================================
+    //Coord >> Randomize1 >> SplitToTime1(0) >> trackApproximation1 >> CoordStorage1 ;
+    //Coord >> Randomize2 >> SplitToTime2(0) >> CoordStorage2;
+    //=========================================================================================================
+    Coord >> Randomize1 >> CoordNoize >> SplitToTime1(0) >> trackApproximation1 >> PickValue(1) >> JoinValue;
+                                         SplitToTime1(1) >> trackApproximation2 >> PickValue(1) >> JoinValue >> CoordStorage1;
+                           CoordNoize >> NodeAvarageStep >> Abs >> CoordAvarageStep;
+                                         NodeAvarageStep >> ValueAvarageStep;
+    qDebug() << OutputFilter::Filter(50) << "AVARAGE STEP : " << CoordAvarageStep.first 
+                                                              << CoordAvarageStep.second << "NORM: " << 100*ValueAvarageStep;          
+    
 
     Coord >> Randomize2 >> SplitToTime2(0) >> PickValue(1) >> JoinValue;
                            SplitToTime2(1) >> PickValue(1) >> JoinValue >> CoordStorage2;
+    //=========================================================================================================
 
-    if(trackApproximation2.isLoaded()) { 
+    if(trackApproximation1.isLoaded()) { 
                                    //qDebug() << "STORE FUTURE: "  << CoordStorage1.getAvailable();
                                    //if(displayGraph1) displayGraph1->setPoints(trackApproximation1.TrackInput); 
                                    //if(displayGraph2) displayGraph2->setPoints(trackApproximation.TrackFuture); 
@@ -61,13 +99,15 @@ class PolynomApproximationTest
 {
   public:
     int NumberPoints = 300;
+    int NumberReroll = 30;
+    int NumberForecast = 5;
   float Range = 400;
   float Step = Range/NumberPoints;
     int Direction = 1;
-  float Dispersion = 15;
+  float Dispersion = 25;
 
   std::pair<float,float> CoordStart{20,20};
-  PolynomApproximation<NUM_PARAM> trackApproximation{NumberPoints};
+  PolynomApproximation<NUM_PARAM> trackApproximation{NumberPoints, NumberReroll, NumberForecast};
 
   std::vector<float> param = {0,0,0,0};
   std::vector<float> params_output = {0,0,0,0};

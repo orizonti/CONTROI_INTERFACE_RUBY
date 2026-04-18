@@ -14,19 +14,25 @@
 class GenericApproximation: public PassCoordClass<float>
 {
   public:
-  GenericApproximation(int Size = 100) 
+  GenericApproximation(int Size = 100, int SizeRollbak=10, int StepsFuture = 2) 
   {
       TrackInput.setSize(Size); 
       TrackFuture.setSize(Size); 
       SizeWindow = Size;
+      StepsRollback = SizeRollbak;
+      StepsForecasting = StepsFuture;
   }
-  int SizeWindow = 10;
+  int   SizeWindow = 100;
+  int   StepsRollback = SizeWindow/10;
+  float StepTimeScale = 0.5;
+  int   StepsForecasting = 2;
 
+  NodeValueAvarageStep<float> NodeAvarageStep{10};
   NodeCoordStorage<float> TrackInput;
   NodeCoordStorage<float> TrackFuture;
 
-    std::pair<float,float> posFuture{0,0};
-    std::pair<float,float> posLast{0,0};
+  std::pair<float,float> posFuture{0,0};
+  std::pair<float,float> posLast{0,0};
 
   double RMSE = std::numeric_limits<double>::quiet_NaN();
   bool isResultValid = false;
@@ -34,10 +40,10 @@ class GenericApproximation: public PassCoordClass<float>
     MeasurePeriodNode MeasurePeriod;
     void setInput(const QPair<float,float>& Coord) override  
     {   
-                Coord >> TrackInput;             if(!TrackInput.isLoaded()) return; 
+                Coord >> TrackInput; Coord.first >> NodeAvarageStep >> StepTimeScale; if(!TrackInput.isLoaded()) return; 
         getApproximation(TrackInput); 
                          TrackInput.skipLoaded(); 
-                         TrackInput.rollbackStore(SizeWindow - 20);  
+                         TrackInput.rollbackStore(SizeWindow - StepsRollback);  
                                         
     };
     void flushTrack() { TrackInput.skipLoaded(); };
@@ -61,7 +67,7 @@ template<int NUM_PARAM>
 class PolynomApproximation: public GenericApproximation
 {
   public:
-    PolynomApproximation(int Size = 100) : GenericApproximation(Size)
+    PolynomApproximation(int Size = 100, int SizeRollback = 10, int StepsFuture = 2) : GenericApproximation(Size, SizeRollback, StepsFuture)
     { 
       A_MAT1 = Eigen::MatrixXd(static_cast<Eigen::Index>(Size), 1);
       A_MAT3 = Eigen::MatrixXd(static_cast<Eigen::Index>(Size), 3);
@@ -111,8 +117,7 @@ void PolynomApproximation<NUM_PARAM>::operator=(const PolynomApproximation<NUM_P
 template<int NUM_PARAM>
 const std::pair<float,float>& PolynomApproximation<NUM_PARAM>::getFutureStep()
 {
-    float step = 0.5;
-    posFuture.first = posLast.first + 10*step;  
+    posFuture.first = posLast.first + StepsForecasting*StepTimeScale;  
     posFuture.second = trackPolynom[2]*std::pow(posFuture.first,2) +
                        trackPolynom[1]*posFuture.first +
                        trackPolynom[0];
@@ -135,7 +140,7 @@ NodeCoordStorage<float>& PolynomApproximation<NUM_PARAM>::getFuture()
     TrackFuture.reset();
     for(auto coord: TrackInput)
     {
-    coord.first = coord.first + 50*step;  
+    coord.first = coord.first + 2*StepTimeScale;  
     coord.second = trackPolynom[2]*std::pow(coord.first,2) +
                    trackPolynom[1]*coord.first +
                    trackPolynom[0];

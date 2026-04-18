@@ -49,10 +49,12 @@ void SinkDisplayLabel::setImageFrom(SourceImageDisplayInterface* Src)
 
 	auto posPicked = LabelDisplay->getPos();
 	
-	QPen pen; pen.setWidth(2); pen.setColor(Qt::red);
+	QPen pen; pen.setWidth(1); pen.setColor(Qt::green);
+
+	QPainter Painter;
 	Painter.begin(&DisplayImage);
 	Painter.setPen(pen);
-	Painter.drawRect(CoordRect.first, CoordRect.second, SizeRect.first, SizeRect.second);
+	for(auto& rect_pos: Rects) { Painter.drawRect(rect_pos.first-40, rect_pos.second-40, 80,80); ; }
 	Painter.end();
 
 	LabelDisplay->setPixmap(QPixmap::fromImage(DisplayImage)); 

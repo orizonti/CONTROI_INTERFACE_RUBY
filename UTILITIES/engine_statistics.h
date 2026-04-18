@@ -41,9 +41,11 @@ public:
 	bool isModeSingle = false;
 
     void reset()
-	{ ValueMax = -std::numeric_limits<T>::max();
+	{ 
+	  ValueMax = -std::numeric_limits<T>::max();
 	  ValueMin =  std::numeric_limits<T>::max();
-	  CurrentElement = StatSample.begin(); isStatLoaded = false;};
+	  isStatLoaded = false;
+	};
 
     void clear(){ std::fill(StatSample.begin(), StatSample.end(),0); 
 				  CurrentElement = StatSample.begin(); isStatLoaded = false; };
@@ -60,9 +62,10 @@ public:
 	const T& GetAvarageValue() {    return ValueAvarage;};
 	const T& GetMinValue() {    return ValueMin;};
 	const T& GetMaxValue() {    return ValueMax;};
-	const T& GetRange() {    return ValueMax - ValueMin;};
+	const T& GetRange()    {    return ValueMax - ValueMin;};
 
 	void CalcDispersion();
+	void resetOnLoaded() { if(isLoaded()) reset(); }
 };
 
 template<typename T>
@@ -71,6 +74,7 @@ class StatisticCoord  : public PassCoordClass<T>
 public:
 	StatisticCoord() {SetSize(10); };
 	StatisticCoord(int WindowSize) { SetSize(WindowSize); };
+	int index = 0;
 
     void SetSize(int WindowSize) { Size = WindowSize; StatSample.resize(Size); EndPos = StatSample.end(); clear();}
 	std::vector<QPair<T,T>> StatSample;
@@ -103,13 +107,13 @@ public:
 
     void reset()
 	{ 
-         CoordMax.first  = -std::numeric_limits<T>::max(); CoordAvarage.first = 0; CoordAvarage.second = 0; 
+         CoordMax.first  = -std::numeric_limits<T>::max(); //CoordAvarage.first = 0; CoordAvarage.second = 0; 
          CoordMax.second = -std::numeric_limits<T>::max();
 
          CoordMin.first  = std::numeric_limits<T>::max();
          CoordMin.second = std::numeric_limits<T>::max();
 
-		CurrentElement = StatSample.begin(); isStatLoaded = false; };
+		 isStatLoaded = false; };
 
 	bool isLoaded() { return isStatLoaded;};
 
@@ -123,6 +127,7 @@ public:
 	const QPair<T, T>& GetAvarageCoord() { return CoordAvarage;};
 	const QPair<T, T>& GetMinCoord() { return CoordMin;};
 	const QPair<T, T>& GetMaxCoord() { return CoordMax;};
+	       QPair<T, T> GetRange() { return CoordMax - CoordMin;};
 
 	const QPair<T, T>& GetDispersionCoord() { return CoordDispersion;};
 	               T   GetDispersionNorm() { return Norm(CoordDispersion);};
@@ -131,6 +136,7 @@ public:
 		T GetAvarageDeviation() { return DeviationAvarage; }
 	
 	void CalcDispersion();
+	void resetOnLoaded() { if(isLoaded()) reset(); }
 };
 
 template<typename T = float>
@@ -214,6 +220,7 @@ void StatisticCoord<T>::setInput(const QPair<T,T>& Input)
 	//		   << "[LAST]"   << CurrentElement->first << CurrentElement->second
 	//		   << "[AVG]"    << CoordAvarage.first << CoordAvarage.second;
 
+	index++;
 	*CurrentElement = Input; 
 	 CurrentElement++; if(CurrentElement == EndPos) {CurrentElement = StatSample.begin(); CalcDispersion(); isStatLoaded = true;}
 

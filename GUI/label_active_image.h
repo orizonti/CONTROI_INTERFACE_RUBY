@@ -33,6 +33,10 @@ class SinkDisplayLabel : public SinkDisplayNode
 {
 	Q_OBJECT
 	public:
+	SinkDisplayLabel() 
+	{ 
+	       Rects.push_back(std::pair<float,float>(0,0));
+	}
 	LabelActiveImage* LabelDisplay = nullptr;
      SinkDisplayNode* NodeLinked = nullptr;
     void linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device);    
@@ -46,16 +50,17 @@ class SinkDisplayLabel : public SinkDisplayNode
 	void linkToSinkNode(SinkDisplayNode* Node) { NodeLinked = Node; } 
 
 	void enablePlot(bool OnOff) { FlagPlotEnabled = OnOff; }
-	bool FlagPlotEnabled = false;
-
+	                         bool FlagPlotEnabled = false;
+       
 	  QImage DisplayImage;
-	QPainter Painter;
 
-	std::pair<float,float> CoordRect;
-	std::pair<int  ,int  > SizeRect ;
-	void setCoordPaint(std::pair<float,float> Coord) { CoordRect = Coord; }
+	std::vector<std::pair<float,float>> Rects;
 
-	//std::vector<std::pair<float,float>> CoordsObjects;
+	void setCoordPaint(std::pair<float,float> Coord, int channel) 
+	{
+		if(Rects.size()-1 < channel) { Rects.push_back(Coord); setCoordPaint(Coord,channel); } 
+		                               Rects[channel] = Coord;  
+	}
 
 	private slots:
 	void slotNodePicked() { if(NodeLinked != nullptr) NodeLinked->linkToSource(this->GetSource()); }
