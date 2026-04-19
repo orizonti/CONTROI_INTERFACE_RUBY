@@ -49,8 +49,8 @@ class PolynomApproximationDynamicTest: public PassCoordClass<float>
   NodeCoordJoinValue<float> JoinValue;
   NodeCoordSplitToTime<float> SplitToTime1; 
   NodeCoordSplitToTime<float> SplitToTime2; 
-  NodeCoordRandomizer<float> Randomize1{4,4};
-  NodeCoordRandomizer<float> Randomize2{4,4};
+  NodeCoordRandomizer<float> Randomize1{0,0};
+  NodeCoordRandomizer<float> Randomize2{0,0};
   NodeCoordAvarageStep<float> NodeAvarageStep{40};
   std::pair<float,float> CoordAvarageStep{0,0};
                   float  ValueAvarageStep{0};

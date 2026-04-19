@@ -94,12 +94,11 @@ void SinusGeneratorClass::slotCalculateValue()
     //qDebug() << OutputFilter::Filter(10) << "SINUS  : " << CurrentOutput.first 
     //         << "COUNTER: " << CounterStep.first<< "PERIOD: " << PeriodMeasure2 << "[ PERIOD NODE ]" << MeasurePeriod.getMilliseconds();
 
-
-    CounterStep.first++ ; if(CounterStep.first  > Period.first ) CounterStep.first  = 0;
-    CounterStep.second++; if(CounterStep.second > Period.second) CounterStep.second = 0;
+    CounterStep.first +=1; if(CounterStep.first  > Period.first ) CounterStep.first  = 0;
+    CounterStep.second+=2; if(CounterStep.second > Period.second) CounterStep.second = 0;
 
     CurrentOutput.first  = Offset.first  + Amplitude.first *std::sin(CounterStep.first *Step.first);
-    CurrentOutput.second = Offset.second + Amplitude.second*std::cos(CounterStep.second*Step.second);
+    CurrentOutput.second = Offset.second + Amplitude.second*std::cos(CounterStep.second*Step.second + Period.second/2);
 
 
     Noize.first  = AmplitudeNoize*std::rand()/RAND_MAX - AmplitudeNoize/2;

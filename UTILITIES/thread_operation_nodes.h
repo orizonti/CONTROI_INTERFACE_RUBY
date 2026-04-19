@@ -1236,6 +1236,8 @@ void NodeValueCategorizer<T>::setValue(T InputValue)
 
       if(InputValue < GroupSpan) PassValueClass<T>::Value = GroupCount;
       if(InputValue > LimitValue) PassValueClass<T>::Value = 0;
+
+      PassValueClass<T>::Value =  GroupCount - PassValueClass<T>::Value;
 };
 
 

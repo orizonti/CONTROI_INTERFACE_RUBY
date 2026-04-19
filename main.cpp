@@ -135,15 +135,16 @@ int main(int argc, char* argv[])
 
   //=====================================================================================
   //TEST TRACK APPROXIMATION 
-  SinusGeneratorClass SinusGenerator; SinusGenerator.setPeriod(10);
+  SinusGeneratorClass SinusGenerator; SinusGenerator.setPeriod(3);
                                       SinusGenerator.slotSetAmplitude(200); 
-                                      SinusGenerator.slotSetFrequency(0.3);
+                                      SinusGenerator.slotSetFrequency(0.09);
                                       SinusGenerator.slotSetOffset(240,240);
   WidgetLineGraph graphWidget; graphWidget.setSize(500); graphWidget.show();
   
+  float amp1 = 6; float amp2 = 6;
   NodeCoordSplitToTime<float> SplitToTime; 
-  NodeCoordRandomizer<float> Randomize{20,10};
-  NodeCoordRandomizer<float> Randomize2{0,2};
+  NodeCoordRandomizer<float> Randomize {amp1,amp2};
+  NodeCoordRandomizer<float> Randomize2{amp1,amp2};
   NodeCoordPassNorm<float> Norm;
   NodeCoordSwap SwapCoord; 
 
@@ -153,41 +154,20 @@ int main(int argc, char* argv[])
             //PolynomApproximationTest<2> Test1(2,1.2,0.000,0);
             //                graphWidget.GraphPointsStorage2->setPoints(Test1.TrackApprox);
             //                graphWidget.GraphPointsStorage->setPoints(Test1.TrackNoize);
-
-
             //======================================================================================
             //DYNAMIC TEST
-            //PolynomApproximationDynamicTest<3> Test2{100,10,4};
-            //                    SplitToTime.setResetCounter(SinusGenerator.Period.first);
-            //                    SinusGenerator | Test2;
-            //                                      Test2.linkToGraph(graphWidget.GraphPointsStorage2);
-            //                                      Test2.linkToGraph(graphWidget.GraphPointsStorage );
-            //======================================================================================
-
-            //  StatisticMovingParam ProcessorTrack;
-            //  NodeCoordRandomizer<float> Randomizer{12};
-            //  NodeCoordPassValue<float> PassValue;
-            //  NodeCoordPassValue<float> PassValue2;
-            //  SinusGenerator | Randomizer | ProcessorTrack | PassValue2(0) | graphWidget(0);
-            //                   //Randomizer | PassValue(0) | graphWidget(1);
-            //
-            //  SinusGenerator.slotStartGenerate(true);
-            //
-            //=====================================================================================
-            //DISPERSION ESTIMATE BY SPAN
-            StatisticDispersionSpan<float,2> CoordSpan2(10);
-            StatisticDispersionSpan<float,1> CoordSpan1(10);
-            EstimatorObjectVelocity<float> VelEstimator;
-            //SinusGenerator | Randomize | CoordSpan2;
-            //SinusGenerator | Randomize | Norm | CoordSpan1;
+            PolynomApproximationDynamicTest<3> Test2{140,10,4};
+                                SplitToTime.setResetCounter(SinusGenerator.Period.first);
+                                SinusGenerator | Randomize2 | Test2;
+                                                  Test2.linkToGraph(graphWidget.GraphPointsStorage2);
+                                                  Test2.linkToGraph(graphWidget.GraphPointsStorage );
             //=====================================================================================
             //DISPERSION ESTIMATE BY APPROXIMATION
-                        StatisticMovingParam TrackStat;
-             //SinusGenerator | Randomize | TrackStat;
-             SinusGenerator | Randomize | VelEstimator;
+                        //EstimatorObjectMovingParams TrackStat;
+                        EstimatorTrackHold<float> TrackHold;
+             SinusGenerator | Randomize | TrackHold;
             //=====================================================================================
-
-            SinusGenerator.slotStartGenerate(true);
+             SinusGenerator.slotStartGenerate(true);
 
 
   return app.exec();

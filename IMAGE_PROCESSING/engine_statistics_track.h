@@ -19,10 +19,10 @@
 #include "module_period_measure.h"
 
 template<typename T = float, int type=2>
-class StatisticDispersionSpan: public PassCoordClass<T>
+class EstimatorDispersionCoordSpan: public PassCoordClass<T>
 {
   public:
-  StatisticDispersionSpan(int SizeWindow) { };
+  EstimatorDispersionCoordSpan(int SizeWindow) { };
 
   QPair<T,T> CoordSlowed{0,0};
 
@@ -89,10 +89,10 @@ class StatisticDispersionSpan: public PassCoordClass<T>
 };
 
 template<typename T>
-class StatisticDispersionSpan<T,1>: public PassValueClass<T>
+class EstimatorDispersionCoordSpan<T,1>: public PassValueClass<T>
 {
   public:
-  StatisticDispersionSpan(int SizeWindow) { };
+  EstimatorDispersionCoordSpan(int SizeWindow) { };
 
   T ValueSlowed{0};
 
@@ -144,34 +144,45 @@ class StatisticDispersionSpan<T,1>: public PassValueClass<T>
       RangeDispersion = Scale*RangeDispersion; 
       RangeDispersion >> StatLong2;
       RangeDispersion = StatLong2.GetMaxValue(); 
+      PassValueClass<T>::Value = RangeDispersion;
 
-      if(StatLong2.isLoaded()) qDebug() << "[ COORD SPAN ]" <<  RangeDispersion;
+      //if(StatLong2.isLoaded()) qDebug() << "[ COORD SPAN ]" <<  RangeDispersion;
          StatLong2.resetOnLoaded();
      }
   };
 };
 
 template<typename T = float>
-class EstimatorObjectVelocity: public PassCoordClass<T>
+class EstimatorVelocityAvarageStep: public PassCoordClass<T>
 {
   public:
-   EstimatorObjectVelocity() { }
+   EstimatorVelocityAvarageStep() { }
 
 	void setInput(const QPair<T,T>& Coord) override  
   {
 
-    Coord >> Thinning1(2)  >> NodeAvarageStep1 >> Norm >> Velocity1 >> Categorizer1;
-    Coord >> Thinning2(6)  >> NodeAvarageStep2 >> Norm >> Velocity2 >> Categorizer2;
-    Coord >> Thinning3(12) >> NodeAvarageStep3 >> Norm >> Velocity3 >> Categorizer3;
+    Coord >> Thinning1(2)  >> NodeAvarageStep1 >> Norm >> Velocity1 >> Categorizer1 >> Velocity1Level;
+    Coord >> Thinning2(6)  >> NodeAvarageStep2 >> Norm >> Velocity2 >> Categorizer2 >> Velocity2Level;
+    Coord >> Thinning3(12) >> NodeAvarageStep3 >> Norm >> Velocity3 >> Categorizer3 >> Velocity3Level;
 
-    qDebug() << OutputFilter::Filter(20) << "[ VELOCITY ESTIMATOR ]" << Velocity1 << Velocity2 << Velocity3 
-                                         << "[CAT]" << Categorizer1.getValue() 
-                                                    << Categorizer2.getValue()
-                                                    << Categorizer3.getValue();
+    probabiltyMoving = 100*(Velocity1Level/10 + Velocity2Level/10 + Velocity3Level/10)/3;
+    //qDebug() << OutputFilter::Filter(20) << "[ VELOCITY ESTIMATOR ]" << Velocity1 << Velocity2 << Velocity3 
+    //                                     << "[CAT]" << Velocity1Level 
+    //                                                << Velocity2Level
+    //                                                << Velocity3Level;
   }
+
+    float getMovingProbability() { return probabiltyMoving;        }
+                 bool isMoving() { return probabiltyMoving > 15;}
+
     T Velocity1{0};
     T Velocity2{0};
     T Velocity3{0};
+
+    T Velocity1Level{0};
+    T Velocity2Level{0};
+    T Velocity3Level{0};
+    T probabiltyMoving{0};
 
     NodeCoordDifference<T> Substract;
     NodeCoordPassNorm<T> Norm;
@@ -181,34 +192,42 @@ class EstimatorObjectVelocity: public PassCoordClass<T>
     NodeCoordPassThinning<T> Thinning2{4};
     NodeCoordPassThinning<T> Thinning3{10};
 
-    NodeValueCategorizer<T> Categorizer1{10,10};
-    NodeValueCategorizer<T> Categorizer2{50,10};
-    NodeValueCategorizer<T> Categorizer3{100,10};
+    NodeValueCategorizer<T> Categorizer1{1,10};
+    NodeValueCategorizer<T> Categorizer2{2,10};
+    NodeValueCategorizer<T> Categorizer3{8,10};
 
     NodeCoordAvarageStep<T> NodeAvarageStep1{10};
     NodeCoordAvarageStep<T> NodeAvarageStep2{10};
     NodeCoordAvarageStep<T> NodeAvarageStep3{10};
 };
 
-class StatisticMovingParam: public PassCoordClass<float>
+class EstimatorObjectMovingParams: public PassCoordClass<float>
 {
   public:
-    StatisticMovingParam() 
+    EstimatorObjectMovingParams() 
     { 
       Statistic1.setModeSingle(true);
       Statistic2.setModeSingle(true);
       Statistic3.setModeSingle(true);
-      Statistic4.setModeSingle(true);
     };
 
+    //======================================
     QPair<float,float> CoordProlong{0,0};
     QPair<float,float> CoordAvarage{0,0};
+    QPair<float,float> Velocity; 
+    QPair<float,float> Acceleration; 
+                float  VelocityNorm = 0; 
+                float  AccelerationNorm = 0; 
+                float  DispersionCoord = 0; 
+                float  DispersionCoordSpan = 0; 
+    //======================================
 
+    private:
     StatisticCoord<float> Statistic1{10};  
-    StatisticCoord<float> Statistic2{30}; 
-    StatisticCoord<float> Statistic3{100}; 
-    StatisticCoord<float> Statistic4{10};  
-    StatisticDispersionSpan<float,1> StatisticSpan{10};
+    StatisticCoord<float> Statistic2{10}; 
+    StatisticCoord<float> Statistic3{10}; 
+
+    EstimatorDispersionCoordSpan<float,1> StatisticSpan{10};
 
       NodeCoordDifference<float> Substract;
         NodeCoordAbsolute<float> Abs;
@@ -216,51 +235,88 @@ class StatisticMovingParam: public PassCoordClass<float>
        NodeCoordPassValue<float> PickValue;
        NodeCoordJoinValue<float> JoinValue;
      NodeCoordSplitToTime<float> SplitToTime; 
+     NodeCoordGain<float> Gain;
 
     NodeCoordVelocity<float> NodeVelocity;
     NodeCoordVelocity<float> NodeAcceleration;
 
-    PolynomApproximation<3> trackApprox1{100,10,2};
-    PolynomApproximation<3> trackApprox2{100,10,2};
+    ApproximationTwoAxis<3> trackApprox{100,10,4};
+
+
                MeasurePeriodNode MeasurePeriod;
 
-    QPair<float,float> Velocity; 
-    QPair<float,float> Acceleration; 
-                float  VelocityNorm = 0; 
-                float  AccelerationNorm = 0; 
-                float  DispersionCoord = 0; 
 
+  public:
   void reset() { }
 
 	const QPair<float,float>& getOutput() override { return OutputCoord;};
 
 	void setInput(const QPair<float,float>& Coord) override  
   {
-     Coord >> SplitToTime(0) >> trackApprox1 >>  PickValue(1) >> JoinValue >> CoordProlong; 
-              SplitToTime(1) >> trackApprox2 >>  PickValue(1) >> JoinValue >> Substract;
-                                                                     Coord >> Substract >> Statistic1;
-     Coord >> Norm >> StatisticSpan;
+     Coord >> trackApprox >> CoordProlong >> Substract;
+                                    Coord >> Substract >> Statistic1;
 
-     CoordProlong >> NodeVelocity >> Statistic2; 
-                     NodeVelocity >> NodeAcceleration >> Statistic3;
+                             CoordProlong >> NodeVelocity >> Gain(0.1) >> Statistic2; 
+                                             NodeVelocity >> Gain(0.001) >> NodeAcceleration >> Statistic3;
+     Coord >> Norm >> StatisticSpan >> DispersionCoordSpan;
 
       if(!Statistic1.isLoaded()) return;
 
-       if(Statistic1.isLoaded()){ DispersionCoord = 0.5*Statistic1.GetDispersionNorm() + 0.5*StatisticSpan.getValue(); 
-                                     CoordAvarage = Statistic1.GetAvarageCoord();   Statistic1.reset(); }
-       if(Statistic2.isLoaded()){        Velocity = Statistic2.GetAvarageCoord();                       }
-       if(Statistic2.isLoaded()){    VelocityNorm = Statistic2.GetDispersionNorm();  Statistic2.reset();}
-       if(Statistic3.isLoaded()){    Acceleration = Statistic3.GetAvarageCoord();                       }
-       if(Statistic3.isLoaded()){AccelerationNorm = Statistic3.GetDispersionNorm();  Statistic3.reset();}
+       if(Statistic1.isLoaded()){ DispersionCoord = Statistic1.GetDispersionNorm(); 
+                                  CoordAvarage = Statistic1.GetAvarageCoord();        Statistic1.reset();}
 
-       //qDebug() << OutputFilter::Filter(2) << "[ TRACK STAT ]" <<"[COORD DISP]" << DispersionCoord;
-       qDebug() << "[ TRACK STAT ]" <<"[COORD DISP]" << DispersionCoord;
-                                            //<< "[AVG]" << CoordAvarage.first << CoordAvarage.second
-                                            //<< "[VEL]"          << Velocity.first << Velocity.second
-                                            //<< "[VEL_NORM]"     << VelocityNorm
-                                            //<< "[ACCEL]"        << Acceleration.first << Acceleration.second
-                                            //<< "[ACCEL_NORM]"   << AccelerationNorm;
+       if(Statistic2.isLoaded()){ Velocity = Statistic2.GetAvarageCoord();                       
+                                  VelocityNorm = Statistic2.GetDispersionNorm();      Statistic2.reset();}
+
+       if(Statistic3.isLoaded()){ Acceleration = Statistic3.GetAvarageCoord();                       
+                                  AccelerationNorm = Statistic3.GetDispersionNorm();  Statistic3.reset();}
+
+       printState(2);
+
   };
+
+  void printState(int thinning)
+  {
+
+       //qDebug() << OutputFilter::Filter(thinning) << "[ TRACK STAT ]" <<"[DISP ]" << DispersionCoord;
+       //qDebug() << OutputFilter::Filter(thinning) << "[ TRACK STAT ]" <<"[VEL  ]" << Velocity.first << Velocity.second;
+       //qDebug() << OutputFilter::Filter(thinning) << "[ TRACK STAT ]" <<"[ACCEL]" << Acceleration.first << Acceleration.second;
+       qDebug() << OutputFilter::Filter(thinning) << "[DISP ]" << DispersionCoord
+                                                  << "[SPAN ]" << DispersionCoordSpan
+                                                  << "[VEL  ]" << VelocityNorm;
+                                                  //<< "[ACCEL]" << Acceleration.first;
+                                            //<< "[AVG  ]" << CoordAvarage.first << CoordAvarage.second
+  }
+};
+
+template<typename T = float>
+class EstimatorTrackHold: public PassCoordClass<T>
+{
+  public:
+   EstimatorTrackHold() { }
+
+	void setInput(const QPair<T,T>& Coord) override  
+  {
+    Coord >> EstimatorVelocity;
+    //Coord >> EstimatorStatParams; EstimatorStatParams.DispersionCoordSpan >> Categorizer1 >> DispersionLevel; 
+    //isDispersionLimit = DispersionLevel < 5;
+
+    qDebug() << OutputFilter::Filter(20) << "[ MOVING ]" << EstimatorVelocity.isMoving() << EstimatorVelocity.getMovingProbability();
+                                        //<< "[ DISP]" << EstimatorStatParams.DispersionCoordSpan << isDispersionLimit
+                                        //<< "[ COMBINE ]" << (EstimatorVelocity.isMoving() && isDispersionLimit);
+  }
+    EstimatorVelocityAvarageStep<float> EstimatorVelocity;
+            EstimatorObjectMovingParams EstimatorStatParams;
+    T DispersionLevel{0};
+    bool isDispersionLimit{false};
+
+    NodeValueCategorizer<T> Categorizer1{40,20};
+    NodeValueCategorizer<T> Categorizer2{40,20};
+    NodeValueCategorizer<T> Categorizer3{40,20};
+
+    NodeCoordAvarageStep<T> NodeAvarageStep1{10};
+    NodeCoordAvarageStep<T> NodeAvarageStep2{10};
+    NodeCoordAvarageStep<T> NodeAvarageStep3{10};
 };
 
 #endif

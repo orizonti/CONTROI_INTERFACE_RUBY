@@ -151,6 +151,36 @@ NodeCoordStorage<float>& PolynomApproximation<NUM_PARAM>::getFuture()
 }
 
 
+template<int NUM_PARAM>
+class ApproximationTwoAxis: public PassCoordClass<float>
+{
+  public:
+    explicit ApproximationTwoAxis(int Size = 100, int SizeRollback = 10, int StepsFuture = 2):
+    trackApprox1(Size, SizeRollback, StepsFuture),
+    trackApprox2(Size, SizeRollback, StepsFuture)
+    { 
+    };
+
+    bool isLoaded() { return trackApprox1.isLoaded();}
+
+    void reset() { trackApprox1.reset(); trackApprox2.reset(); }
+
+       NodeCoordPassValue<float> PickValue;
+       NodeCoordJoinValue<float> JoinValue;
+     NodeCoordSplitToTime<float> SplitToTime; 
+
+    PolynomApproximation<NUM_PARAM> trackApprox1;
+    PolynomApproximation<NUM_PARAM> trackApprox2;
+
+    void setInput(const QPair<float,float>& Coord) override
+    {
+     Coord >> SplitToTime(0) >> trackApprox1 >>  PickValue(1) >> JoinValue; 
+              SplitToTime(1) >> trackApprox2 >>  PickValue(1) >> JoinValue >> PassCoordClass<float>::OutputCoord;  
+    }
+
+};
+
+
 #endif 
 
     //Eigen::VectorXd residual = A_MAT * PARAMS_FUNC - Y_VEC;
