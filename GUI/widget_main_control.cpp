@@ -192,18 +192,18 @@ void WidgetMainControl::synchronizePeer(WidgetMainControl* widget)
    connect(&widgetPeer->butRegimIllum, SIGNAL(toggled(bool)), this, SLOT(slotPeerChanged()));
    connect(&widgetPeer->butRegimLaser, SIGNAL(toggled(bool)), this, SLOT(slotPeerChanged()));
    connect(&widgetPeer->butRegimReady, SIGNAL(toggled(bool)), this, SLOT(slotPeerChanged()));
-   connect(&widgetPeer->butRegimWork, SIGNAL(toggled(bool)), this, SLOT(slotPeerChanged()));
+   connect(&widgetPeer->butRegimWork , SIGNAL(toggled(bool)), this, SLOT(slotPeerChanged()));
 
    connect(&this->butRegimIllum, SIGNAL(toggled(bool)), widgetPeer, SLOT(slotPeerChanged()));
    connect(&this->butRegimLaser, SIGNAL(toggled(bool)), widgetPeer, SLOT(slotPeerChanged()));
    connect(&this->butRegimReady, SIGNAL(toggled(bool)), widgetPeer, SLOT(slotPeerChanged()));
-   connect(&this->butRegimWork, SIGNAL(toggled(bool)) , widgetPeer, SLOT(slotPeerChanged()));
+   connect(&this->butRegimWork , SIGNAL(toggled(bool)), widgetPeer, SLOT(slotPeerChanged()));
 }
 
 void WidgetMainControl::slotPeerChanged()
 {
-     widgetPeer->butRegimIllum.blockSignals(true); butRegimIllum.setChecked(widgetPeer->butRegimIllum.isChecked()); widgetPeer->butRegimIllum.blockSignals(false);
-     widgetPeer->butRegimLaser.blockSignals(true); butRegimLaser.setChecked(widgetPeer->butRegimLaser.isChecked()); widgetPeer->butRegimLaser.blockSignals(false);
-     widgetPeer->butRegimReady.blockSignals(true); butRegimReady.setChecked(widgetPeer->butRegimReady.isChecked()); widgetPeer->butRegimReady.blockSignals(false);
-      widgetPeer->butRegimWork.blockSignals(true);  butRegimWork.setChecked(widgetPeer->butRegimWork.isChecked() );  widgetPeer->butRegimWork.blockSignals(false);
+     butRegimIllum.blockSignals(true); butRegimIllum.setChecked(widgetPeer->butRegimIllum.isChecked()); butRegimIllum.blockSignals(false);
+     butRegimLaser.blockSignals(true); butRegimLaser.setChecked(widgetPeer->butRegimLaser.isChecked()); butRegimLaser.blockSignals(false);
+     butRegimReady.blockSignals(true); butRegimReady.setChecked(widgetPeer->butRegimReady.isChecked()); butRegimReady.blockSignals(false);
+      butRegimWork.blockSignals(true);  butRegimWork.setChecked(widgetPeer->butRegimWork.isChecked() ); butRegimWork.blockSignals(false);
 }

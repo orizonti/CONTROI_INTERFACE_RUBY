@@ -37,7 +37,7 @@ class PolynomApproximationDynamicTest: public PassCoordClass<float>
 
   int NumberPoints = 100;
   int NumberReroll = 10;
-  int NumberForecast = 5;
+  int NumberForecast = 20;
 
   PolynomApproximation<NUM_PARAM> trackApproximation1;
   PolynomApproximation<NUM_PARAM> trackApproximation2;
@@ -52,6 +52,8 @@ class PolynomApproximationDynamicTest: public PassCoordClass<float>
   NodeCoordRandomizer<float> Randomize1{0,0};
   NodeCoordRandomizer<float> Randomize2{0,0};
   NodeCoordAvarageStep<float> NodeAvarageStep{40};
+  NodeCoordPassThinning<float> Thinning{10};
+
   std::pair<float,float> CoordAvarageStep{0,0};
                   float  ValueAvarageStep{0};
   std::pair<float,float> CoordNoize;
@@ -60,20 +62,24 @@ class PolynomApproximationDynamicTest: public PassCoordClass<float>
 	void setInput(const QPair<float, float>& Coord) 
   { 
 
+    Coord >> Randomize2 >> SplitToTime2(0) >> PickValue(1) >> JoinValue;
+                           SplitToTime2(1) >> PickValue(1) >> JoinValue >> CoordStorage2;
     //=========================================================================================================
     //Coord >> Randomize1 >> SplitToTime1(0) >> trackApproximation1 >> CoordStorage1 ;
     //Coord >> Randomize2 >> SplitToTime2(0) >> CoordStorage2;
     //=========================================================================================================
-    Coord >> Randomize1 >> CoordNoize >> SplitToTime1(0) >> trackApproximation1 >> PickValue(1) >> JoinValue;
-                                         SplitToTime1(1) >> trackApproximation2 >> PickValue(1) >> JoinValue >> CoordStorage1;
-                           CoordNoize >> NodeAvarageStep >> Abs >> CoordAvarageStep;
-                                         NodeAvarageStep >> ValueAvarageStep;
-    //qDebug() << OutputFilter::Filter(50) << "AVARAGE STEP : " << CoordAvarageStep.first 
-    //                                                          << CoordAvarageStep.second << "NORM: " << 100*ValueAvarageStep;          
-    
+    //Coord >> Randomize1 >> CoordNoize >> SplitToTime1(0) >> trackApproximation1 >> PickValue(1) >> JoinValue;
+    //                                     SplitToTime1(1) >> trackApproximation2 >> PickValue(1) >> JoinValue >> CoordStorage1;
 
-    Coord >> Randomize2 >> SplitToTime2(0) >> PickValue(1) >> JoinValue;
-                           SplitToTime2(1) >> PickValue(1) >> JoinValue >> CoordStorage2;
+    Coord >> Randomize1 >> CoordNoize >> SplitToTime1(0) >> trackApproximation1;
+                                         SplitToTime1(1) >> trackApproximation2;
+    int steps_forecasting = 40;
+    for(int n = 0; n < steps_forecasting; n++)
+    {
+    trackApproximation1.getFutureStep(0.1) >> PickValue(1) >> JoinValue;
+    trackApproximation2.getFutureStep(0.1) >> PickValue(1) >> JoinValue >> Thinning(steps_forecasting) >> CoordStorage1;
+    }
+
     //=========================================================================================================
 
     if(trackApproximation1.isLoaded()) { 

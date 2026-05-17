@@ -3,8 +3,11 @@
 
 void PolynomApproximation<2>::setInput(const QPair<float,float>& Coord) 
 {
-              Coord >> TrackInput; Coord.first >> NodeAvarageStep >> StepTimeScale;
-    posLast = Coord;
+    Coord >> TrackInput; 
+    Coord.first >> NodeAvarageStep >> StepTimeScale;
+                      posLast = Coord; 
+    posFuture.first = posLast.first + StepTimeScale*StepsForecasting;  
+
     if(isLoaded()) reset();
 
     sums[0] += Coord.first;
@@ -15,6 +18,7 @@ void PolynomApproximation<2>::setInput(const QPair<float,float>& Coord)
     trackPolynom[2] = 0;
     trackPolynom[1] = (SizeWindow * sums[2] - sums[0] * sums[1]) / (SizeWindow * sums[3] - sums[0] * sums[0]);
     trackPolynom[0] = (sums[1] - trackPolynom[1] * sums[0]) / SizeWindow;
+
 
     getFuture();
 }
@@ -83,8 +87,11 @@ std::vector<float> PolynomApproximation<2>::getApproximation(std::span<std::pair
 //=====================================================================================
 void PolynomApproximation<3>::setInput(const QPair<float,float>& Coord) 
 {
-              Coord >> TrackInput; Coord.first >> NodeAvarageStep >> StepTimeScale;
-    posLast = Coord;
+
+    Coord >> TrackInput; 
+    Coord.first >> NodeAvarageStep >> StepTimeScale;
+                      posLast = Coord; 
+          posFuture = posLast;  
     if(isLoaded()) reset();
 
     //qDebug() << "[ TRACK INPUT ]" << Coord.first << Coord.second << "IDX: " << IndexInput;
@@ -103,6 +110,7 @@ void PolynomApproximation<3>::setInput(const QPair<float,float>& Coord)
     trackPolynom[1] = RESULT(1);
     trackPolynom[2] = RESULT(0); getFuture(); 
 
+    //qDebug() << OutputFilter::Filter(50) << "[TIME SCALE]" << StepTimeScale << "[MILLI]";
                                                             //MeasurePeriod++;
     //qDebug() << OutputFilter::Filter(10) << "[ GET APPOROX TIME]" << StepTimeScale;
     //qDebug() << "[ GET APPOROX ]" << trackPolynom[0] << trackPolynom[1] << trackPolynom[2] << "INDEX: " <<  IndexInput << "TIME: " << MeasurePeriod.getMicroseconds();

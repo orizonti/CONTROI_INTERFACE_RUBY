@@ -13,6 +13,7 @@
 #include <gst/app/gstappsink.h>
 #include "device_generic_interface.h"
 #include "engine_udp_interface.h"
+#include "device_zoom_rotation.h"
 
 
 #define CV_CAPTURE 1
@@ -45,6 +46,8 @@ class CameraInterfaceUniversal :public QObject, public SourceImageInterface,
   QString    TAG_NAME{"[ CAMERA ]"};
   QString CAMERA_INFO{"[ CAMERA NO DATA ]"};
 
+  std::shared_ptr<DeviceZoomRotation> ControlZoom = nullptr;
+  void connectZoomControl(QString user, QString pass, QString ip, QString port);
   //std::shared_ptr<DeviceCameraRemoteInterface<UDPConnectionEngine, int,int>> ControlCameraRemote = nullptr; 
 
   cv::VideoCapture capture;

@@ -46,6 +46,7 @@ void SinkDisplayLabel::setImageFrom(SourceImageDisplayInterface* Src)
 
 	if(!LabelDisplay   ) {  return; }; 
 	if(!FlagPlotEnabled) { LabelDisplay->setPixmap(QPixmap::fromImage(DisplayImage)); return; }
+	if(DisplayImage.isNull()) return;
 
 	auto posPicked = LabelDisplay->getPos();
 	

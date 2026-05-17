@@ -9,7 +9,7 @@
 #include <cmath>
 #include <QTimer>
 #include "device_generic_interface.h"
-#include "interface_node_synchronizer.h"
+#include "interface_node_signal_adapter.h"
 
 class WidgetRotaryControl : public QWidget, public PassCoordClass<float> 
 {
@@ -34,7 +34,7 @@ public:
         if(TypeWidget == 0) { slotSetState(Coord.first); }
         if(TypeWidget == 1) { slotSetState(Coord.second);}
     };
-    NodeStateSynchronizer NodeSynchronizer{this};
+    NodeCoordSignalAdapter NodeSynchronizer{this};
 
     void linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device) { ControlRotary = Device; };
     void initWidget();

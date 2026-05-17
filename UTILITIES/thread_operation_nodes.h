@@ -120,6 +120,7 @@ public:
                          { if(EnableOutput) Receiver = PassCoordClass<T>::OutputCoord; return Receiver; };
 };
 
+
 template<typename T = float>
 class NodeCoordAvarageStep: public PassCoordClass<T>
 {
@@ -201,6 +202,56 @@ class NodeCoordAbsolute : public PassCoordClass<T>
     PassCoordClass<T>::passCoord();
 	};
 };
+
+template <class T = float>
+class NodeCoordSaturation : public PassCoordClass<T>
+{
+public:
+  NodeCoordSaturation(T Limit1, T Limit2) : Limit(Limit1,Limit2) {};
+  NodeCoordSaturation(T Limit1)             : Limit(Limit1,Limit1) {};
+  QPair<T, T> Limit{1000,1000};
+
+  void setInput(const QPair<T,T>& Coord) override
+  { 
+    if(std::abs(Coord.first ) < Limit.first ) PassCoordClass<T>::OutputCoord.first  = Coord.first;
+    if(std::abs(Coord.second) < Limit.second) PassCoordClass<T>::OutputCoord.second = Coord.second;
+  }
+  PassCoordClass<T>& operator()(T Limit1)           { Limit.first = Limit1; Limit.second = Limit1; return *this;};
+  PassCoordClass<T>& operator()(T Limit1, T Limit2) { Limit.first = Limit1; Limit.second = Limit2; return *this;};
+
+};
+
+template <class T = float>
+class NodeCoordJumpShutter : public PassCoordClass<T>
+{
+public:
+  NodeCoordJumpShutter(T Limit1) : Limit(Limit1) {};
+  QPair<T, T> LastCoord;
+  QPair<T, T> Step;
+  T StepDistance{0};
+  T Limit;
+
+  void setInput(const QPair<T,T>& Coord) override
+  { 
+       Step = Coord-LastCoord; 
+                    LastCoord = Coord;
+       StepDistance = std::hypot(Step.first,Step.second);
+    if(StepDistance > Limit) PassCoordClass<T>::PassBlocked = true;
+              
+  }
+  void reset() { PassCoordClass<T>::PassBlocked = false; }
+
+  NodeCoordPassNop<T> NopNode;
+
+  PassCoordClass<T>& operator>>(PassCoordClass<T>& Receiver) override 
+  { if( PassCoordClass<T>::PassBlocked) return NopNode; PassCoordClass<T>::OutputCoord >> Receiver; return Receiver; }
+
+  QPair<T,T>& operator>>(QPair<T,T>& Receiver) override  
+  { if(!PassCoordClass<T>::PassBlocked) Receiver = PassCoordClass<T>::OutputCoord; return Receiver; };
+
+  PassCoordClass<T>& operator()(T Limit1) { Limit = Limit1; return *this;};
+};
+
 
 template<typename T>
 class NodeCoordGain : public PassCoordClass<T>
@@ -445,7 +496,7 @@ class NodeCoordSplitToTime : public PassCoordClass<T>
   int counter = 0;
   int counter_limit = -1;
   float timePoint = 0;
-  float timeScale = 0.02;
+  float timeScale = 1;
 
   void setResetCounter(int value ) { counter_limit = value; qDebug() << "RESET COUNTER LIMIT: " << value;};
 	void setInput(const QPair<T,T>& Coord) override
@@ -693,6 +744,17 @@ class NodeCoordPassWait : public PassCoordClass<T>
   void operator>>(QPair<T,T>& Receiver) override  { if(Distance < 2) Receiver = PassCoordClass<T>::OutputCoord; };
 };
 
+template<typename T>
+class NodeCoordIntegrator : public PassCoordClass<T>
+{
+	public:
+	void setInput(const QPair<float,float>& Coord) override 
+  { PassCoordClass<T>::OutputCoord = PassCoordClass<float>::OutputCoord + Coord; }
+  void reset() { PassCoordClass<T>::OutputCoord = 0; }
+};
+
+
+
 template<typename T = float>
 class NodeCoordStorage : public PassCoordClass<T>
 {
@@ -833,6 +895,7 @@ class NodeCoordStorage : public PassCoordClass<T>
   enum class INPUT_MODE { SINGLE_LOAD = 0, CONTINOUS_LOAD = 1, AUTO_SKIP_LOAD = 2};
   NodeCoordStorage ()         {  setSize(10); };
 	NodeCoordStorage (int size) {  setSize(size ); };
+	NodeCoordStorage (const NodeCoordStorage<T>& storage) {  Coords = storage.Coords; SizeStorage = storage.SizeStorage; reset();  };
   void setSize(int size)      {  Coords.resize(size + ExtraSpace); SizeStorage = size; reset(); } 
   void reset()                {  PosRead.reset(this); PosLast.reset(this); PosWrite.reset(this); PassedNum = 0;};
   int size() { return  SizeStorage;}
@@ -874,6 +937,7 @@ class NodeCoordStorage : public PassCoordClass<T>
     PosWrite.setData(Coord); 
     PosWrite++; PassedNum++; 
 
+    //qDebug() << OutputFilter::Filter(100) << "STORAGE INPUT: " << Coord.first << Coord.second;
     //qDebug() << "POS READ: " << PosRead.getRemain() << "DISTANCE: " << PosRead.getDistance(PosWrite);
     //passToLink();
   };
@@ -950,6 +1014,18 @@ class TestNodeCoordStorage
 };
 
 //======================================================================
+template<typename T>
+class NodeValueIntegrator : public PassValueClass<T>
+{
+	public:
+  void reset() { PassValueClass<T>::Value = 0; }
+	void setValue(T Input) override 
+  { 
+    PassValueClass<T>::Value += Input; 
+    //qDebug() << OutputFilter::Filter(100) << "INTEGRATOR INPUT:  " << Input 
+    //                                      << "VALUE: " << PassValueClass<T>::Value;
+  }
+};
 //===========================================================================
 template< typename T = float>
 class NodeValueDifference : public PassValueClass<T>
@@ -1010,6 +1086,43 @@ public:
                          Output >> Receiver; PassValueClass<T>::enablePass = false; return Receiver; 
   };
 
+};
+
+template<typename T>
+class NodeValueAvarageGliding : public PassValueClass<T>
+{
+	public:
+	NodeValueAvarageGliding(){ SamplePoints.resize(10); std::fill(SamplePoints.begin(), SamplePoints.end(),0); 
+                                                                      CurrentPoint = SamplePoints.begin();  
+                                                                PassValueClass<T>::Value = 0;};
+	NodeValueAvarageGliding(int size) {    window_size = size; 
+                                         SamplePoints.resize(size); 
+                               std::fill(SamplePoints.begin(), SamplePoints.end(), 0); 
+                                                CurrentPoint = SamplePoints.begin(); 
+                                         PassValueClass<T>::Value = 0;};
+
+	void setValue(T Value) override
+	{
+      PassValueClass<T>::Value -= *CurrentPoint/window_size;
+                                  *CurrentPoint = Value/window_size; 
+      PassValueClass<T>::Value += *CurrentPoint;
+
+      CurrentPoint++; if(CurrentPoint == SamplePoints.end()) CurrentPoint = SamplePoints.begin();
+
+	};
+  const T& getValue() { return PassValueClass<T>::Value;}
+
+	int window_size = 10;
+           std::vector<T> SamplePoints;
+  typename std::vector<T>::iterator CurrentPoint;
+
+  PassValueClass<T>& operator>>(PassValueClass<T>& Receiver) override 
+  { 
+     this->getValue() >> Receiver; return Receiver; ; 
+  };
+
+  T& operator>>(T& Receiver) override  { Receiver = PassValueClass<T>::Value; return Receiver; };
+	NodeValueAvarageGliding & operator()(int size) { window_size = size; return *this;}
 };
 
 

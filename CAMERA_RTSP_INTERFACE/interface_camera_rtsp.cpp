@@ -6,6 +6,7 @@
 #include <QRegularExpression>
 #include <QProcess>
 #include <QThread>
+#include "debug_output_filter.h"
 
 
 
@@ -26,12 +27,13 @@ CameraInterfaceUniversal::CameraInterfaceUniversal(QString strVideoSource, QStri
   QRegularExpression ip_match("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
   QRegularExpression udp_match("udpsrc");
 
-  auto matched = udp_match.match(strVideoSource);                        isCameraUp = matched.hasMatch();
-       matched =  ip_match.match(strVideoSource); if(matched.hasMatch()) isCameraUp = checkHost(matched.captured(0));
+  auto matched =  ip_match.match(strVideoSource); if(matched.hasMatch()) isCameraUp |= checkHost(matched.captured(0));
+       matched = udp_match.match(strVideoSource);                        isCameraUp |= matched.hasMatch();
 
   #ifdef CV_CAPTURE
   if(!isCameraUp) return;
        capture.open(strVideoSource.toStdString(), cv::CAP_GSTREAMER);
+       qDebug() << "[ UP ]" <<strVideoSource;
   if (!capture.isOpened()) qDebug()  << "[ ERROR ] CANNOT OPEN VIDEO SOURCE: " << strVideoSource;
   QObject::connect(&timerGetFrame, SIGNAL(timeout()),this, SLOT(slotGetFrame()));
   #endif
@@ -81,6 +83,7 @@ void CameraInterfaceUniversal::slotGetFrame()
 {
         bool isFrameGrabbed = capture.grab();
         if (!isFrameGrabbed) return; 
+
 
          auto mat = ImageStore->getBuffer();
 
@@ -236,4 +239,9 @@ bool CameraInterfaceUniversal::checkHost(const QString& ipAddress)
 
            isCameraUp = result.hasMatch();
     return isCameraUp;
+}
+
+void CameraInterfaceUniversal::connectZoomControl(QString user, QString pass, QString ip, QString port)
+{
+  ControlZoom = std::make_shared<DeviceZoomRotation>(user,pass,ip,port);
 }

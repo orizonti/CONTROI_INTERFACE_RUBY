@@ -108,7 +108,7 @@ void UDPConnectionEngine::slotReadData()
 
 void UDPConnectionEngine::slotSendMessage(const QByteArray& Command, uint16_t Param)
 {
- //qDebug() << "SEND COMMAND: " << QString(Command.toHex()) << "SIZE: " << Command.size() << "SOCKET: " << IPRemote << PortRemote;
+ qDebug() << "SEND COMMAND: " << QString(Command.toHex()) << "SIZE: " << Command.size() << "SOCKET: " << IPRemote << PortRemote;
  Socket->writeDatagram(Command,QHostAddress(IPRemote),PortRemote); 
 }
 

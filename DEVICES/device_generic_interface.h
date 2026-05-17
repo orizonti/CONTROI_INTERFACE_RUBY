@@ -11,18 +11,15 @@
 class DeviceGenericHandleControl
 {
 	public:
-	virtual void setLevel( uint32_t Level) {setParam(0, Level);};
-	virtual void setValue( float    Value) {setParam(1, Value);};
-	virtual void setPair(std::pair<float,float> Coord) {};
+	virtual void setValue ( float    Value) { setParam(0,Value); };
+	virtual void setLevel ( uint32_t Level) { setParam(1,Level); };
+	virtual void setPair  ( std::pair<float,float> Coord)    {};
+	virtual void setEnable(bool OnOff, uint16_t Number = 0) {};
 
-	virtual std::pair<float,float> getPair() { return std::pair<float,float>(0,0); };
+	virtual std::pair<float,float> getPair()  { return std::pair<float,float>(0,0); };
 	virtual                  float getValue() { return 0; };
 
-	virtual void setParam (uint16_t CommandID, uint32_t CommandParam) = 0;
-	virtual void setParam (uint16_t CommandID, float    CommandParam)    = 0;
-
-	virtual void setEnable(bool OnOff, uint16_t Number = 0) { setParam(Number,(uint32_t)OnOff);};
-
+	virtual void  setParam (uint16_t CommandID, float    CommandParam) {} ;
 	virtual float getParam (uint16_t CommandID) { return 0;} ;
 };
 
@@ -43,7 +40,6 @@ public:
 
 	void transmitMessage(const char* Message, int size, uint16_t param = 0) { ConnectionDevice->slotSendMessage(Message, size, param); }
 
-	void  setParam (uint16_t CommandID, uint32_t CommandParam) override {};
 	void  setParam (uint16_t CommandID, float    CommandParam) override {} ;
 	float getParam (uint16_t CommandID) override { return 0;} ;
 

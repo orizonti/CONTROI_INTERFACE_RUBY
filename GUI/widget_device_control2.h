@@ -13,7 +13,7 @@
 #include <QGroupBox>
 #include <QPushButton>
 #include <QBoxLayout>
-#include "interface_node_synchronizer.h"
+#include "interface_node_signal_adapter.h"
 
 
 class WidgetDeviceControl2 : public WidgetAdjustable, public PassCoordClass<float>
@@ -32,7 +32,7 @@ public:
         if(labelsState.isEmpty()) return;
         State = Coord; labelsState[0]->setText(QString("%1 %2").arg(State.first).arg(State.second)); 
     };
-    NodeStateSynchronizer NodeSynchronizer{this};
+    NodeCoordSignalAdapter NodeSynchronizer{this};
     void linkToWidget(WidgetDeviceControl2* widget) { NodeSynchronizer.linkPeers(&widget->NodeSynchronizer);};
     //================================================================
 

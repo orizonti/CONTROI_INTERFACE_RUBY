@@ -28,6 +28,7 @@ class WidgetComplexInterface : public WidgetAdjustable
 public:
     WidgetComplexInterface(QWidget* parent = nullptr);
     ~WidgetComplexInterface();
+    std::vector<WidgetDeviceControl*> widgetsHidden;
 
     WidgetMainControl* widgetMainControl1   = nullptr;
     WidgetMainControl* widgetMainControl2   = nullptr;
@@ -66,11 +67,15 @@ public:
 
     SinkDisplayLabel* outputVideoBig = nullptr;
 
+void installEventFilter(KeyboardFilter *filterObj);
+
 public slots:
     void slotSetMainMode();
     void slotSetHandleMode();
     void slotSetBigImageMode();
     void slotShowMalfunctionList();
+    void slotShowHiddenWidgets();
+    void slotHideHiddenWidgets();
 signals:
 void signalEndWork();
 private:

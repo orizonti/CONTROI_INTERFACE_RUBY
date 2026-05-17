@@ -67,6 +67,7 @@ include_directories("./UTILITIES")
 include_directories("./DEVICES")
 include_directories("./COMMON")
 include_directories("./AIMING_MODULES")
+include_directories("./CONTROL_PTZ")
 include_directories("D:/LIBRARY/MATH_LIBRARY/eigen")
 
 
@@ -118,7 +119,7 @@ add_executable (testCameraRTSP
         "./UTILITIES/sinus_generator_class.cpp"
         "./UTILITIES/engine_keyfilter.cpp"
 
-        "./COMMON/interface_node_synchronizer.cpp"
+        "./COMMON/interface_node_signal_adapter.cpp"
 
         "./UTILITIES/register_settings.cpp"
         "./CAMERA_RTSP_INTERFACE/interface_camera_rtsp.cpp"
@@ -128,6 +129,12 @@ add_executable (testCameraRTSP
         "./TRANSMISSION_MODULES/NETWORK_INTERFACES/engine_udp_interface.cpp"
         "./TRANSMISSION_MODULES/NETWORK_INTERFACES/engine_uart_interface.cpp"
         "./TRANSMISSION_MODULES/DATA_STRUCTURES/message_command_structures_rotary.cpp"
+
+        "./CONTROL_PTZ/device_zoom_rotation.cpp"
+        "./CONTROL_PTZ/services_onvif/onvif_device_service.cpp"
+        "./CONTROL_PTZ/services_onvif/onvif_media_service.cpp"
+        "./CONTROL_PTZ/request_soap/request_soap.cpp"
+
         )
 
 target_link_libraries(testCameraRTSP

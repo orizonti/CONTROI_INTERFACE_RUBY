@@ -9,7 +9,7 @@ class PassValueClass
 public:
 	std::vector<PassValueClass*> NodesLinked;
 	bool isLinked() { return !NodesLinked.empty();}
-	V Value;
+	V Value{0};
     bool enablePass = false;
 
 	virtual const V& getValue() { return Value;};

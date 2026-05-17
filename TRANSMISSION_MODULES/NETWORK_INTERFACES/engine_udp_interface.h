@@ -51,8 +51,6 @@ public:
         int PortRemote = 7575;
         int PortLocal  = 7575;
        bool Connected  = false;
-
-
 signals:
 void SignalDeviceConnected();
 void signalMessageAvailable();

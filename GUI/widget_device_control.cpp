@@ -291,18 +291,19 @@ void WidgetDeviceControl::setName(QString name) { labelName->setText(name); }
 
 void WidgetDeviceControl::linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device)
 {
+   if(Device == nullptr) { qDebug() << "[WIDGET CONTROL] LINK DEVICE FAIL [EMPTY DEVICE]"; return; }
    DeviceLinked = Device; 
                if(Device) linkSignals();
 }
 
 void WidgetDeviceControl::linkSignals()
 {
-    QVector<QPushButton*> buttonsLevel;
 
     int level = 1;
     for(auto button: buttonsLevel)
     {
-      connect(button, &QPushButton::toggled, [level, this](bool OnOff) { if(OnOff) DeviceLinked->setLevel(level); } ); level++;
+      connect(button, &QPushButton::toggled, [level, this](bool OnOff) 
+           { if(OnOff) DeviceLinked->setLevel(level); qDebug() << "SET LEVEL: " << level << OnOff; } ); level++;
     }
 
     int device = 1;
@@ -310,14 +311,15 @@ void WidgetDeviceControl::linkSignals()
     {
       connect(button, &QPushButton::toggled, [device, this](bool OnOff) { DeviceLinked->setEnable(OnOff,device); } ); device++;
     }
-
       connect(spinParam, &QSpinBox::valueChanged, [this](int Value) { DeviceLinked->setValue(Value); } ); 
-
 
     //if(!groupArrows->isVisible()) return;
 
+    State = DeviceLinked->getPair(); 
+    labelState->setText(QString("%1\n%2").arg(State.first).arg(State.second));
+
     std::vector<QPair<float,float>> VelsVector;
-    float VelocityScale = 0.10;
+    float VelocityScale = 0.50;
     if(schemeArrowsControl == 4)
     {
         buttonsArrow.push_back(buttonLeft);  VelsVector.push_back(QPair<float,float>(-VelocityScale, 0));
@@ -346,22 +348,23 @@ void WidgetDeviceControl::linkSignals()
     }
 
 
+    VelocityScale = 1;
     std::vector<float> VelsScalar;
     if(schemeArrowsControl == 2)
     {
-        buttonsArrow.push_back(buttonLeft);  VelsScalar.push_back(VelocityScale );
+        buttonsArrow.push_back(buttonLeft);  VelsScalar.push_back( VelocityScale );
         buttonsArrow.push_back(buttonRight); VelsScalar.push_back(-VelocityScale);
 
-        auto velocityValue = VelsScalar.begin();
-        for(auto but: buttonsArrow)
+        for(int n = 0; n < 2; n++)
         {
-        QObject::connect(but, &QPushButton::pressed,  [this, velocityValue]() 
+        auto Velocity = VelsScalar[n];
+        auto button = buttonsArrow[n];
+        QObject::connect(button, &QPushButton::pressed,  [this, Velocity]() 
         {   
-            DeviceLinked->setValue(*velocityValue); timerCheckDevice.start(1);
+            DeviceLinked->setValue(Velocity); timerCheckDevice.start(1);
         });
-        QObject::connect(but, &QPushButton::released, [this     ]()      { DeviceLinked->setEnable(false);  timerCheckDevice.stop(); });
+        QObject::connect(button, &QPushButton::released, [this     ]()      { DeviceLinked->setEnable(false);  timerCheckDevice.stop(); });
         }
-
     }
 
                                             std::pair<float,float> Position;

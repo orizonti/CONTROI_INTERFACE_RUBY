@@ -57,13 +57,15 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
        widgetControlCamera2Float = new WidgetDeviceControl("КамераГК ", Qt::Vertical, this); 
        widgetControlCamera3Float = new WidgetDeviceControl("Тепловиз ", Qt::Vertical, this); 
 
-       widgetControlCamera1Float->enableScheme(0,1,1,0,0,0); widgetControlCamera1Float->setScheme(5,0,0);
-       widgetControlCamera2Float->enableScheme(0,1,1,0,0,0); widgetControlCamera2Float->setScheme(5,0,0);
-       widgetControlCamera3Float->enableScheme(0,1,1,0,0,0); widgetControlCamera3Float->setScheme(5,0,0);
+       widgetControlCamera1Float->enableScheme(0,0,1,0,0,0); widgetControlCamera1Float->setScheme(6,0,0);
+       widgetControlCamera2Float->enableScheme(0,0,1,0,0,0); widgetControlCamera2Float->setScheme(6,0,0);
+       widgetControlCamera3Float->enableScheme(0,0,1,0,0,0); widgetControlCamera3Float->setScheme(6,0,0);
 
-       //widgetControlCamera1Float->move(18,170); widgetControlCamera1Float->show();
-       //widgetControlCamera2Float->move(18,510); widgetControlCamera2Float->show();
-       //widgetControlCamera3Float->move(640,170); widgetControlCamera3Float->show();
+       widgetControlCamera1Float->move(18,170);  //widgetControlCamera1Float->show();
+       widgetControlCamera2Float->move(18,510);  //widgetControlCamera2Float->show();
+       widgetControlCamera3Float->move(640,170); //widgetControlCamera3Float->show();
+
+       widgetsHidden.push_back(widgetControlCamera3Float);
        
 
 //void WidgetDeviceControl::enableScheme(bool enableState, 
@@ -128,6 +130,9 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
     outputVideo1->linkToDisplay(ui->labelCameraFast);
     outputVideo2->linkToDisplay(ui->labelCameraZoom);
     outputVideo3->linkToDisplay(ui->labelCameraThermal);
+    ui->labelCameraFast->setMaximumSize(800,350);
+    ui->labelCameraZoom->setMaximumSize(800,350);
+    ui->labelCameraThermal->setMaximumSize(800,350);
 
     outputVideo1Mini->linkToDisplay(ui->labelMiniCameraFast);
     outputVideo2Mini->linkToDisplay(ui->labelMiniCameraZoom);
@@ -274,4 +279,21 @@ void WidgetComplexInterface::slotSetBigImageMode()
 void WidgetComplexInterface::slotShowMalfunctionList()
 {
 
+}
+
+void WidgetComplexInterface::slotShowHiddenWidgets()
+{
+for(auto& widget: widgetsHidden) widget->show();
+}
+void WidgetComplexInterface::slotHideHiddenWidgets()
+{
+for(auto& widget: widgetsHidden) widget->hide();
+}
+
+
+void WidgetComplexInterface::installEventFilter(KeyboardFilter *filterObj)
+{
+  connect(filterObj, &KeyboardFilter::signalControlAlt, this, &WidgetComplexInterface::slotShowHiddenWidgets);
+  connect(filterObj, &KeyboardFilter::signalRelease, this, &WidgetComplexInterface::slotHideHiddenWidgets);
+  QWidget::installEventFilter(filterObj);
 }

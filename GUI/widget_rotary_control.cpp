@@ -90,15 +90,19 @@ void WidgetRotaryControl::updateAngle()
                                 angleRotationDegree = angleRotation*180/M_PI; calcStep();
         }
 
+        if(TypeWidget == 0)
+        {
+
         angleRotationShiftedDegree = angleRotationDegree - angleRotationNull;
             if(angleRotationShiftedDegree < 0 ) angleRotationShiftedDegree = 360 + angleRotationShiftedDegree;
 
         //angleRotationDeviceDegree = angleRotationShiftedDegree;
         angleRotationDeviceDegree = angleRotationShiftedDegree + angleRotationDeviceNull;
             if(360 - angleRotationDeviceDegree < 0 ) angleRotationDeviceDegree = angleRotationDeviceDegree - 360;
+        }
 
-
-        qDebug() << "[ SET ANGLE ]" << angleRotationDeviceDegree << "[  STEP ] " << angleRotationDegreeStep << " DIR: " << StepDirection;
+        if(TypeWidget == 1) angleRotationDeviceDegree = angleRotationDegree;
+        qDebug() << "[ SET ANGLE ]" << angleRotationDeviceDegree;
 
         if(ControlRotary) ControlRotary->setParam(ControlChannel, angleRotationDeviceDegree);
         //if(allowSignals ) emit signalStateChanged(angleRotationDegree);

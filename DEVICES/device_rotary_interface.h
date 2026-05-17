@@ -128,6 +128,7 @@ public:
 
 	~DeviceRotaryControl() { qDebug() << TAG_NAME << "DELETE"; }
   //================================================
+  bool FLAG_START_MOVE = false;
 
   std::shared_ptr<DeviceControlAdapter<DEVICE_TYPE>> ControlRotaryPos;
   std::shared_ptr<DeviceControlAdapter<DEVICE_TYPE>> ControlRotaryStep;
@@ -167,9 +168,9 @@ public:
   //DEVICE_GENERIC_HANDLE_CONTROL
 	                  void setPair(std::pair<float,float> Coord) override { moveWithVelocity(Coord);};
 	std::pair<float,float> getPair()       override { return getPosDevice(); };
-	void setEnable(bool OnOff, uint16_t Number = 0) { if(!OnOff) stopMove(); };
-    void setParam (uint16_t CommandID, uint32_t CommandParam) {};
-    void setParam (uint16_t CommandID, float    CommandParam) 
+
+	  void setEnable(bool OnOff, uint16_t Number = 0) override { if(!OnOff) stopMove(); };
+    void setParam (uint16_t CommandID, float    CommandParam)  override
     {
       if(CommandID == 0) PositionTarget.first  = CommandParam;
       if(CommandID == 1) PositionTarget.second = CommandParam; checkPositionOffset();
@@ -310,6 +311,7 @@ template<typename T_CONNECTION, typename T_COMMAND, typename T_MESSAGE>
 void DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::setNull(const QPair<float, float>& NullPos) 
 { 
                     qDebug() << TAG_NAME << "[ MOVE TO NULL ] " << NullPos.first << NullPos.second; 
+                    PositionTarget = NullPos;
                     PositionTargetDevice = NullPos; checkPositionOffset();
   this->sendCommand(PositionTargetDevice);      
 }
@@ -348,6 +350,7 @@ void DeviceRotaryControl<T_CONNECTION,T_COMMAND,T_MESSAGE>::moveToPos(const QPai
                     PositionTargetDevice = PositionTarget + PositionNullDevice; checkPositionOffset();
   this->sendCommand(PositionTargetDevice);                  PositionRelativeAnchor = PositionTarget;
   qDebug() << TAG_NAME << "[ MOVE TO POS ]" << PositionTargetDevice.first << PositionTargetDevice.second << PositionNullDevice.first << PositionNullDevice.second;
+  FLAG_START_MOVE = true;
 }
 
 

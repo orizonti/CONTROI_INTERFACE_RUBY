@@ -47,7 +47,7 @@
 #include <QPainter>
 #include "widget_line_graph.h"
 #include "engine_keyfilter.h"
-#include "interface_node_synchronizer.h"
+#include "interface_node_signal_adapter.h"
 
 QStringList LoadCameraLinks();
 //#include "message_command_id.h"
@@ -104,6 +104,24 @@ template<> class TypeRegisterSizes<sizeof(MESSAGE_HEADER_GENERIC)>
 };
 //=============================================================================================
 
+void SaveMeasureDataToFile(QString FileName, NodeCoordStorage<float>& Measure)
+{
+    qDebug() << "[ SAVE DATA TO FILE ]" << FileName ;
+    QFile data(FileName);
+    data.open(QFile::WriteOnly); data.flush();
+
+	QString outString;
+	QTextStream out(&outString);
+
+  int counter = 0;
+	for(auto& coord: Measure)
+	{
+		out << coord.first  << " "<< coord.second << Qt::endl;  counter++;
+	}
+  qDebug() << "DATA SAVE TO FILE COUNTER: " << counter;
+	data.write(outString.toUtf8());
+	data.close();
+}
 
 int main(int argc, char* argv[])
 {
@@ -135,18 +153,18 @@ int main(int argc, char* argv[])
 
   //=====================================================================================
   //TEST TRACK APPROXIMATION 
-  SinusGeneratorClass SinusGenerator; SinusGenerator.setPeriod(3);
-                                      SinusGenerator.slotSetAmplitude(200); 
-                                      SinusGenerator.slotSetFrequency(0.09);
-                                      SinusGenerator.slotSetOffset(240,240);
-  WidgetLineGraph graphWidget; graphWidget.setSize(500); graphWidget.show();
+  //SinusGeneratorClass SinusGenerator; SinusGenerator.setPeriod(3);
+  //                                    SinusGenerator.slotSetAmplitude(200); 
+  //                                    SinusGenerator.slotSetFrequency(0.09);
+  //                                    SinusGenerator.slotSetOffset(240,240);
+  //WidgetLineGraph graphWidget; graphWidget.setSize(500); graphWidget.show();
   
-  float amp1 = 6; float amp2 = 6;
-  NodeCoordSplitToTime<float> SplitToTime; 
-  NodeCoordRandomizer<float> Randomize {amp1,amp2};
-  NodeCoordRandomizer<float> Randomize2{amp1,amp2};
-  NodeCoordPassNorm<float> Norm;
-  NodeCoordSwap SwapCoord; 
+  //float amp1 = 12; float amp2 = 12;
+  //NodeCoordSplitToTime<float> SplitToTime; 
+  //NodeCoordRandomizer<float> Randomize {amp1,amp2};
+  //NodeCoordRandomizer<float> Randomize2{amp1,amp2};
+  //NodeCoordPassNorm<float> Norm;
+  //NodeCoordSwap SwapCoord; 
 
             //======================================================================================
             //STATIC TEST
@@ -156,21 +174,21 @@ int main(int argc, char* argv[])
             //                graphWidget.GraphPointsStorage->setPoints(Test1.TrackNoize);
             //======================================================================================
             //DYNAMIC TEST
-            PolynomApproximationDynamicTest<3> Test2{140,10,4};
-                                SplitToTime.setResetCounter(SinusGenerator.Period.first);
-                                SinusGenerator | Randomize2 | Test2;
-                                                  Test2.linkToGraph(graphWidget.GraphPointsStorage2);
-                                                  Test2.linkToGraph(graphWidget.GraphPointsStorage );
+            //PolynomApproximationDynamicTest<3> Test2{140,10,20};
+            //                    SplitToTime.setResetCounter(SinusGenerator.Period.first);
+            //                    SinusGenerator | Randomize2 | Test2;
+            //                                      Test2.linkToGraph(graphWidget.GraphPointsStorage2);
+            //                                      Test2.linkToGraph(graphWidget.GraphPointsStorage );
             //=====================================================================================
             //DISPERSION ESTIMATE BY APPROXIMATION
                         //EstimatorObjectMovingParams TrackStat;
-                        EstimatorTrackHold<float> TrackHold;
-             SinusGenerator | Randomize | TrackHold;
+            //   EstimatorTrackHold<float> TrackHold;
+            // SinusGenerator | Randomize | TrackHold;
             //=====================================================================================
-             SinusGenerator.slotStartGenerate(true);
+            //SinusGenerator.slotStartGenerate(true);
 
 
-  return app.exec();
+  //return app.exec();
   //=====================================================================================
   
   //TypeRegister<>::printRegisteredTypes();
@@ -237,20 +255,20 @@ int main(int argc, char* argv[])
 
   std::shared_ptr<UDPConnectionEngine> ConnectionInterface5 = std::make_shared<UDPConnectionEngine>();
 
-  QString ip_terminal = "192.168.1.200";
+  QString     ip_terminal = "192.168.1.200";
   QString ip_proc_module1 = "192.168.1.57";
   QString ip_proc_module2 = "192.168.1.75";
   QString ip_proc_module3 = "192.168.1.59";
 
-  QString ip_platform = "192.168.1.120";
+  QString     ip_platform = "192.168.1.120";
 
   ConnectionInterface1->listenTo (ip_terminal    ,2323);
   ConnectionInterface1->connectTo(ip_proc_module1,2525);
 
-  ConnectionInterface2->listenTo (ip_terminal    ,2323);
+  ConnectionInterface2->listenTo (ip_terminal    ,2324);
   ConnectionInterface2->connectTo(ip_proc_module2,2525);
 
-  ConnectionInterface3->listenTo (ip_terminal    ,2323);
+  ConnectionInterface3->listenTo (ip_terminal    ,2325);
   ConnectionInterface3->connectTo(ip_proc_module3,2525);
  
   ConnectionInterface4->listenTo (ip_terminal,40805);
@@ -266,16 +284,16 @@ int main(int argc, char* argv[])
     {
      auto data = DispatcherType1::ExtractData<CommandAiming<0>>(&Message);
      //qDebug() << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 1;
-     WindowInterface->outputVideo1->enablePlot(true);
-     WindowInterface->outputVideo1->setCoordPaint(data->Command,0);
+     WindowInterface->outputVideo2->enablePlot(true);
+     WindowInterface->outputVideo2->setCoordPaint(data->Command,0);
     });
 
     Dispatcher1_2->AppendCallback<CommandAiming<0>> ( [WindowInterface](MessageType1& Message)
     {
      auto data = DispatcherType1::ExtractData<CommandAiming<0>>(&Message);
      //qDebug() << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 2;
-     WindowInterface->outputVideo2->enablePlot(true);
-     WindowInterface->outputVideo2->setCoordPaint(data->Command,0);
+     WindowInterface->outputVideo1->enablePlot(true);
+     WindowInterface->outputVideo1->setCoordPaint(data->Command,0);
     });
 
     Dispatcher1_3->AppendCallback<CommandAiming<0>> ( [WindowInterface](MessageType1& Message)
@@ -286,12 +304,6 @@ int main(int argc, char* argv[])
      WindowInterface->outputVideo3->setCoordPaint(data->Command,0);
     });
 
-           
-    Dispatcher2_1->AppendCallback<ControlRX> ( [](MessageType2& Message) 
-    {
-        auto data = DispatcherType2::ExtractData<ControlRX>(&Message);
-        //qDebug() <<  OutputFilter::Filter(1000) << "[ GET CONTROL RX ]" << data->value0.position << data->value1.position;;
-    });
 
                                   MessageRotaryStateJson receiver; 
     Dispatcher3_1->AppendCallback<MessageRotaryStateJson> ( [receiver](MessageType3& Message) mutable
@@ -315,10 +327,10 @@ int main(int argc, char* argv[])
   //=====================================================================================================
 
   //LASERS
-  std::shared_ptr<DeviceGenericHandleControl> ControlLaserPower = std::make_shared<DeviceLaserPower>(ConnectionInterface3 , "[LASER_POWER]");
-  std::shared_ptr<DeviceGenericHandleControl> ControlLaserIllum = std::make_shared<DeviceLaserIllum>(ConnectionInterface3 , "[LASER_POINTER]");
+  std::shared_ptr<DeviceGenericHandleControl> ControlLaserPower = std::make_shared<DeviceLaserPower>(ConnectionInterface2 , "[LASER_POWER]");
+  std::shared_ptr<DeviceGenericHandleControl> ControlLaserIllum = std::make_shared<DeviceLaserIllum>(ConnectionInterface2 , "[LASER_POINTER]");
   //FOCUS CONTROL
-  std::shared_ptr<DeviceGenericHandleControl> ControlFocusator  = std::make_shared<DeviceFocusator >(ConnectionInterface3 , "[FOCUSATOR]");
+  std::shared_ptr<DeviceGenericHandleControl> ControlFocusator  = std::make_shared<DeviceFocusator >(ConnectionInterface1 , "[FOCUSATOR]");
   //=====================================================================================================
   //LIDS
   std::shared_ptr<DeviceGenericHandleControl> ControlLid  = std::make_shared<DeviceLid>(ConnectionInterface5, "[LIDS]");
@@ -327,20 +339,19 @@ int main(int argc, char* argv[])
   std::shared_ptr<DeviceScanator> ControlScanator = std::make_shared<DeviceScanator>(ConnectionInterface2, CONTROL_PARAM::POS, "[SCANATOR]");
   std::shared_ptr<DevicePlatform> ControlPlatform = std::make_shared<DevicePlatform>(ConnectionInterface4, CONTROL_PARAM::POS, "[PLATFORM]");
 
-  std::shared_ptr<DeviceGenericHandleControl> ControlAiming1 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine>>(ConnectionInterface3, "[AIMING1]");
+  std::shared_ptr<DeviceGenericHandleControl> ControlAiming1 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine>>(ConnectionInterface2, "[AIMING1]");
   std::shared_ptr<DeviceGenericHandleControl> ControlAiming2 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine>>(ConnectionInterface3, "[AIMING2]");
 
     ControlScanator->setLimits(CONTROL_PARAM::POS,30000,30000);
 
     ControlPlatform->setLimits(CONTROL_PARAM::POS,360,20); 
-    ControlPlatform->setNull(QPair<float,float>(73.48,-2.57));
+    ControlPlatform->setNull(QPair<float,float>(66,5.3));
 
-    WindowInterface->widgetMainControl1->widgetAzimuth->setNullDevice(73.48);
-    WindowInterface->widgetMainControl1->widgetElevation->setNullDevice(-2.57);
+    WindowInterface->widgetMainControl1->widgetAzimuth->setNullDevice(73.417);
+    WindowInterface->widgetMainControl1->widgetElevation->setNullDevice(-2.71706);
 
-    WindowInterface->widgetMainControl2->widgetAzimuth->setNullDevice(73.48);
-    WindowInterface->widgetMainControl2->widgetElevation->setNullDevice(-2.57);
-
+    WindowInterface->widgetMainControl2->widgetAzimuth->setNullDevice(73.417);
+    WindowInterface->widgetMainControl2->widgetElevation->setNullDevice(-2.71706);
 
   WindowInterface->widgetLidControl->linkToDevice(ControlLid);
 
@@ -356,7 +367,6 @@ int main(int argc, char* argv[])
   //linkPeers(WindowInterface->widgetMainControl1->widgetAzimuth, WindowInterface->widgetMainControl1->widgetElevation);
   //linkPeers(WindowInterface->widgetMainControl2->widgetAzimuth, WindowInterface->widgetMainControl2->widgetElevation);
 
-
   WindowInterface->widgetControlLaserPower->linkToDevice(ControlLaserPower);
   WindowInterface->widgetControlLaserIllum->linkToDevice(ControlLaserIllum);
 
@@ -365,28 +375,66 @@ int main(int argc, char* argv[])
 
   WindowInterface->widgetMainControl1->linkToDeviceRotary(ControlPlatform->ControlRotaryPos);
   WindowInterface->widgetMainControl1->linkToDevice(ControlLid,0);
-  WindowInterface->widgetMainControl1->linkToDevice(ControlLaserIllum,1);
-  WindowInterface->widgetMainControl1->linkToDevice(ControlLaserPower,2);
+  WindowInterface->widgetMainControl1->linkToDevice(ControlLaserPower,1);
+  WindowInterface->widgetMainControl1->linkToDevice(ControlLaserIllum,2);
   WindowInterface->widgetMainControl1->linkToDevice(ControlAiming1,3);
   WindowInterface->widgetMainControl1->linkToDevice(ControlAiming2,4);
 
   WindowInterface->widgetMainControl2->linkToDeviceRotary(ControlPlatform->ControlRotaryPos);
   WindowInterface->widgetMainControl2->linkToDevice(ControlLid,0);
-  WindowInterface->widgetMainControl2->linkToDevice(ControlLaserIllum,1);
-  WindowInterface->widgetMainControl2->linkToDevice(ControlLaserPower,2);
+  WindowInterface->widgetMainControl2->linkToDevice(ControlLaserPower,1);
+  WindowInterface->widgetMainControl2->linkToDevice(ControlLaserIllum,2);
   WindowInterface->widgetMainControl2->linkToDevice(ControlAiming1,3);
   WindowInterface->widgetMainControl2->linkToDevice(ControlAiming2,4);
 
   //==================================================================================================================
 
+    NodeCoordStorage<float> Storage1(5000); Storage1.setContinousMode(false);
+    NodeCoordStorage<float> Storage2(5000); Storage2.setContinousMode(false);
+    MeasurePeriodNode MeasurePeriod;
+    NodeValueIntegrator<float> Integrator;
+    NodeCoordJoinValue Join;
+    bool FLAG_MEASURE = false;
+           
+//    Dispatcher2_1->AppendCallback<ControlRX> ( [MeasurePeriod, Integrator, Join, Storage1, Storage2, ControlPlatform](MessageType2& Message) mutable 
+//    {
+//        //MeasurePeriod++;
+//        auto data = DispatcherType2::ExtractData<ControlRX>(&Message);
+//
+//        //if(ControlPlatform->FLAG_START_MOVE)
+//        //{
+//        //                       data->value1.position >> Join;
+//        //MeasurePeriod.getMilliseconds() >> Integrator>> Join >> Storage1;
+//
+//        ////                  data->value1.position >> Join;
+//        ////        MeasurePeriod.getMilliseconds() >> Join >> Storage2;
+//        //if(Storage1.isLoaded()) 
+//        //{ 
+//        //  qDebug() << "[ MEASURE END ]" << Storage1.getAvailable(); ControlPlatform->FLAG_START_MOVE = false; 
+//        //  SaveMeasureDataToFile("D:/TRASH/MEASURES/MEASURE_Y_A60_STEP1.txt", Storage1);
+//        //}
+//        //}
+//
+//        qDebug() <<  OutputFilter::Filter(2000) << "[ GET CONTROL RX ]" << data->value0.position << data->value1.position;;
+//    });
+
+    Dispatcher2_1->AppendCallback<ControlRX> ( [](MessageType2& Message) mutable 
+    {
+        auto data = DispatcherType2::ExtractData<ControlRX>(&Message);
+        qDebug() <<  OutputFilter::Filter(2000) << "[ GET CONTROL RX ]" << data->value0.position << data->value1.position;;
+    });
+
   //==================================================================================================================
   //CAMERAS
   QStringList links; //links = LoadCameraLinks();
   links.resize(10);
-  links[0] = "rtspsrc location=rtsp://192.168.1.59:8554/test latency=10 drop-on-latency=true is-live=true buffer-mode=auto ! queue ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! appsink drop=1 sync=0 max-buffers=1 async=1";
-  links[1] = "rtspsrc location=rtsp://192.168.1.108:554/stream3 latency=10 drop-on-latency=true is-live=true buffer-mode=auto! queue ! rtpjpegdepay ! jpegparse ! jpegdec ! videoconvert ! appsink name=sink_node drop=1 sync=0 max-buffers=1 async=1";
-  links[2] = "udpsrc port=5000 ! application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=(int)96 ! rtph264depay ! h264parse ! openh264dec ! videoconvert n-threads=3 ! video/x-raw,format=RGB ! appsink name=sink_node drop=1 async=false sync=true max-buffers=1";
+  links[0] = "rtspsrc location=rtsp://192.168.1.69:8554/test latency=50 drop-on-latency=true is-live=true buffer-mode=auto ! queue ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! appsink drop=1 sync=0 max-buffers=1 async=1";
+  links[1] = "rtspsrc location=rtsp://192.168.1.85:8554/test latency=50 drop-on-latency=true is-live=true buffer-mode=auto ! queue ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! appsink drop=1 sync=0 max-buffers=1 async=1";
+  links[2] = "udpsrc port=5000 ! application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)JPEG, payload=(int)96 ! rtpjpegdepay ! jpegparse ! jpegdec ! videoconvertscale n-threads=2 ! video/x-raw,width=640,height=480 ! appsink drop=1 async=false sync=true max-buffers=1";
+  links[2] = "rtspsrc location=rtsp://192.168.1.86:554/user=admin_password=_channel=0_stream=0.sdp latency=1 ! queue ! rtph265depay ! h265parse ! d3d11h265dec ! videoconvertscale ! video/x-raw,width=640,height=480 ! appsink drop=1 sync=0 max-buffers=1 async=1";
+  //links[2] = "udpsrc port=5000 ! application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=(int)96 ! rtph264depay ! h264parse ! openh264dec ! videoconvert n-threads=3 ! video/x-raw,format=RGB ! appsink name=sink_node drop=1 async=false sync=true max-buffers=1";
 
+  //links[1] = "rtspsrc location=rtsp://192.168.1.108:554/stream3 latency=10 drop-on-latency=true is-live=true buffer-mode=auto! queue ! rtpjpegdepay ! jpegparse ! jpegdec ! videoconvert ! appsink name=sink_node drop=1 sync=0 max-buffers=1 async=1";
   //links[0] = "rtsp://192.168.1.31:554/user=admin_password=_channel=1_stream=0.sdp";
   //links[0] = "rtspsrc location=rtsp://admin:123456@192.168.1.247/live/video is-live=true latency=1 buffer-mode=auto ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! video/x-raw,format=RGB ! appsink name=sink_node drop=1 sync=0 max-buffers=1 async=1";
   //links[0] = "rtspsrc location=rtsp://192.168.1.31:554/user=admin_password=_channel=1_stream=0.sdp drop-on-latency=true is-live=1 latency=10 buffer-mode=auto ! queue ! rtph264depay ! h264parse ! openh264dec ! videoconvert n-threads=1 primaries-mode=fast ! video/x-raw,format=RGB ! appsink name=sink_node drop=1 sync=0 async=1 max-buffers=1";
@@ -397,10 +445,16 @@ int main(int argc, char* argv[])
   //links[1] = "videotestsrc pattern=ball ! video/x-raw,format=BGR,width=640,height=480 ! queue ! videoconvert ! appsink name=sink_node";
   //links[2] = "videotestsrc ! video/x-raw,format=BGR,width=640,height=480 ! queue ! videoconvert ! appsink name=sink_node";
 
-  //gst_init(&argc, &argv);
+
+
+  gst_init(&argc, &argv);
   CameraInterfaceUniversal* Camera1 = new CameraInterfaceUniversal(links[0], "[CAMERA1]");
   CameraInterfaceUniversal* Camera2 = new CameraInterfaceUniversal(links[1], "[CAMERA2]");
   CameraInterfaceUniversal* Camera3 = new CameraInterfaceUniversal(links[2], "[CAMERA3]");
+                            Camera3->connectZoomControl("admin","admin","192.168.1.86","8899");
+
+  WindowInterface->widgetControlCamera3Float->linkToDevice(Camera3->ControlZoom);
+
 
                                          QThread* threadCamera1 = new QThread;
                                          QThread* threadCamera2 = new QThread;
@@ -408,7 +462,7 @@ int main(int argc, char* argv[])
 
                             Camera1->moveToThread(threadCamera1);
                             Camera2->moveToThread(threadCamera2);
-                            Camera3->moveToThread(threadCamera2);
+                            Camera3->moveToThread(threadCamera3);
 
   QObject::connect(threadCamera1, &QThread::started, Camera1, &CameraInterfaceUniversal::slotStartStream);
   QObject::connect(threadCamera2, &QThread::started, Camera2, &CameraInterfaceUniversal::slotStartStream);
@@ -416,6 +470,7 @@ int main(int argc, char* argv[])
 
   //QObject::connect(WindowInterface, &WidgetComplexInterface::signalEndWork, Camera1, &CameraInterfaceUniversal::slotEndWork, Qt::QueuedConnection);
   //QObject::connect(WindowInterface, &WidgetComplexInterface::signalEndWork, Camera2, &CameraInterfaceUniversal::slotEndWork, Qt::QueuedConnection);
+
 
   QObject::connect(WindowInterface, &WidgetComplexInterface::signalEndWork, threadCamera1, &QThread::quit, Qt::QueuedConnection);
   QObject::connect(WindowInterface, &WidgetComplexInterface::signalEndWork, threadCamera2, &QThread::quit, Qt::QueuedConnection);

@@ -1,22 +1,48 @@
 #pragma once
 #include "interface_pass_coord.h"
 #include "interface_pass_value.h"
+#include "device_generic_interface.h"
 #include <QObject>
 
-class NodeParamSynchronizer: public QObject
+class NodeSignalAdapter: public QObject
 {
     Q_OBJECT
     public: 
-    explicit NodeParamSynchronizer(PassValueClass<float>* Node, QObject* parent = nullptr): QObject(parent) 
+    explicit NodeSignalAdapter(DeviceGenericHandleControl* Node, uint32_t SignalNumber = 0, QObject* parent = nullptr): QObject(parent) 
+    { NodeState = Node; Number = SignalNumber; } 
+    DeviceGenericHandleControl* NodeState = nullptr;
+    uint32_t Number = 0;
+
+        void operator|(NodeSignalAdapter* DstNode) { linkPeers(DstNode); }
+    void connectSignal(NodeSignalAdapter* DstNode) { QObject::connect(this, SIGNAL(signalStateChanged()), DstNode, SLOT(slotSetState(float))); };
+        void linkPeers(NodeSignalAdapter* DstNode) 
+        { 
+            this->connectSignal(DstNode);
+            DstNode->connectSignal(this); };
+
+    friend void operator>>(bool signal, NodeSignalAdapter& Node) { if(signal) Node.emitSignal(); } ;
+                                                                              void emitSignal() { emit signalStateChanged(); }
+
+    public slots:
+    void slotSetSignal() { NodeState->setEnable(true,Number);}
+    signals:
+    void signalStateChanged();
+};
+
+class NodeParamSignalAdapter: public QObject
+{
+    Q_OBJECT
+    public: 
+    explicit NodeParamSignalAdapter(PassValueClass<float>* Node, QObject* parent = nullptr): QObject(parent) 
     { NodeState = Node;  } 
     PassValueClass<float>* NodeState = nullptr;
 
-    void linkPeers(NodeParamSynchronizer* DstNode) 
+    void linkPeers(NodeParamSignalAdapter* DstNode) 
     { 
          this->connectSignal(DstNode);
       DstNode->connectSignal(this);
     };
-    void connectSignal(NodeParamSynchronizer* DstNode) 
+    void connectSignal(NodeParamSignalAdapter* DstNode) 
     { 
       QObject::connect(this, SIGNAL(signalStateChanged(float)), DstNode, SLOT(slotSetState(float)));
     };
@@ -30,24 +56,24 @@ class NodeParamSynchronizer: public QObject
     void signalStateChanged(float param);
 };
 
-class NodeStateSynchronizer: public QObject
+class NodeCoordSignalAdapter: public QObject
 {
     Q_OBJECT
     public: 
-    explicit NodeStateSynchronizer(PassCoordClass<float>* Node, QObject* parent = nullptr): QObject(parent) 
+    explicit NodeCoordSignalAdapter(PassCoordClass<float>* Node, QObject* parent = nullptr): QObject(parent) 
     { 
       NodeState = Node; 
     } 
     PassCoordClass<float>* NodeState = nullptr;
 
     std::pair<float,float> StatePass{0,0}; 
-    void linkPeers(NodeStateSynchronizer* DstNode) 
+    void linkPeers(NodeCoordSignalAdapter* DstNode) 
     { 
          this->connectSignal(DstNode);
       DstNode->connectSignal(this);
     };
 
-    void connectSignal(NodeStateSynchronizer* DstNode) 
+    void connectSignal(NodeCoordSignalAdapter* DstNode) 
     { 
       QObject::connect(this, SIGNAL(signalStateChanged(std::pair<float,float>)), DstNode, SLOT(slotSetState(std::pair<float,float>)));
     };

@@ -29,14 +29,14 @@ public:
 
     explicit DeviceLaserInterface(std::shared_ptr<T_CONNECTION> Connection, QString Name = "[ DEVICE ]");
 	        ~DeviceLaserInterface();
-	QString DISPLAY_NAME{"Силовой лазер"};
+	QString DISPLAY_NAME{"Лазер"};
 
 	public:
     void loadSettings(){};
 
-	void setParam(uint16_t ID, uint32_t Param) override;
+	void setParam(uint16_t ID, float Param) override;
 
-    void putMessage(REQUEST_TYPE message) override; 
+       void putMessage(REQUEST_TYPE message) override; 
 	QString getName() { return DISPLAY_NAME; }
 
 	public:
@@ -52,8 +52,9 @@ public:
     void setValue(float Value) override { setPower(90*Value); }
 	void setEnable(bool OnOff, uint16_t Number = 0) override
     {
-        if(Number == 1) setPowerEnable(OnOff); 
-        if(Number == 2) setPilotEnable(OnOff); 
+        //qDebug() << this->TAG_NAME << "[ CHANNEL ]" << Number << OnOff;
+        if(Number == 0) setPowerEnable(OnOff); 
+        if(Number == 1) setPilotEnable(OnOff); 
     }
     //========================================================
 
@@ -80,7 +81,7 @@ template<typename T_CONNECTION, int NUM_DEVICE>
 DeviceLaserInterface<T_CONNECTION,NUM_DEVICE>::~DeviceLaserInterface() { qDebug() << this->TAG_NAME << "DELETE"; }
 
 template<typename T_CONNECTION, int NUM_DEVICE>
-void DeviceLaserInterface<T_CONNECTION, NUM_DEVICE>::setParam(uint16_t ID, uint32_t Value)
+void DeviceLaserInterface<T_CONNECTION, NUM_DEVICE>::setParam(uint16_t ID, float Value)
 {
 	uint8_t param = Value > 0 ? 1 : 0;  
 	Command.DATA.Command = ID_PARAM_KEY[ID][param];
@@ -107,8 +108,12 @@ DeviceLaserInterface<T_CONNECTION, NUM_DEVICE>::DeviceLaserInterface(std::shared
 DEVICE_INTERFACE(Connection, Name)
 {
   QTimer::singleShot(100, [this]()  { this->setCheckProcedure(); });
+  QTimer::singleShot(1000, [this]()  { this->setPowerHigh(); });
+  qDebug() << "[ LASER COMMAND ]";
 
-  DISPLAY_NAME = Name;
+  this->DISPLAY_NAME = Name;
+  this->TAG_NAME    = Name;
+
   KEY_MODULE[LASER_FAULT]     = LASER_MODULE;
   KEY_MODULE[LASER_ON]        = LASER_MODULE;       KEY_MODULE[LASER_OFF]       = LASER_MODULE;
   KEY_MODULE[LASER_BEAM_ON]   = LASER_MODULE_BEAM ; KEY_MODULE[LASER_BEAM_OFF]  = LASER_MODULE_BEAM;

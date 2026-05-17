@@ -2,3 +2,4 @@
 
 bool KeyboardFilter::KeyControlPressed = false;
 bool KeyboardFilter::KeyAltPressed     = false;
+bool KeyboardFilter::KeyShiftPressed   = false   ;
