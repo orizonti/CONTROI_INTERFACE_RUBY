@@ -22,10 +22,26 @@ void CameraInterfaceUniversal::slotStartStream() { timerGetFrame.start(10);}
 
 void CameraInterfaceUniversal::slotStopStream()  { timerGetFrame.stop(); timerWaitFrame.stop(); }
 
+void CameraInterfaceUniversal::slotReset()
+{
+  qDebug() << "[CAMERA RESET]";
+  #ifdef CV_CAPTURE
+  if(capture.isOpened()) capture.release();
+                         capture.open(AddressCamera.toStdString(), cv::CAP_GSTREAMER);
+
+  if( !capture.isOpened()) qDebug()  << "[ ERROR ] CANNOT OPEN VIDEO SOURCE: " << AddressCamera;
+  if( !capture.isOpened()) return;
+  if( timerGetFrame.isActive()) return; timerGetFrame.start(10);
+  #endif
+}
+
 CameraInterfaceUniversal::CameraInterfaceUniversal(QString strVideoSource, QString NAME) : TAG_NAME(NAME)
 {
   QRegularExpression ip_match("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
   QRegularExpression udp_match("udpsrc");
+  AddressCamera = strVideoSource;
+  QObject::connect(&timerGetFrame, SIGNAL(timeout()),this, SLOT(slotGetFrame()));
+  QObject::connect(this, SIGNAL(signalReset()),this, SLOT(slotReset()),Qt::QueuedConnection);
 
   auto matched =  ip_match.match(strVideoSource); if(matched.hasMatch()) isCameraUp |= checkHost(matched.captured(0));
        matched = udp_match.match(strVideoSource);                        isCameraUp |= matched.hasMatch();
@@ -35,9 +51,7 @@ CameraInterfaceUniversal::CameraInterfaceUniversal(QString strVideoSource, QStri
        capture.open(strVideoSource.toStdString(), cv::CAP_GSTREAMER);
        qDebug() << "[ UP ]" <<strVideoSource;
   if (!capture.isOpened()) qDebug()  << "[ ERROR ] CANNOT OPEN VIDEO SOURCE: " << strVideoSource;
-  QObject::connect(&timerGetFrame, SIGNAL(timeout()),this, SLOT(slotGetFrame()));
   #endif
-  
 
 
   #ifdef GST_CAPTURE
@@ -77,6 +91,17 @@ if(Buffers.empty()) { for (int i = 0; i < 10; i++) Buffers.push_back(cv::Mat());
 
 void CameraImageStorage::deinitStorage() { }
 
+bool CameraInterfaceUniversal::IsROIValid(cv::Rect& ROI)
+{
+const int& ImageWidth  = inputImage.cols;
+const int& ImageHeight = inputImage.rows;
+
+  if((ROI.x + ROI.width  + 2) > ImageWidth  || 
+     (ROI.y + ROI.height + 2) > ImageHeight ||
+                                 ROI.x <= 0 || 
+                                 ROI.y <= 0) return false;
+  return true ;
+}
 
 #ifdef CV_CAPTURE
 void CameraInterfaceUniversal::slotGetFrame()
@@ -85,12 +110,19 @@ void CameraInterfaceUniversal::slotGetFrame()
         if (!isFrameGrabbed) return; 
 
 
-         auto mat = ImageStore->getBuffer();
+         inputImage = ImageStore->getBuffer();
 
-             isFrameGrabbed = capture.retrieve(mat);
-        if (!isFrameGrabbed) return; 
+             isFrameGrabbed = capture.retrieve(inputImage);
+        if (!isFrameGrabbed || inputImage.empty()) return; 
 
-        mutexStorage.lock(); ImageStore->putNewFrameToStorage(mat); mutexStorage.unlock();
+        if(!IsROIValid(rectCrop) && isCropNeeded) return;
+
+        if(isCropNeeded) inputImageResized = inputImage(rectCrop);
+        else             inputImageResized = inputImage;
+
+        //cv::cvtColor(inputImageResized,inputImageProcessed,cv::COLOR_BGR2GRAY);
+
+        mutexStorage.lock(); ImageStore->putNewFrameToStorage(inputImageResized); mutexStorage.unlock();
 }
 #endif
 
@@ -188,9 +220,9 @@ cv::Mat& CameraImageStorage::getBuffer()
 
 void CameraImageStorage::putNewFrameToStorage(void* Frame, int width, int height)
 {
-
+   //std::lock_guard<std::mutex> locker(lockBuffer);
                           *BufferToWrite = cv::Mat(width, height, CV_8UC3, Frame).clone();
-   ImageToDisplay = QImage(BufferToWrite->data,BufferToWrite->cols, BufferToWrite->rows, QImage::Format_RGB888);
+   ImageToDisplay = QImage(BufferToWrite->data,BufferToWrite->cols, BufferToWrite->rows, QImage::Format_BGR888);
                            BufferToWrite++; 
                         if(BufferToWrite == Buffers.end()) BufferToWrite = Buffers.begin();
   SizeImage.first = BufferToWrite->cols; SizeImage.second = BufferToWrite->rows;
@@ -198,6 +230,7 @@ void CameraImageStorage::putNewFrameToStorage(void* Frame, int width, int height
 
 void CameraImageStorage::putNewFrameToStorage(cv::Mat& Frame)
 {
+   //std::lock_guard<std::mutex> locker(lockBuffer);
                           *BufferToWrite = Frame.clone(); 
    ImageToDisplay = QImage(BufferToWrite->data,Frame.cols,Frame.rows,QImage::Format_BGR888);
                            BufferToWrite++; 
@@ -227,11 +260,6 @@ bool CameraInterfaceUniversal::checkHost(const QString& ipAddress)
     auto output = QString(process.readAllStandardOutput());
     qDebug() << "[ CHECK HOST ] " << ipAddress;
 
-    //qDebug() << "===================";
-    //for(auto str: output) qDebug() << str;
-    //qDebug() << "===================";
-
-    //QRegularExpression re("Host is up");
     QRegularExpression re("MAC Address");
     QRegularExpressionMatch result = re.match(output);
     
@@ -239,6 +267,10 @@ bool CameraInterfaceUniversal::checkHost(const QString& ipAddress)
 
            isCameraUp = result.hasMatch();
     return isCameraUp;
+}
+
+void CameraInterfaceUniversal::slotCheckHost()
+{
 }
 
 void CameraInterfaceUniversal::connectZoomControl(QString user, QString pass, QString ip, QString port)

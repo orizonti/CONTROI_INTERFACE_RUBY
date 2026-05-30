@@ -65,13 +65,13 @@ template<> constinit const int TypeRegister<RequestPosScanator>       ::TYPE_ID{
 template<> constinit const int TypeRegister<CommandAiming1>           ::TYPE_ID{4 };
 template<> constinit const int TypeRegister<CommandAiming2>           ::TYPE_ID{5 };
 template<> constinit const int TypeRegister<RequestAiming >           ::TYPE_ID{6 };
+template<> constinit const int TypeRegister<CommandCheckConnection   >::TYPE_ID{7 };
 
 template<> constinit const int TypeRegister<CommandDeviceLaserPointer>::TYPE_ID{0x110};
 template<> constinit const int TypeRegister<CommandDeviceLaserPower  >::TYPE_ID{0x120};
 template<> constinit const int TypeRegister<CommandDeviceFocusator   >::TYPE_ID{0x130};
 template<> constinit const int TypeRegister<RequestDeviceLaserPointer>::TYPE_ID{0x210};
 template<> constinit const int TypeRegister<RequestDeviceLaserPower  >::TYPE_ID{0x220};
-template<> constinit const int TypeRegister<CommandCheckConnection   >::TYPE_ID{0x230};
 
 template<> constinit const int TypeRegister<SystemState>              ::TYPE_ID{0xA001}; 
 template<> constinit const int TypeRegister<ControlRX  >              ::TYPE_ID{0xA002};
@@ -218,6 +218,7 @@ int main(int argc, char* argv[])
   using BufferType2=RingBufferGeneric<MESSAGE_HEADER_ROTARY , MessageTypeRotary2::GetSizeMessage(), 12,IteratorMode::Chunked>; 
   using BufferType3=RingBufferGeneric<MESSAGE_HEADER_ROTARY_JSON , 
                                       MESSAGE_HEADER_ROTARY_JSON::getMaxSizeStatic(), 12,IteratorMode::ChunkedContinous>; 
+  qDebug() << "[ROTARY MESSAGE SIZE]" << MessageTypeRotary2::GetSizeMessage();
 
           std::shared_ptr<MessageStorageInterface> RingBuffer1_1 = std::make_shared<BufferType1>();
           std::shared_ptr<MessageStorageInterface> RingBuffer1_2 = std::make_shared<BufferType1>(); 
@@ -256,6 +257,7 @@ int main(int argc, char* argv[])
   std::shared_ptr<UDPConnectionEngine> ConnectionInterface5 = std::make_shared<UDPConnectionEngine>();
 
   QString     ip_terminal = "192.168.1.200";
+  //QString     ip_terminal = "192.168.1.159";
   QString ip_proc_module1 = "192.168.1.57";
   QString ip_proc_module2 = "192.168.1.75";
   QString ip_proc_module3 = "192.168.1.59";
@@ -283,26 +285,27 @@ int main(int argc, char* argv[])
     Dispatcher1_1->AppendCallback<CommandAiming<0>> ( [WindowInterface](MessageType1& Message)
     {
      auto data = DispatcherType1::ExtractData<CommandAiming<0>>(&Message);
-     //qDebug() << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 1;
-     WindowInterface->outputVideo2->enablePlot(true);
-     WindowInterface->outputVideo2->setCoordPaint(data->Command,0);
+     //qDebug() << OutputFilter::Filter(10) << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 1;
+     WindowInterface->outputVideo1->enablePlot(true);
+     WindowInterface->outputVideo1->setCoordPaint(data->Command,0);
     });
 
     Dispatcher1_2->AppendCallback<CommandAiming<0>> ( [WindowInterface](MessageType1& Message)
     {
      auto data = DispatcherType1::ExtractData<CommandAiming<0>>(&Message);
-     //qDebug() << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 2;
-     WindowInterface->outputVideo1->enablePlot(true);
-     WindowInterface->outputVideo1->setCoordPaint(data->Command,0);
+     //qDebug() << OutputFilter::Filter(10) << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 2;
+     WindowInterface->outputVideo2->enablePlot(true);
+     WindowInterface->outputVideo2->setCoordPaint(data->Command,0);
     });
 
     Dispatcher1_3->AppendCallback<CommandAiming<0>> ( [WindowInterface](MessageType1& Message)
     {
      auto data = DispatcherType1::ExtractData<CommandAiming<0>>(&Message);
-     //qDebug() << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 3;
-     WindowInterface->outputVideo3->enablePlot(true);
-     WindowInterface->outputVideo3->setCoordPaint(data->Command,0);
+     //qDebug() << OutputFilter::Filter(10) << "GET AIMING STATE: " << data->Command.first << data->Command.second << "[CHANNEL]" << 3;
+     WindowInterface->outputVideo2->enablePlot(true);
+     WindowInterface->outputVideo2->setCoordPaint(data->Command,0);
     });
+
 
 
                                   MessageRotaryStateJson receiver; 
@@ -319,9 +322,12 @@ int main(int argc, char* argv[])
 
                            using CommandScanator = MessageGenericExt<CommandSetPosScanator, MESSAGE_HEADER_EXT   >;
                            using CommandPlatform = MessageGenericExt<ControlTX            , MESSAGE_HEADER_ROTARY>;
+                           using CommandPlatformProc = MessageGenericExt<CommandSetPosRotary , MESSAGE_HEADER_EXT>;
 
   using DeviceScanator = DeviceRotaryControl<UDPConnectionEngine, CommandScanator, RequestPosScanator>;
-  using DevicePlatform = DeviceRotaryControl<UDPConnectionEngine, CommandPlatform, ControlRX>;
+
+  using DevicePlatformProc = DeviceRotaryControl<UDPConnectionEngine, CommandPlatformProc, RequestPosRotary>;
+  using DevicePlatform     = DeviceRotaryControl<UDPConnectionEngine, CommandPlatform, ControlRX>;
 
   using DeviceLid        = DeviceLidControl<UDPConnectionEngine>;
   //=====================================================================================================
@@ -336,26 +342,37 @@ int main(int argc, char* argv[])
   std::shared_ptr<DeviceGenericHandleControl> ControlLid  = std::make_shared<DeviceLid>(ConnectionInterface5, "[LIDS]");
   //==================================================================================================================
   //ROTARY SCANATOR
-  std::shared_ptr<DeviceScanator> ControlScanator = std::make_shared<DeviceScanator>(ConnectionInterface2, CONTROL_PARAM::POS, "[SCANATOR]");
-  std::shared_ptr<DevicePlatform> ControlPlatform = std::make_shared<DevicePlatform>(ConnectionInterface4, CONTROL_PARAM::POS, "[PLATFORM]");
+  std::shared_ptr<DevicePlatformProc> ControlPlatformProc = std::make_shared<DevicePlatformProc>(ConnectionInterface1, CONTROL_PARAM::POS, "[PLATFORM_PROC]");
+  std::shared_ptr<DevicePlatform> ControlPlatform     = std::make_shared<DevicePlatform>(ConnectionInterface4, CONTROL_PARAM::POS, "[PLATFORM_DIRECT]");
+                                  //ControlPlatform | ControlPlatformProc;
 
-  std::shared_ptr<DeviceGenericHandleControl> ControlAiming1 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine>>(ConnectionInterface2, "[AIMING1]");
+  std::shared_ptr<DeviceScanator> ControlScanator = std::make_shared<DeviceScanator>(ConnectionInterface2, CONTROL_PARAM::POS, "[SCANATOR]");
+
+  std::shared_ptr<DeviceGenericHandleControl> ControlAiming1 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine>>(ConnectionInterface1, "[AIMING1]");
   std::shared_ptr<DeviceGenericHandleControl> ControlAiming2 = std::make_shared<DeviceGenericAiming<UDPConnectionEngine>>(ConnectionInterface3, "[AIMING2]");
 
     ControlScanator->setLimits(CONTROL_PARAM::POS,30000,30000);
 
     ControlPlatform->setLimits(CONTROL_PARAM::POS,360,20); 
-    ControlPlatform->setNull(QPair<float,float>(66,5.3));
+    ControlPlatformProc->setLimits(CONTROL_PARAM::POS,360,20); 
 
-    WindowInterface->widgetMainControl1->widgetAzimuth->setNullDevice(73.417);
-    WindowInterface->widgetMainControl1->widgetElevation->setNullDevice(-2.71706);
+    float X_NULL = 41.62;
+    float Y_NULL = 7.0;
 
-    WindowInterface->widgetMainControl2->widgetAzimuth->setNullDevice(73.417);
-    WindowInterface->widgetMainControl2->widgetElevation->setNullDevice(-2.71706);
+    float X_NULL_CONTROL = X_NULL;
+    float Y_NULL_CONTROL = Y_NULL;
+
+    //ControlPlatformProc->setNull(QPair<float,float>(X_NULL, Y_NULL));
+
+    WindowInterface->widgetMainControl1->widgetAzimuth->setNull(X_NULL_CONTROL);
+    WindowInterface->widgetMainControl1->widgetElevation->setNull(Y_NULL_CONTROL);
+
+    WindowInterface->widgetMainControl2->widgetAzimuth->setNull(X_NULL_CONTROL);
+    WindowInterface->widgetMainControl2->widgetElevation->setNull(Y_NULL_CONTROL);
 
   WindowInterface->widgetLidControl->linkToDevice(ControlLid);
 
-  WindowInterface->widgetControlPlatform->linkToDevice(ControlPlatform->ControlRotaryVel);
+  WindowInterface->widgetControlPlatform->linkToDevice(ControlPlatformProc->ControlRotaryVel);
   WindowInterface->widgetControlScanator->linkToDevice(ControlScanator->ControlRotaryVel);
 
   linkPeers(WindowInterface->widgetControlPlatform, WindowInterface->widgetMainControl1->widgetAzimuth);
@@ -373,14 +390,14 @@ int main(int argc, char* argv[])
   WindowInterface->outputVideo1->linkToDevice(ControlAiming1);
   WindowInterface->outputVideo2->linkToDevice(ControlAiming2);
 
-  WindowInterface->widgetMainControl1->linkToDeviceRotary(ControlPlatform->ControlRotaryPos);
+  WindowInterface->widgetMainControl1->linkToDeviceRotary(ControlPlatformProc->ControlRotaryPos);
   WindowInterface->widgetMainControl1->linkToDevice(ControlLid,0);
   WindowInterface->widgetMainControl1->linkToDevice(ControlLaserPower,1);
   WindowInterface->widgetMainControl1->linkToDevice(ControlLaserIllum,2);
   WindowInterface->widgetMainControl1->linkToDevice(ControlAiming1,3);
   WindowInterface->widgetMainControl1->linkToDevice(ControlAiming2,4);
 
-  WindowInterface->widgetMainControl2->linkToDeviceRotary(ControlPlatform->ControlRotaryPos);
+  WindowInterface->widgetMainControl2->linkToDeviceRotary(ControlPlatformProc->ControlRotaryPos);
   WindowInterface->widgetMainControl2->linkToDevice(ControlLid,0);
   WindowInterface->widgetMainControl2->linkToDevice(ControlLaserPower,1);
   WindowInterface->widgetMainControl2->linkToDevice(ControlLaserIllum,2);
@@ -421,18 +438,18 @@ int main(int argc, char* argv[])
     Dispatcher2_1->AppendCallback<ControlRX> ( [](MessageType2& Message) mutable 
     {
         auto data = DispatcherType2::ExtractData<ControlRX>(&Message);
-        qDebug() <<  OutputFilter::Filter(2000) << "[ GET CONTROL RX ]" << data->value0.position << data->value1.position;;
+        qDebug() <<  OutputFilter::Filter(6000) << "[ GET CONTROL RX ]" << data->value0.position << data->value1.position;;
     });
 
   //==================================================================================================================
   //CAMERAS
   QStringList links; //links = LoadCameraLinks();
   links.resize(10);
-  links[0] = "rtspsrc location=rtsp://192.168.1.69:8554/test latency=50 drop-on-latency=true is-live=true buffer-mode=auto ! queue ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! appsink drop=1 sync=0 max-buffers=1 async=1";
-  links[1] = "rtspsrc location=rtsp://192.168.1.85:8554/test latency=50 drop-on-latency=true is-live=true buffer-mode=auto ! queue ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! appsink drop=1 sync=0 max-buffers=1 async=1";
-  links[2] = "udpsrc port=5000 ! application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)JPEG, payload=(int)96 ! rtpjpegdepay ! jpegparse ! jpegdec ! videoconvertscale n-threads=2 ! video/x-raw,width=640,height=480 ! appsink drop=1 async=false sync=true max-buffers=1";
-  links[2] = "rtspsrc location=rtsp://192.168.1.86:554/user=admin_password=_channel=0_stream=0.sdp latency=1 ! queue ! rtph265depay ! h265parse ! d3d11h265dec ! videoconvertscale ! video/x-raw,width=640,height=480 ! appsink drop=1 sync=0 max-buffers=1 async=1";
-  //links[2] = "udpsrc port=5000 ! application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=(int)96 ! rtph264depay ! h264parse ! openh264dec ! videoconvert n-threads=3 ! video/x-raw,format=RGB ! appsink name=sink_node drop=1 async=false sync=true max-buffers=1";
+  links[0] = "udpsrc port=5000 ! application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)JPEG, payload=(int)96 ! rtpjpegdepay ! jpegparse ! jpegdec ! videoconvert ! video/x-raw,width=1280,height=720 ! appsink drop=1 async=true sync=true max-buffers=1";
+  links[1] = "rtspsrc location=rtsp://192.168.1.75:8554/test latency=100 drop-on-latency=true is-live=true buffer-mode=auto ! queue ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! appsink drop=1 sync=false max-buffers=1 async=true";
+  links[2] = "udpsrc port=5001 ! application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=(int)96 ! rtph264depay ! h264parse ! openh264dec ! videoconvert n-threads=3 ! video/x-raw,format=BGR ! appsink drop=1 async=false sync=true max-buffers=1";
+  //links[2] = "rtspsrc location=rtsp://192.168.1.59:8554/test latency=100 drop-on-latency=true is-live=true buffer-mode=auto ! queue ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! appsink drop=1 sync=false max-buffers=1 async=true";
+  //links[2] = "rtspsrc location=rtsp://192.168.1.86:554/user=admin_password=_channel=0_stream=0.sdp latency=1 ! queue ! rtph265depay ! h265parse ! d3d11h265dec ! videoconvertscale ! video/x-raw,width=640,height=480 ! appsink drop=1 sync=0 max-buffers=1 async=1";
 
   //links[1] = "rtspsrc location=rtsp://192.168.1.108:554/stream3 latency=10 drop-on-latency=true is-live=true buffer-mode=auto! queue ! rtpjpegdepay ! jpegparse ! jpegdec ! videoconvert ! appsink name=sink_node drop=1 sync=0 max-buffers=1 async=1";
   //links[0] = "rtsp://192.168.1.31:554/user=admin_password=_channel=1_stream=0.sdp";
@@ -448,11 +465,10 @@ int main(int argc, char* argv[])
 
 
   gst_init(&argc, &argv);
-  CameraInterfaceUniversal* Camera1 = new CameraInterfaceUniversal(links[0], "[CAMERA1]");
-  CameraInterfaceUniversal* Camera2 = new CameraInterfaceUniversal(links[1], "[CAMERA2]");
-  CameraInterfaceUniversal* Camera3 = new CameraInterfaceUniversal(links[2], "[CAMERA3]");
-                            Camera3->connectZoomControl("admin","admin","192.168.1.86","8899");
-
+  CameraInterfaceUniversal* Camera1 = new CameraInterfaceUniversal(links[0], "[CAMERA1]"); Camera1->isCropNeeded = true;
+  CameraInterfaceUniversal* Camera2 = new CameraInterfaceUniversal(links[1], "[CAMERA2]"); Camera2->isCropNeeded = false;
+  CameraInterfaceUniversal* Camera3 = new CameraInterfaceUniversal(links[2], "[CAMERA3]"); Camera3->isCropNeeded = false;
+                            Camera3->connectZoomControl("admin","admin","192.168.1.108","80");
   WindowInterface->widgetControlCamera3Float->linkToDevice(Camera3->ControlZoom);
 
 
@@ -493,6 +509,26 @@ int main(int argc, char* argv[])
   if(Camera1->isCameraAccessable()) { threadCamera1->start(); WindowInterface->outputVideo1->slotActivate(true); }
   if(Camera2->isCameraAccessable()) { threadCamera2->start(); WindowInterface->outputVideo2->slotActivate(true); }
   if(Camera3->isCameraAccessable()) { threadCamera3->start(); WindowInterface->outputVideo3->slotActivate(true); }
+
+  //threadCamera1->start(); WindowInterface->outputVideo1->slotActivate(true); 
+  //threadCamera2->start(); WindowInterface->outputVideo2->slotActivate(true); 
+  //threadCamera3->start(); WindowInterface->outputVideo3->slotActivate(true); 
+
+    Dispatcher1_1->AppendCallback<CommandCheckConnection> ( [](MessageType1& Message)
+    {
+     qDebug() << "[PROCESSOR MODULE] 1 [ ACTIVE ]";
+    });
+
+    Dispatcher1_2->AppendCallback<CommandCheckConnection> ( [Camera2](MessageType1& Message)
+    {
+     qDebug() << "[PROCESSOR MODULE] 2 [ ACTIVE ]"; Camera2->reset();
+    });
+
+    Dispatcher1_3->AppendCallback<CommandCheckConnection> ( [](MessageType1& Message)
+    {
+     qDebug() << "[PROCESSOR MODULE] 3 [ ACTIVE ]";
+    });
+
 
                           WindowInterface->showMaximized();
                         //WindowInterface->showFullScreen();

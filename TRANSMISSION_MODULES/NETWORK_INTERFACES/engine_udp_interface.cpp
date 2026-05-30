@@ -91,7 +91,7 @@ UDPConnectionEngine::~UDPConnectionEngine()
 
 void UDPConnectionEngine::slotReadData()
 {
-    //qDebug() << OutputFilter::Filter(1000) << "READ DATA FROM: " << IPRemote << PortRemote;
+    //qDebug() << "READ DATA FROM: " << IPRemote << PortRemote;
    if(MessageStorage == nullptr) return;
    if(Socket->bytesAvailable() < MessageStorage->getMinMessageSize() ) return;
 
@@ -108,7 +108,7 @@ void UDPConnectionEngine::slotReadData()
 
 void UDPConnectionEngine::slotSendMessage(const QByteArray& Command, uint16_t Param)
 {
- qDebug() << "SEND COMMAND: " << QString(Command.toHex()) << "SIZE: " << Command.size() << "SOCKET: " << IPRemote << PortRemote;
+ //qDebug() << OutputFilter::Filter(10) << "SEND COMMAND: " << QString(Command.toHex()) << "SIZE: " << Command.size() << "SOCKET: " << IPRemote << PortRemote;
  Socket->writeDatagram(Command,QHostAddress(IPRemote),PortRemote); 
 }
 

@@ -45,6 +45,7 @@ class CameraInterfaceUniversal :public QObject, public SourceImageInterface,
   public:
   QString    TAG_NAME{"[ CAMERA ]"};
   QString CAMERA_INFO{"[ CAMERA NO DATA ]"};
+  QString AddressCamera;
 
   std::shared_ptr<DeviceZoomRotation> ControlZoom = nullptr;
   void connectZoomControl(QString user, QString pass, QString ip, QString port);
@@ -67,7 +68,7 @@ class CameraInterfaceUniversal :public QObject, public SourceImageInterface,
     const std::vector<QPair<int,int>>& getPoints() override { return CameraPoints;};  
               const std::vector<QRect>& getRects() override { return CameraRects;};  
                           const QString& getInfo() override { return CAMERA_INFO;};  
-                 std::pair<int,int> getSizeImage() override { return SizeImage;};
+                 std::pair<int,int> getSizeImage() override { return SIZE_ROI;};
 
     void moveToThread(QThread* thread);
   //=========================================
@@ -84,25 +85,40 @@ class CameraInterfaceUniversal :public QObject, public SourceImageInterface,
   bool isStreamActive = false;
 
   //=============================================
-  std::pair<int,int> ImagePos {20 ,20 }; 
-  std::pair<int,int> SizeImage{720,540}; 
+  std::pair<int,int> SIZE_CAMERA{1280,720}; 
+  std::pair<int,int> SIZE_ROI {720 ,540}; 
+  std::pair<int,int> OFFSET_ROI = (SIZE_CAMERA-SIZE_ROI)*0.5; 
 
   std::vector<QPair<int,int>> CameraPoints{2};
   std::vector<QRect>          CameraRects {2};
 
+  cv::Mat inputImage          {SIZE_CAMERA.first,SIZE_CAMERA.second,CV_8UC3};
+  cv::Mat inputImageResized   {SIZE_ROI.first,SIZE_ROI.second,CV_8UC3};
+  cv::Mat inputImageProcessed {SIZE_ROI.first,SIZE_ROI.second,CV_8UC1};
+     bool isCropNeeded = false;
+
+  cv::Rect rectCrop{OFFSET_ROI.first,OFFSET_ROI.second,SIZE_ROI.first,SIZE_ROI.second};
+
   QMutex mutexStorage;
   std::shared_ptr<CameraImageStorage> ImageStore = std::make_shared<CameraImageStorage>(this);
   //=============================================
+
+  bool IsROIValid(cv::Rect& ROI);
+  void reset() { emit signalReset(); }
 
   public slots:
   void slotGetFrame();
   void slotStartStream();
   void slotStopStream();
   void slotEndWork();
+  void slotCheckHost();
+  void slotReset();
 
   #ifdef GST_CAPTURE
   void slotWaitFrame();
   #endif
+  signals:
+  void signalReset();
 };
 
 
@@ -116,6 +132,7 @@ class CameraImageStorage: public SourceImageInterface
   void deinitStorage();
   cv::Mat& getBuffer();
   cv::Mat InputImage;
+  std::mutex lockBuffer;
 
             std::vector<cv::Mat> Buffers;
   std::vector<cv::Mat>::iterator BufferToWrite;

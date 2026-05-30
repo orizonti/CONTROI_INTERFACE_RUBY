@@ -10,6 +10,7 @@
 #include "message_iterator_generic.h"
 #include "message_struct_generic.h"
 #include "message_header_generic.h"
+#include "debug_output_filter.h"
 
 template< typename H_TYPE, size_t M_SIZE, size_t M_NUM, IteratorMode IT_MODE = IteratorMode::Chunked> 
 class RingBufferGeneric : public MessageStorageInterface
@@ -73,6 +74,9 @@ void RingBufferGeneric<H_TYPE,M_SIZE,M_NUM,IT_MODE>::appendData(uint8_t* Data, u
    MESSAGE_AVAILABLE = IncommingPointer.MessageNumber;
 
    //qDebug() << "[ MESSAGE IN STORE ]" << MESSAGE_AVAILABLE << "[ PASSED ]" << MESSAGE_PASSED; 
+   QByteArray array((char*)Data,Size); array.truncate(10);
+   //qDebug() << OutputFilter::Filter(2000) << "[ DATA ]" << QString(array.toHex()); 
+
 
    if(MESSAGE_AVAILABLE > 8) MessagePointer++;
 

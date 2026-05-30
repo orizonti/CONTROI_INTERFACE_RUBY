@@ -57,7 +57,7 @@ public:
 	template<typename T> 
 	void sendCommand(const QPair<T,T>& data) 
 	{ 
-		qDebug()<< TAG_NAME << "[ SEND SET PAIR COMMAND ]" << T_COMMAND::printDataType();
+		//qDebug()<< TAG_NAME << "[ SEND SET PAIR COMMAND ]" << T_COMMAND::printDataType();
 		Command.setData(data); 
 		Command.dumpToByteArray(MessageOutputBuffer);
 		ConnectionDevice->slotSendMessage(MessageOutputBuffer);

@@ -1,4 +1,5 @@
 ﻿#include "widget_rotary_control.h"
+#include "debug_output_filter.h"
 
 WidgetRotaryControl::WidgetRotaryControl(QWidget* parent) : QWidget(parent) 
 {
@@ -92,23 +93,51 @@ void WidgetRotaryControl::updateAngle()
 
         if(TypeWidget == 0)
         {
+        //angleRotationShiftedDegree = angleRotationDegree - angleRotationNull;
+        //if(angleRotationShiftedDegree > 180) angleRotationShiftedDegree = angleRotationShiftedDegree - 360;
 
-        angleRotationShiftedDegree = angleRotationDegree - angleRotationNull;
-            if(angleRotationShiftedDegree < 0 ) angleRotationShiftedDegree = 360 + angleRotationShiftedDegree;
-
-        //angleRotationDeviceDegree = angleRotationShiftedDegree;
-        angleRotationDeviceDegree = angleRotationShiftedDegree + angleRotationDeviceNull;
-            if(360 - angleRotationDeviceDegree < 0 ) angleRotationDeviceDegree = angleRotationDeviceDegree - 360;
+          angleRotationShiftedDegree = angleRotationDegree + 180;
         }
 
+                            angleRotationDeviceDegree = angleRotationShiftedDegree;
         if(TypeWidget == 1) angleRotationDeviceDegree = angleRotationDegree;
-        qDebug() << "[ SET ANGLE ]" << angleRotationDeviceDegree;
+        //qDebug() << "[ SET ANGLE ROTARY ]" << angleRotationDeviceDegree; 
+
 
         if(ControlRotary) ControlRotary->setParam(ControlChannel, angleRotationDeviceDegree);
         //if(allowSignals ) emit signalStateChanged(angleRotationDegree);
         NodeSynchronizer.synchronizePeers();
 
         update();  
+}
+
+void WidgetRotaryControl::slotMove()
+{
+                                angleRotationDegree += stepMove*directionMove;
+    angleRotationFutureDegree = angleRotationDegree;
+
+            angleRotation = angleRotationDegree*M_PI/180;
+      angleRotationFuture = angleRotationDegree*M_PI/180;
+
+    if(TypeWidget == 1)
+    {
+    if(angleRotation < angleRotationMin) angleRotation = angleRotationMin; 
+    if(angleRotation > angleRotationMax) angleRotation = angleRotationMax;
+    }
+
+    if(TypeWidget == 0)
+    {
+       //angleRotationShiftedDegree = angleRotationDegree - angleRotationNull;
+       angleRotationShiftedDegree = angleRotationDegree + 180;
+    //if(angleRotationShiftedDegree > 180) angleRotationShiftedDegree = angleRotationShiftedDegree - 360;
+    }
+
+                        angleRotationDeviceDegree = angleRotationShiftedDegree;
+    if(TypeWidget == 1) angleRotationDeviceDegree = angleRotationDegree;
+    if(ControlRotary) ControlRotary->setParam(ControlChannel, angleRotationDeviceDegree);
+    qDebug() << OutputFilter::Filter(10) << "[ SET ANGLE ROTARY ]" << angleRotationDeviceDegree; 
+
+    update();
 }
 
 void WidgetRotaryControl::calcStep()
@@ -126,13 +155,13 @@ void WidgetRotaryControl::calcStep()
 
 void WidgetRotaryControl::setNull(float Null)
 {
-    angleRotationNull = Null;
+    //angleRotationNull = Null;
     angleRotationDegree = Null;
     angleRotation = angleRotationDegree*M_PI/180;
     update();
 }
 
-void WidgetRotaryControl::setNullDevice(float Null) { angleRotationDeviceNull = Null; }
+void WidgetRotaryControl::setNullDevice(float Null) { angleRotationDegree = Null; }
 
 void WidgetRotaryControl::updateFutureAngle()
 {
@@ -185,26 +214,9 @@ void WidgetRotaryControl::slotMoveStart(int Direction)
 {
     directionMove = Direction;
                  if(Direction == 0) { timerMove.stop(); return; }
-    timerMove.start(10);
+    timerMove.start(2);
 }
 
-void WidgetRotaryControl::slotMove()
-{
-                                angleRotationDegree += stepMove*directionMove;
-    angleRotationFutureDegree = angleRotationDegree;
-
-            angleRotation = angleRotationDegree*M_PI/180;
-      angleRotationFuture = angleRotationDegree*M_PI/180;
-
-    if(TypeWidget == 1)
-    {
-    if(angleRotation < angleRotationMin) angleRotation = angleRotationMin; 
-    if(angleRotation > angleRotationMax) angleRotation = angleRotationMax;
-    }
-    update();
-
-    if(ControlRotary) ControlRotary->setParam(ControlChannel, angleRotationDegree);
-}
 
 void WidgetRotaryControl::slotCheckState()
 {

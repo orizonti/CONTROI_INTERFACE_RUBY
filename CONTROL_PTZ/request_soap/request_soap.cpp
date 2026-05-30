@@ -68,7 +68,7 @@ bool SoapRequest::waitReply()
           while(FLAG_WAIT_REQUEST) 
           {
                duration += 2ms;   std::this_thread::sleep_for(2ms); 
-            if(duration > 60ms) { FLAG_WAIT_REQUEST = false; this->loop.quit(); return false; }
+            if(duration > 500ms) { FLAG_WAIT_REQUEST = false; this->loop.quit(); return false; }
           }
       
           return true;

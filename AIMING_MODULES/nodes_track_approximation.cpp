@@ -1,6 +1,40 @@
 #include "nodes_track_approximation.h"
 
+template<>
+void PolynomApproximation<3>::reset()
+{
+    //================================================
+    TrackInput.rollbackStore(SizeWindow - StepsRollback);
+           IndexInput = 0;
 
+    for(auto& coord_last: TrackInput)
+    {
+    A_MAT3(IndexInput, 0) = coord_last.first * coord_last.first;
+    A_MAT3(IndexInput, 1) = coord_last.first;
+    A_MAT3(IndexInput, 2) = 1.0;
+     Y_VEC(IndexInput) = coord_last.second;   IndexInput++; 
+    }
+    //================================================
+}
+
+template<>
+void PolynomApproximation<2>::reset()
+{
+    //================================================
+    TrackInput.rollbackStore(SizeWindow - StepsRollback);
+    IndexInput = 0; 
+    sums[0] = 0; sums[1] = 0; sums[2] = 0; sums[3] = 0; 
+    for(auto& coord_last: TrackInput)
+    {
+        sums[0] += coord_last.first;
+        sums[1] += coord_last.second;
+        sums[2] += coord_last.first * coord_last.second;
+        sums[3] += coord_last.first * coord_last.first; IndexInput++;
+    }
+    //================================================
+}
+
+template<>
 void PolynomApproximation<2>::setInput(const QPair<float,float>& Coord) 
 {
     Coord >> TrackInput; 
@@ -28,22 +62,6 @@ void PolynomApproximation<2>::setInput(const QPair<float,float>& Coord)
 
 
 template<>
-void PolynomApproximation<2>::reset()
-{
-    //================================================
-    TrackInput.rollbackStore(SizeWindow - StepsRollback);
-    IndexInput = 0; 
-    sums[0] = 0; sums[1] = 0; sums[2] = 0; sums[3] = 0; 
-    for(auto& coord_last: TrackInput)
-    {
-        sums[0] += coord_last.first;
-        sums[1] += coord_last.second;
-        sums[2] += coord_last.first * coord_last.second;
-        sums[3] += coord_last.first * coord_last.first; IndexInput++;
-    }
-    //================================================
-}
-
 std::vector<float> PolynomApproximation<2>::getApproximation(NodeCoordStorage<float>& track)   
 {
     double sumX  = 0;
@@ -64,7 +82,7 @@ std::vector<float> PolynomApproximation<2>::getApproximation(NodeCoordStorage<fl
 
 }
 
-
+template<>
 std::vector<float> PolynomApproximation<2>::getApproximation(std::span<std::pair<float,float>> track)   
 {
     double sumX  = 0;
@@ -85,6 +103,7 @@ std::vector<float> PolynomApproximation<2>::getApproximation(std::span<std::pair
 }
 
 //=====================================================================================
+template<>
 void PolynomApproximation<3>::setInput(const QPair<float,float>& Coord) 
 {
 
@@ -116,22 +135,6 @@ void PolynomApproximation<3>::setInput(const QPair<float,float>& Coord)
     //qDebug() << "[ GET APPOROX ]" << trackPolynom[0] << trackPolynom[1] << trackPolynom[2] << "INDEX: " <<  IndexInput << "TIME: " << MeasurePeriod.getMicroseconds();
 }
 
-template<>
-void PolynomApproximation<3>::reset()
-{
-    //================================================
-    TrackInput.rollbackStore(SizeWindow - StepsRollback);
-           IndexInput = 0;
-
-    for(auto& coord_last: TrackInput)
-    {
-    A_MAT3(IndexInput, 0) = coord_last.first * coord_last.first;
-    A_MAT3(IndexInput, 1) = coord_last.first;
-    A_MAT3(IndexInput, 2) = 1.0;
-     Y_VEC(IndexInput) = coord_last.second;   IndexInput++; 
-    }
-    //================================================
-}
 
 
 template<>

@@ -58,8 +58,8 @@ class SinkDisplayLabel : public SinkDisplayNode
 
 	void setCoordPaint(std::pair<float,float> Coord, int channel) 
 	{
-		if(Rects.size()-1 < channel) { Rects.push_back(Coord); setCoordPaint(Coord,channel); } 
-		                               Rects[channel] = Coord;  
+		if(Rects.size() <= channel) return;
+		   Rects[channel] = Coord;  
 	}
 
 	private slots:

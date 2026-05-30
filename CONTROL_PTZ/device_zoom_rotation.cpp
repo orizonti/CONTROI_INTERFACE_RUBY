@@ -17,7 +17,7 @@ QList<QString> DeviceZoomRotation::onvif_schemas
 
 DeviceZoomRotation::DeviceZoomRotation(QString user, QString pass, QString ip, QString port, QObject* parent): QObject(parent)
 {
-  QTimer::singleShot(6000,[this,user,pass,ip, port](){connectToDevice(user,pass,ip,port);});
+  QTimer::singleShot(1000,[this,user,pass,ip, port](){connectToDevice(user,pass,ip,port);});
 }
 
 DeviceZoomRotation::DeviceZoomRotation() { }
@@ -60,8 +60,21 @@ DeviceCapabilities deviceCapabilities = OnvifDeviceService::GetCapabilities(serv
     body.push_back(profile_token);
     body.push_back("</ProfileToken>");
     body.push_back("<PanTilt>true</PanTilt><Zoom>true</Zoom>");
-    body.push_back("</Stop>");
+    body.push_back("</ContinousMove>");
     requestMove.body = body;
+
+    requestMoveAbs.address = deviceCapabilities.addressPTZService;
+    requestMoveAbs.username = user;
+    requestMoveAbs.password = pass;
+    requestMoveAbs.action = "http://www.onvif.org/ver20/ptz/wsdl/AbsoluteMove";
+    requestMoveAbs.XMLNs = onvif_schemas;
+    body = QString("<Stop xmlns=\"http://www.onvif.org/ver20/ptz/wsdl\">");
+    body.push_back("<ProfileToken>");
+    body.push_back(profile_token);
+    body.push_back("</ProfileToken>");
+    body.push_back("<PanTilt>true</PanTilt><Zoom>true</Zoom>");
+    body.push_back("</AbsoluteMove>");
+    requestMoveAbs.body = body;
 
     //============================================================================
     requestSetHome.address = deviceCapabilities.addressPTZService;
@@ -153,7 +166,7 @@ DeviceCapabilities deviceCapabilities = OnvifDeviceService::GetCapabilities(serv
     body.push_back("</GotoHomePosition>");
     requestGoHome.body = body;
 
-    slotMoveLimit();
+    //slotMoveLimit();
 }
 
 void DeviceZoomRotation::slotContinuousMove(double x, double y, double z)
@@ -169,6 +182,25 @@ void DeviceZoomRotation::slotContinuousMove(double x, double y, double z)
     requestMove.body = body;
     requestMove.sendRequest(response);
 }
+
+void DeviceZoomRotation::slotAbsoluteMove(double x, double y, double z)
+{
+    QString body("<AbsoluteMove xmlns=\"http://www.onvif.org/ver20/ptz/wsdl\">");
+    body.push_back("<ProfileToken>");
+    body.push_back(profile_token);
+    body.push_back("</ProfileToken>");
+    body.push_back("<Position>");
+    body.push_back("<PanTilt xmlns=\"http://www.onvif.org/ver10/schema\" x=\"" + QString::number(x) + "\" y=\""+ QString::number(y) +"\"/>");
+    body.push_back("<Zoom xmlns=\"http://www.onvif.org/ver10/schema\" x=\"" + QString::number(z) + "\"/>");
+    body.push_back("</Position>");
+    body.push_back("<Speed>");
+    body.push_back("<PanTilt xmlns=\"http://www.onvif.org/ver10/schema\" x=\"" + QString::number(1) + "\" y=\""+ QString::number(1) +"\"/>");
+    body.push_back("<Zoom xmlns=\"http://www.onvif.org/ver10/schema\" x=\"" + QString::number(1) + "\"/>");
+    body.push_back("</Speed></AbsoluteMove>");
+    requestMoveAbs.body = body;
+    requestMoveAbs.sendRequest(response);
+}
+
 
 void DeviceZoomRotation::slotZoomIn()  { slotContinuousMove(0,0, 1); }
 void DeviceZoomRotation::slotZoomOut() { slotContinuousMove(0,0,-1); }
@@ -203,8 +235,13 @@ void DeviceZoomRotation::setParam(uint16_t CommandID, float    CommandParam)
   }
 }
 
-
 void DeviceZoomRotation::slotMovePos(int pos)
+{
+   qDebug() << TAG_NAME.toStdString().c_str() << "[MOVE TO POS]" << pos;
+   slotAbsoluteMove(0,0,PositionsZoom[pos]);
+}
+
+void DeviceZoomRotation::slotMovePosTiming(int pos)
 {
 
   int steps_count = std::abs(pos - posStep);
@@ -236,19 +273,15 @@ void DeviceZoomRotation::slotMoveLimit()
   slotZoomIn(); QTimer::singleShot(8000,[this]() { slotStop(); qDebug() << TAG_NAME << "AT LIMIT"; });
 }
 
+//<xs:complexType name=”PTZVector”>
+//<xs:sequence>
+//<xs:element name=”PanTilt” type=”tt:Vector2D” minOccurs=”0”/>
+//<xs:element name=”Zoom” type=”tt:Vector1D” minOccurs=”0”/>
+//</xs:sequence>
+//</xs:complexType>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//<xs:complexType name=”Vector2D”>
+//<xs:attribute name=”x” type=”xs:float” use=”required”/>
+//<xs:attribute name=”y” type=”xs:float” use=”required”/>
+//<xs:attribute name=”space” type=”xs:anyURI” use=”optional”/>
+//</xs:complexType>

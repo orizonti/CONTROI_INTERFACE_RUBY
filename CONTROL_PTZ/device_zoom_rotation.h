@@ -17,6 +17,7 @@ private:
 public:
     DeviceZoomRotation();
     DeviceZoomRotation(QString user, QString pass, QString ip, QString port, QObject* parent = nullptr);
+    std::vector<float> PositionsZoom{0.7,0.75,0.8,0.85,0.9,0.95,1};
 
     void connectToDevice(QString user, QString pass, QString ip, QString port);
 
@@ -35,6 +36,8 @@ public:
     SoapRequest requestGoHome;
     SoapRequest requestGetStatus;
 
+    SoapRequest requestMoveAbs;
+
     QString profile_token;
     QString response;
 
@@ -43,7 +46,9 @@ public:
 
     public slots:
     void slotContinuousMove(double x, double y, double z);
+    void slotAbsoluteMove(double x, double y, double z);
 
+    void slotMovePosTiming(int pos);
     void slotMovePos(int pos);
     void slotMoveStep();
     void slotMoveLimit();

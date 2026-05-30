@@ -109,7 +109,7 @@ public:
     QPen pen4{QColor(215, 50, 28), 2, Qt::SolidLine};
 
       int directionMove = 1;
-    float stepMove      = 0.5;
+    float stepMove      = 0.002;
            QTimer timerMove;
            //QTimer timerCheckState;
 

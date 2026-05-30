@@ -217,7 +217,7 @@ struct CommandCloseConnection  { uint8_t Comman = 0xC6; uint8_t Param = 0; };
 struct CommandCheckConnection  
 { 
   public:
-  uint8_t Command  = 0xC5; uint8_t Param = 0; 
+  uint64_t Command  = 0xC5; uint64_t Param = 0; 
   bool operator==(CommandCheckConnection copy) { return (Command == copy.Command && Param == copy.Param); }
 };
 
