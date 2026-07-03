@@ -66,14 +66,14 @@ struct CommandDevice
 
   union Param
   {
-  uint32_t ParamInt = 0;
+   int32_t ParamInt = 0;
      float ParamFloat;
-  };
+  } CommandParam;
 
    void operator=(const CommandDevice<NUM_DEV>& Copy) { ModuleID = Copy.ModuleID; Command = Copy.Command; };
 
    friend void operator<<(QDataStream& stream, CommandDevice<NUM_DEV>& command) 
-   { stream << command.ModuleID << command.Command << command.ParamInt; };
+   { stream << command.ModuleID << command.Command << command.CommandParam.ParamInt; };
 
   std::string print() { std::stringstream stream; stream << ModuleID << " " << Command; return stream.str(); }
 };
@@ -117,6 +117,38 @@ class CommandSetPair
    public:
 
    std::string print() { std::stringstream stream; stream << Command.first << " " << Command.second; return stream.str(); }
+};
+
+template<int N_CHAN>
+class CommandSetTwoPair
+{
+   public:
+   std::pair<float,float> Command;
+   std::pair<float,float> Command2;
+
+   CommandSetTwoPair(const QPair<float,float>& Pos,
+                     const QPair<float,float> Pos2) { Command = Pos; Command2 = Pos2; }
+
+   public:
+   void operator=(const CommandSetTwoPair<N_CHAN>& Copy) { Command = Copy.Command; Command2 = Copy.Command2; };
+
+   template<typename T> void setData  (const QPair<T,T>& Pos, const QPair<T,T> Pos2) { Command = Pos; Command2 = Pos2; };
+
+   friend void operator<<(QDataStream& stream, CommandSetTwoPair<N_CHAN>& command)
+   {
+    stream.setFloatingPointPrecision(QDataStream::SinglePrecision);
+    stream << command.Command.first  << command.Command.second;
+    stream << command.Command2.first << command.Command2.second;
+   };
+
+   void dumpToByteArray(QByteArray& RawData)
+   {
+    QDataStream stream(&RawData, QIODevice::ReadWrite);
+                stream.setByteOrder(QDataStream::LittleEndian);
+    stream.setFloatingPointPrecision(QDataStream::SinglePrecision);
+    stream << Command.first  << Command.second;
+    stream << Command2.first << Command2.second;
+   };
 };
 
 template<int N_CHAN>
@@ -242,6 +274,9 @@ using CommandSetPosScanator = CommandSetPair<1>;
 
 using CommandAiming1 = CommandAiming<0>;
 using CommandAiming2 = CommandAiming<1>;
+using CommandAiming3 = CommandAiming<2>;
+using CommandAiming4 = CommandAiming<3>;
+
        using RequestAiming = RequestStateExtended<1,float>;
 //=====================================================
 using CommandDeviceLaserPointer = CommandDeviceRedux<0>;
@@ -255,21 +290,12 @@ using RequestDeviceFocusator    = RequestDevice<3>;
 //=====================================================
 
 
-#define LASER_CHECK 0x20
-#define LASER_ON    0x22
-#define LASER_OFF   0x26
+#define LASER_SET_POWER 0   // SDC 34.2
+#define LASER_BEAM_ON   1   // EMOFF
+#define LASER_BEAM_OFF  2   // EMON
+#define LASER_PILOT_ON  3   // ABN
+#define LASER_PILOT_OFF 4   // ABF
+#define LASER_FAULT_RESET 5 // RERR
 
-#define LASER_SET_POWER 0x23
-#define LASER_BEAM_ON   0x24
-#define LASER_BEAM_OFF  0x25
-#define LASER_PILOT_ON  0x27
-#define LASER_PILOT_OFF 0x28
-
-#define LASER_FAULT 0x39
-
-#define LASER_MODULE       0 
-#define LASER_MODULE_BEAM  1
-#define LASER_MODULE_PILOT 2
-#define LASER_MODULE_POWER 3
 
 template<typename T> bool isAligned() { return sizeof(T) == T::getSize(); }

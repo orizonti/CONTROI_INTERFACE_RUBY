@@ -35,9 +35,13 @@ public:
     void enableScheme(bool enableState, bool enableParam, bool enableLevels, bool enableOnOff, bool enableArrows, bool enableLabel = true);
     void setScheme(int numberLevels, int numberDevice, int schemeArrows = 0);
     void setButtonsName(QVector<QString> names);
+    void setButtonsMode(QVector<bool> modes);
+    void setLabelMode(int Mode);
     void setLevelsName(QVector<QString> names);
     void setName(QString name);
     void setSizes();
+    int ModeLabel = 2;
+    void addSpace(int group);
     
 
     void linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device);
@@ -65,11 +69,18 @@ public:
     QGroupBox* groupArrows = nullptr;
 
     int schemeArrowsControl = 0;
-    QSize maxButtonsSize{50,50};
-    QSize minButtonsSize{30,30};
+    QSize minButtonsSize{80,40};
+    QSize maxButtonsSize{100,50};
 
-    QSize maxLabelsSize{70,50};
-    QSize minLabelsSize{70,30};
+    QSize minArrowsSize{30,40};
+    QSize maxArrowsSize{60,50};
+
+    QSize minLevelsSize{30,40};
+    QSize maxLevelsSize{60,50};
+
+
+    QSize minLabelsSize{80,40};
+    QSize maxLabelsSize{100,50};
 
     QBoxLayout* mainLayout = nullptr;
 };

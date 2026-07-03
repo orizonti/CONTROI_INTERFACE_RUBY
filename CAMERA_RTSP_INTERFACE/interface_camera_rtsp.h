@@ -14,6 +14,7 @@
 #include "device_generic_interface.h"
 #include "engine_udp_interface.h"
 #include "device_zoom_rotation.h"
+#include "module_period_measure.h"
 
 
 #define CV_CAPTURE 1
@@ -48,6 +49,8 @@ class CameraInterfaceUniversal :public QObject, public SourceImageInterface,
   QString AddressCamera;
 
   std::shared_ptr<DeviceZoomRotation> ControlZoom = nullptr;
+
+  MeasurePeriodNode MeasurePeriod;
   void connectZoomControl(QString user, QString pass, QString ip, QString port);
   //std::shared_ptr<DeviceCameraRemoteInterface<UDPConnectionEngine, int,int>> ControlCameraRemote = nullptr; 
 
@@ -56,6 +59,9 @@ class CameraInterfaceUniversal :public QObject, public SourceImageInterface,
             QTimer timerWaitFrame{this};
   frameStateStruct frameState; 
   GstElement *frameInputNode = nullptr;
+  cv::RotateFlags RotationDirection = cv::ROTATE_90_COUNTERCLOCKWISE;
+  void setRotate(cv::RotateFlags Rotation) { RotationDirection = Rotation; isRotateNeeded = true;};
+  void setFlip(bool OnOff) { isFlipNeeded = OnOff; };
 
   std::shared_ptr<SourceImageInterface> getImageSource();
 
@@ -64,6 +70,7 @@ class CameraInterfaceUniversal :public QObject, public SourceImageInterface,
 
   cv::Mat& getImageToProcess()                 override ;
       void getImageToProcess(cv::Mat& ImageDst)override ;
+
 
     const std::vector<QPair<int,int>>& getPoints() override { return CameraPoints;};  
               const std::vector<QRect>& getRects() override { return CameraRects;};  
@@ -85,19 +92,28 @@ class CameraInterfaceUniversal :public QObject, public SourceImageInterface,
   bool isStreamActive = false;
 
   //=============================================
-  std::pair<int,int> SIZE_CAMERA{1280,720}; 
-  std::pair<int,int> SIZE_ROI {720 ,540}; 
+  std::pair<int,int> SIZE_CAMERA{720,1280}; 
+  std::pair<int,int> SIZE_ROI {640 ,480}; 
   std::pair<int,int> OFFSET_ROI = (SIZE_CAMERA-SIZE_ROI)*0.5; 
+  cv::Rect rectCrop{OFFSET_ROI.first,OFFSET_ROI.second,SIZE_ROI.first,SIZE_ROI.second};
+  void setCameraSizes(std::pair<int,int> SizeCamera, std::pair<int,int> ROI);
+  void printCameraSizes();
 
   std::vector<QPair<int,int>> CameraPoints{2};
   std::vector<QRect>          CameraRects {2};
 
   cv::Mat inputImage          {SIZE_CAMERA.first,SIZE_CAMERA.second,CV_8UC3};
+  cv::Mat inputImageProcessed {SIZE_CAMERA.first,SIZE_CAMERA.second,CV_8UC3};
+  cv::Mat inputImageRotated   {SIZE_ROI.first,SIZE_ROI.second,CV_8UC3};
   cv::Mat inputImageResized   {SIZE_ROI.first,SIZE_ROI.second,CV_8UC3};
-  cv::Mat inputImageProcessed {SIZE_ROI.first,SIZE_ROI.second,CV_8UC1};
+  cv::Mat inputImageGrayscale {SIZE_ROI.first,SIZE_ROI.second,CV_8UC1};
+  cv::Mat processImage;
      bool isCropNeeded = false;
+     bool isRotateNeeded = false;
+     bool isFlipNeeded = false;
+     bool isBrightNeeded = false;
+     bool isColorConvertNeeded = false;
 
-  cv::Rect rectCrop{OFFSET_ROI.first,OFFSET_ROI.second,SIZE_ROI.first,SIZE_ROI.second};
 
   QMutex mutexStorage;
   std::shared_ptr<CameraImageStorage> ImageStore = std::make_shared<CameraImageStorage>(this);

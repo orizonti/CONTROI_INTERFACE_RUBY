@@ -1,0 +1,106 @@
+
+//  //==================================================================
+//  QByteArray outputArray;
+//  QByteArray outputArray2 = Command.castToByteArray();
+//  CommandPlatform Command; Command.DATA.setMode(0xBB);
+//                Command >> outputArray;
+// outputArray2 = Command.castToByteArray();
+//  qDebug() << "COMMAND ROTARY DUMP: " << outputArray.toHex() << "SIZE: " << outputArray.size();
+//  qDebug() << "========================" ;
+//  qDebug() << "COMMAND ROTARY CAST: " << outputArray2.toHex() << "SIZE: " << Command.GetSize() << outputArray2.size();
+//  //==================================================================
+
+//  std::shared_ptr<UARTConnectionEngine> ConnectionInterface4 = std::make_shared<UARTConnectionEngine>();
+//                                        ConnectionInterface4->connectTo("COM3",115200);
+
+
+    //ControlRotary->ModuleMoveSinus.setFreq(0.2);
+    //ControlRotary->ModuleMoveSinus.setAmplitude(40);
+    //ControlRotary->ModuleMoveSinus.enableMove(true);
+
+  //std::chrono::time_point<std::chrono::high_resolution_clock> StartTime = std::chrono::high_resolution_clock::now();
+  //std::chrono::time_point<std::chrono::high_resolution_clock> EndTime = std::chrono::high_resolution_clock::now();
+  //std::chrono::milliseconds Period = std::chrono::duration_cast<std::chrono::milliseconds>(EndTime - StartTime);
+                                               //StartTime = std::chrono::high_resolution_clock::now();
+                                               //EndTime = std::chrono::high_resolution_clock::now();
+                                               //Period = std::chrono::duration_cast<std::chrono::milliseconds>(EndTime - StartTime);
+//template<> void CommandDispatcherGeneric<TypeRegister<CommandDevice<0>>::ID()>::dispatchCommand(const QByteArray& Command) { qDebug() << "DISPATCH COMMAND: " << TypeRegister<CommandDevice<0>>::TYPE_ID << " DEV 0"; };
+//template<> void CommandDispatcherGeneric<TypeRegister<CommandSetPair<0>>::ID()>::dispatchCommand(const QByteArray& Command) { qDebug() << "DISPATCH COMMAND: " << TypeRegister<CommandSetPair<0>>::TYPE_ID << " POS ROTARY"; };
+
+  //links.resize(10);
+  //links[0] = "udpsrc port=5000 ! application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)JPEG, payload=(int)96 ! rtpjpegdepay ! jpegparse ! jpegdec ! videoconvert ! video/x-raw,width=1280,height=720 ! appsink drop=1 async=true sync=true max-buffers=1";
+  //links[1] = "rtspsrc location=rtsp://192.168.1.75:8554/test latency=100 drop-on-latency=true is-live=true buffer-mode=auto ! queue ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! appsink drop=1 sync=false max-buffers=1 async=true";
+  //links[2] = "udpsrc port=5001 ! application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=(int)96 ! rtph264depay ! h264parse ! openh264dec ! videoconvert n-threads=3 ! video/x-raw,format=BGR ! appsink drop=1 async=false sync=true max-buffers=1";
+  //links[2] = "rtspsrc location=rtsp://192.168.1.59:8554/test latency=100 drop-on-latency=true is-live=true buffer-mode=auto ! queue ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! appsink drop=1 sync=false max-buffers=1 async=true";
+  //links[2] = "rtspsrc location=rtsp://192.168.1.86:554/user=admin_password=_channel=0_stream=0.sdp latency=1 ! queue ! rtph265depay ! h265parse ! d3d11h265dec ! videoconvertscale ! video/x-raw,width=640,height=480 ! appsink drop=1 sync=0 max-buffers=1 async=1";
+
+  //links[1] = "rtspsrc location=rtsp://192.168.1.108:554/stream3 latency=10 drop-on-latency=true is-live=true buffer-mode=auto! queue ! rtpjpegdepay ! jpegparse ! jpegdec ! videoconvert ! appsink name=sink_node drop=1 sync=0 max-buffers=1 async=1";
+  //links[0] = "rtsp://192.168.1.31:554/user=admin_password=_channel=1_stream=0.sdp";
+  //links[0] = "rtspsrc location=rtsp://admin:123456@192.168.1.247/live/video is-live=true latency=1 buffer-mode=auto ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! video/x-raw,format=RGB ! appsink name=sink_node drop=1 sync=0 max-buffers=1 async=1";
+  //links[0] = "rtspsrc location=rtsp://192.168.1.31:554/user=admin_password=_channel=1_stream=0.sdp drop-on-latency=true is-live=1 latency=10 buffer-mode=auto ! queue ! rtph264depay ! h264parse ! openh264dec ! videoconvert n-threads=1 primaries-mode=fast ! video/x-raw,format=RGB ! appsink name=sink_node drop=1 sync=0 async=1 max-buffers=1";
+  //links[0] = "rtspsrc location=rtsp://192.168.1.59:8554/test latency=10 drop-on-latency=true is-live=true buffer-mode=auto ! queue ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! appsink name=sink_node drop=1 sync=0 max-buffers=1 async=1";
+  //links[2] = "rtspsrc location=rtsp://192.168.1.31:554/user=admin_password=_channel=1_stream=0.sdp latency=1 ! queue ! rtph265depay ! h265parse ! d3d11h265dec ! videoconvert ! appsink";
+  //links[2] = "rtsp://192.168.1.38:8554/test";
+  //links[0] = "videotestsrc pattern=snow ! video/x-raw,format=BGR,width=640,height=480 ! queue ! videoconvert ! appsink name=sink_node";
+  //links[1] = "videotestsrc pattern=ball ! video/x-raw,format=BGR,width=640,height=480 ! queue ! videoconvert ! appsink name=sink_node";
+  //links[2] = "videotestsrc ! video/x-raw,format=BGR,width=640,height=480 ! queue ! videoconvert ! appsink name=sink_node";
+
+//=========================================================================================================
+//MEASURE RESPONSE FROM ROTARY PLATFORM
+    NodeCoordStorage<float> Storage1(5000); Storage1.setContinousMode(false);
+    NodeCoordStorage<float> Storage2(5000); Storage2.setContinousMode(false);
+    MeasurePeriodNode MeasurePeriod;
+    NodeValueIntegrator<float> Integrator;
+    NodeCoordJoinValue Join;
+    bool FLAG_MEASURE = false;
+
+    MeasurePeriodNode periodMeasure;
+
+
+    Dispatcher2_1->AppendCallback<ControlRX> ( [MeasurePeriod, Integrator, Join, Storage1, Storage2, ControlPlatform](MessageType2& Message) mutable 
+    {
+        //MeasurePeriod++;
+        auto data = DispatcherType2::ExtractData<ControlRX>(&Message);
+
+        //if(ControlPlatform->FLAG_START_MOVE)
+        //{
+        //                       data->value1.position >> Join;
+        //MeasurePeriod.getMilliseconds() >> Integrator>> Join >> Storage1;
+
+        ////                  data->value1.position >> Join;
+        ////        MeasurePeriod.getMilliseconds() >> Join >> Storage2;
+        //if(Storage1.isLoaded()) 
+        //{ 
+        //  qDebug() << "[ MEASURE END ]" << Storage1.getAvailable(); ControlPlatform->FLAG_START_MOVE = false; 
+        //  SaveMeasureDataToFile("D:/TRASH/MEASURES/MEASURE_Y_A60_STEP1.txt", Storage1);
+        //}
+        //}
+
+        qDebug() <<  OutputFilter::Filter(2000) << "[ GET CONTROL RX ]" << data->value0.position << data->value1.position;;
+    });
+
+//void SaveMeasureDataToFile(QString FileName, NodeCoordStorage<float>& Measure)
+//{
+//    qDebug() << "[ SAVE DATA TO FILE ]" << FileName ;
+//    QFile data(FileName);
+//    data.open(QFile::WriteOnly); data.flush();
+//
+//	QString outString;
+//	QTextStream out(&outString);
+//
+//  int counter = 0;
+//	for(auto& coord: Measure)
+//	{
+//		out << coord.first  << " "<< coord.second << Qt::endl;  counter++;
+//	}
+//  qDebug() << "DATA SAVE TO FILE COUNTER: " << counter;
+//	data.write(outString.toUtf8());
+//	data.close();
+//}
+//=========================================================================================================
+
+//                                  MessageRotaryStateJson receiver; 
+//    Dispatcher3_1->AppendCallback<MessageRotaryStateJson> ( [receiver](MessageType3& Message) mutable
+//    {
+//     //receiver.loadData<500>(Message.DATA); receiver.printMessage();
+//    });

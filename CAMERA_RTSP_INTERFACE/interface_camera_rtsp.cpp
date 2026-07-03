@@ -74,7 +74,8 @@ CameraInterfaceUniversal::~CameraInterfaceUniversal() { qDebug() << "[ THERMAL C
 
 void CameraInterfaceUniversal::getImageToDisplay(QImage& ImageDst) 
 { 
-  mutexStorage.lock(); ImageDst = ImageStore->ImageToDisplay.copy(); mutexStorage.unlock();
+  std::lock_guard<std::mutex> Locker(ImageStore->lockBuffer);
+  ImageDst = ImageStore->ImageToDisplay.copy(); 
 }
 
 cv::Mat& CameraInterfaceUniversal::getImageToProcess()                  { return ImageStore->getImageToProcess(); };
@@ -93,8 +94,8 @@ void CameraImageStorage::deinitStorage() { }
 
 bool CameraInterfaceUniversal::IsROIValid(cv::Rect& ROI)
 {
-const int& ImageWidth  = inputImage.cols;
-const int& ImageHeight = inputImage.rows;
+const int& ImageWidth  = processImage.cols;
+const int& ImageHeight = processImage.rows;
 
   if((ROI.x + ROI.width  + 2) > ImageWidth  || 
      (ROI.y + ROI.height + 2) > ImageHeight ||
@@ -109,20 +110,24 @@ void CameraInterfaceUniversal::slotGetFrame()
         bool isFrameGrabbed = capture.grab();
         if (!isFrameGrabbed) return; 
 
-
          inputImage = ImageStore->getBuffer();
 
              isFrameGrabbed = capture.retrieve(inputImage);
         if (!isFrameGrabbed || inputImage.empty()) return; 
 
+        //qDebug() << "GET FRAME: " << inputImage.cols << inputImage.rows;
+                                        processImage = inputImage;
+        if(isRotateNeeded) { cv::rotate(processImage, inputImageRotated, RotationDirection); processImage = inputImageRotated; }
+
+        if(isFlipNeeded) { cv::flip(processImage, inputImageRotated,0); processImage = inputImageRotated; }
+
         if(!IsROIValid(rectCrop) && isCropNeeded) return;
+        if(isCropNeeded) { inputImageResized = processImage(rectCrop); processImage = inputImageResized; }
 
-        if(isCropNeeded) inputImageResized = inputImage(rectCrop);
-        else             inputImageResized = inputImage;
+        if(isBrightNeeded) processImage = processImage*0.8;
+        if(isColorConvertNeeded) { cvtColor(processImage,inputImageGrayscale,cv::COLOR_BGR2GRAY); processImage = inputImageGrayscale; }
 
-        //cv::cvtColor(inputImageResized,inputImageProcessed,cv::COLOR_BGR2GRAY);
-
-        mutexStorage.lock(); ImageStore->putNewFrameToStorage(inputImageResized); mutexStorage.unlock();
+        mutexStorage.lock(); ImageStore->putNewFrameToStorage(processImage); mutexStorage.unlock();
 }
 #endif
 
@@ -220,7 +225,7 @@ cv::Mat& CameraImageStorage::getBuffer()
 
 void CameraImageStorage::putNewFrameToStorage(void* Frame, int width, int height)
 {
-   //std::lock_guard<std::mutex> locker(lockBuffer);
+   std::lock_guard<std::mutex> locker(lockBuffer);
                           *BufferToWrite = cv::Mat(width, height, CV_8UC3, Frame).clone();
    ImageToDisplay = QImage(BufferToWrite->data,BufferToWrite->cols, BufferToWrite->rows, QImage::Format_BGR888);
                            BufferToWrite++; 
@@ -230,7 +235,7 @@ void CameraImageStorage::putNewFrameToStorage(void* Frame, int width, int height
 
 void CameraImageStorage::putNewFrameToStorage(cv::Mat& Frame)
 {
-   //std::lock_guard<std::mutex> locker(lockBuffer);
+   std::lock_guard<std::mutex> locker(lockBuffer); if(Frame.empty()) return;
                           *BufferToWrite = Frame.clone(); 
    ImageToDisplay = QImage(BufferToWrite->data,Frame.cols,Frame.rows,QImage::Format_BGR888);
                            BufferToWrite++; 
@@ -276,4 +281,19 @@ void CameraInterfaceUniversal::slotCheckHost()
 void CameraInterfaceUniversal::connectZoomControl(QString user, QString pass, QString ip, QString port)
 {
   ControlZoom = std::make_shared<DeviceZoomRotation>(user,pass,ip,port);
+}
+
+void CameraInterfaceUniversal::setCameraSizes(std::pair<int,int> SizeCamera, std::pair<int,int> ROI)
+{
+  SIZE_CAMERA = SizeCamera; 
+  SIZE_ROI  = ROI; 
+  OFFSET_ROI = (SIZE_CAMERA-SIZE_ROI)*0.5; 
+  rectCrop = cv::Rect{OFFSET_ROI.first,OFFSET_ROI.second,SIZE_ROI.first,SIZE_ROI.second};
+  //rectCrop = cv::Rect{1,1,SIZE_ROI.first,SIZE_ROI.second};
+}
+void CameraInterfaceUniversal::printCameraSizes()
+{
+  qDebug() << TAG_NAME.toStdString().c_str() << "[SIZE_CAMERA]" << SIZE_CAMERA.first << SIZE_CAMERA.second
+                                             << "[ROI]" << SIZE_ROI.first << SIZE_ROI.second
+                                             << "[RECT]" << rectCrop.x << rectCrop.y << rectCrop.width << rectCrop.height;
 }

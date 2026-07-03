@@ -20,7 +20,6 @@ public:
 
     WidgetRotaryControl(QWidget* parent = nullptr);
 
-
 	const QPair<float, float>& getOutput() 
     { 
         if(TypeWidget == 0) { PassCoordClass<float>::OutputCoord.first = angleRotationDeviceDegree; }
@@ -29,7 +28,7 @@ public:
     };
 	void setInput(const QPair<float, float>& Coord) override 
     { 
-        qDebug() << "[WIDGET ROTARY SYNCHRONIZE]" << Coord.first << Coord.second << "[ CHANNEL ]" << TypeWidget;
+        //qDebug() << "[WIDGET ROTARY SYNCHRONIZE]" << Coord.first << Coord.second << "[ CHANNEL ]" << TypeWidget;
         PassCoordClass<float>::OutputCoord = Coord;
         if(TypeWidget == 0) { slotSetState(Coord.first); }
         if(TypeWidget == 1) { slotSetState(Coord.second);}
@@ -60,7 +59,7 @@ public:
     float angleRotationShiftedDegree = 0;
     float angleRotationDeviceDegree = 0;
     float angleRotationNull = 0;
-    float angleRotationDeviceNull = 70;
+    float angleRotationDeviceNull = 0;
 
     float angleRotationDegreeRelative = 0;
     float angleRotationDegreeRelativeLast = 0;
@@ -120,6 +119,7 @@ void slotMoveStart(int Direction);
 
 private slots:
 void slotMove();
+void slotShift();
 void slotCheckState();
 
 public slots:
@@ -128,7 +128,24 @@ void slotSetState(float angleDegree);
 protected:
     void paintEvent(QPaintEvent* event) override { drawRotation(); }
     void resizeEvent(QResizeEvent *event) override    { sizeWidget = event->size().width(); setBaseSize(sizeWidget, sizeWidget); initWidget(); }
-    void mousePressEvent(QMouseEvent* event) override { pointDirection = event->pos() - pointCenterDrawing; updateAngle(); }
+    void mousePressEvent(QMouseEvent* event) override 
+    { 
+        if (event->button() == Qt::MiddleButton) 
+        {
+            if(ControlRotary) ControlRotary->setParam(ControlChannel, angleRotationDeviceDegree); update(); 
+            qDebug() << "[WIDGET ROTARY MOVE TO ]" << angleRotationDeviceDegree;
+            return;
+        } 
+
+        pointDirection = event->pos() - pointCenterDrawing; updateAngle(); 
+
+    }
     void mouseMoveEvent(QMouseEvent* event)  override { pointDirectionFuture = event->pos() - pointCenterDrawing; updateFutureAngle(); }
+    void wheelEvent(QWheelEvent* event)  override 
+    { 
+        slotShift(); event->accept(); 
+    }
+
+
     void leaveEvent(QEvent* event)           override { pointDirectionFuture = pointDirection; updateFutureAngle(); }
 };

@@ -46,6 +46,7 @@ WidgetMainControl::WidgetMainControl(int Scheme, QWidget* parent) : WidgetAdjust
     this->setStyleSheet(styleButtonsToggled);
      butControl1.setStyleSheet(styleButtons);
      butControl2.setStyleSheet(styleButtons);
+     butControl2.hide();
 
 
     //widgetAzimuth->setStyleSheet(StyleTest);
@@ -64,12 +65,15 @@ WidgetMainControl::WidgetMainControl(int Scheme, QWidget* parent) : WidgetAdjust
     butRegimReady.setCheckable(true);
      butRegimWork.setCheckable(true);
     butRegimLaser.setCheckable(true);
-    butRegimIllum.setCheckable(true);
+    butReset.setCheckable(false);
+
+    butReset.setStyleSheet(styleButtons);
+    QObject::connect(&butReset, &QPushButton::pressed, this, &WidgetMainControl::slotResetPressed );
 
     butRegimReady.setMinimumWidth(68);
      butRegimWork.setMinimumWidth(68);
     butRegimLaser.setMinimumWidth(68);
-    butRegimIllum.setMinimumWidth(68);
+    butReset.setMinimumWidth(68);
 
 
 
@@ -88,7 +92,7 @@ WidgetMainControl::WidgetMainControl(int Scheme, QWidget* parent) : WidgetAdjust
     widgetAzimuth->setNull(90);
 
     gridLayout.addWidget(&butRegimLaser ,1,1);
-    gridLayout.addWidget(&butRegimIllum ,2,1);
+    gridLayout.addWidget(&butReset ,2,1);
     gridLayout.addWidget(&butRegimWork  ,1,2);
     gridLayout.addWidget(&butRegimReady ,2,2);
     gridLayout.addWidget(widgetAzimuth  ,1,3,-1,1);
@@ -99,7 +103,7 @@ WidgetMainControl::WidgetMainControl(int Scheme, QWidget* parent) : WidgetAdjust
     rightLayout.addWidget(&butControl2);
 
       butRegimLaser.setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::MinimumExpanding));
-      butRegimIllum.setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::MinimumExpanding));
+      butReset.setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::MinimumExpanding));
       butRegimWork.setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::MinimumExpanding));
       butRegimReady.setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::MinimumExpanding));
 
@@ -116,7 +120,7 @@ WidgetMainControl::WidgetMainControl(int Scheme, QWidget* parent) : WidgetAdjust
     butRegimReady.setMinimumHeight(40);
      butRegimWork.setMinimumHeight(40);
     butRegimLaser.setMinimumHeight(40);
-    butRegimIllum.setMinimumHeight(40);
+    butReset.setMinimumHeight(40);
 
     butControl1.setMinimumHeight(40);
     butControl2.setMinimumHeight(40);
@@ -130,7 +134,7 @@ WidgetMainControl::WidgetMainControl(int Scheme, QWidget* parent) : WidgetAdjust
     //gridLayout.setRowStretch(1,1);
 
     gridLayout.addWidget(&butRegimLaser  ,0,1);
-    gridLayout.addWidget(&butRegimIllum  ,1,1);
+    gridLayout.addWidget(&butReset  ,1,1);
     gridLayout.addWidget(&butRegimWork   ,0,2);
     gridLayout.addWidget(&butRegimReady  ,1,2);
     //mainLayout2.addWidget(widgetAzimuth   ,5,1,1,-1);
@@ -144,7 +148,7 @@ WidgetMainControl::WidgetMainControl(int Scheme, QWidget* parent) : WidgetAdjust
 
 
       butRegimLaser.setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
-      butRegimIllum.setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+      butReset.setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
        butRegimWork.setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
       butRegimReady.setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
 
@@ -164,16 +168,24 @@ void WidgetMainControl::linkToDeviceRotary(std::shared_ptr<DeviceGenericHandleCo
      widgetElevation->linkToDevice(Device);
 }
 
+void WidgetMainControl::linkButtons()
+{
+    QObject::connect(&butReset, &QPushButton::clicked, [this]() { butRegimWork.setChecked(false); });
+    QObject::connect(&butReset, &QPushButton::clicked, [this]() { butRegimLaser.setChecked(false); });
+}
+
 void WidgetMainControl::linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device, int Number)
 {
-     QVector<QPushButton*> buttons;
-     buttons.push_back(&butRegimReady);
-     buttons.push_back(&butRegimIllum);
-     buttons.push_back(&butRegimLaser);
-     buttons.push_back(&butRegimWork);
-     buttons.push_back(&butRegimWork);
+    QVector<QPushButton*> buttons;
+    buttons.push_back(&butRegimReady);
+    buttons.push_back(&butRegimWork);
+    buttons.push_back(&butReset);
+    buttons.push_back(&butRegimLaser);
 
+    if(buttons[Number]->isCheckable())
     QObject::connect(buttons[Number], &QPushButton::toggled, [Device,this](bool OnOff) { Device->setEnable(OnOff); });
+    else
+    QObject::connect(buttons[Number], &QPushButton::clicked, [Device,this](bool OnOff) { Device->setEnable(true); });
 }
 
 
@@ -189,12 +201,12 @@ void WidgetMainControl::synchronizePeer(WidgetMainControl* widget)
 //     widgetAzimuth->synchronizePeer(widgetPeer->widgetAzimuth);
 //   widgetElevation->synchronizePeer(widgetPeer->widgetElevation);
 
-   connect(&widgetPeer->butRegimIllum, SIGNAL(toggled(bool)), this, SLOT(slotPeerChanged()));
+   connect(&widgetPeer->butReset, SIGNAL(toggled(bool)), this, SLOT(slotPeerChanged()));
    connect(&widgetPeer->butRegimLaser, SIGNAL(toggled(bool)), this, SLOT(slotPeerChanged()));
    connect(&widgetPeer->butRegimReady, SIGNAL(toggled(bool)), this, SLOT(slotPeerChanged()));
    connect(&widgetPeer->butRegimWork , SIGNAL(toggled(bool)), this, SLOT(slotPeerChanged()));
 
-   connect(&this->butRegimIllum, SIGNAL(toggled(bool)), widgetPeer, SLOT(slotPeerChanged()));
+   connect(&this->butReset, SIGNAL(toggled(bool)), widgetPeer, SLOT(slotPeerChanged()));
    connect(&this->butRegimLaser, SIGNAL(toggled(bool)), widgetPeer, SLOT(slotPeerChanged()));
    connect(&this->butRegimReady, SIGNAL(toggled(bool)), widgetPeer, SLOT(slotPeerChanged()));
    connect(&this->butRegimWork , SIGNAL(toggled(bool)), widgetPeer, SLOT(slotPeerChanged()));
@@ -202,7 +214,7 @@ void WidgetMainControl::synchronizePeer(WidgetMainControl* widget)
 
 void WidgetMainControl::slotPeerChanged()
 {
-     butRegimIllum.blockSignals(true); butRegimIllum.setChecked(widgetPeer->butRegimIllum.isChecked()); butRegimIllum.blockSignals(false);
+     butReset.blockSignals(true); butReset.setChecked(widgetPeer->butReset.isChecked()); butReset.blockSignals(false);
      butRegimLaser.blockSignals(true); butRegimLaser.setChecked(widgetPeer->butRegimLaser.isChecked()); butRegimLaser.blockSignals(false);
      butRegimReady.blockSignals(true); butRegimReady.setChecked(widgetPeer->butRegimReady.isChecked()); butRegimReady.blockSignals(false);
       butRegimWork.blockSignals(true);  butRegimWork.setChecked(widgetPeer->butRegimWork.isChecked() ); butRegimWork.blockSignals(false);

@@ -42,6 +42,7 @@ class SinkDisplayLabel : public SinkDisplayNode
     void linkToDevice(std::shared_ptr<DeviceGenericHandleControl> Device);    
 
 	void setImageFrom(SourceImageDisplayInterface* Src) override;
+	void setImage(QImage image) override;
 	void linkToDisplay(LabelActiveImage* Display) 
 	{
 		 LabelDisplay = Display; 

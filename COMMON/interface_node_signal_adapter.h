@@ -81,7 +81,7 @@ class NodeCoordSignalAdapter: public QObject
     { 
                               StatePass = NodeState->getOutput();
       emit signalStateChanged(StatePass);
-      qDebug() << "[ SYNCHRONIZER PASS ]" << StatePass.first << StatePass.second;
+      //qDebug() << "[ SYNCHRONIZER PASS ]" << StatePass.first << StatePass.second;
     }
     public slots:
     void slotSetState(std::pair<float,float> State) {StatePass = State; StatePass >> *NodeState; }

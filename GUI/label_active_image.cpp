@@ -40,6 +40,12 @@ void LabelActiveImage::mousePressEvent(QMouseEvent * ev)
 
 }
 
+void SinkDisplayLabel::setImage(QImage image) 
+{
+	DisplayImage = image.copy();
+	LabelDisplay->setPixmap(QPixmap::fromImage(DisplayImage)); 
+}
+
 void SinkDisplayLabel::setImageFrom(SourceImageDisplayInterface* Src)
 {
 	Src->getImageToDisplay(DisplayImage);	
@@ -49,8 +55,13 @@ void SinkDisplayLabel::setImageFrom(SourceImageDisplayInterface* Src)
 	if(DisplayImage.isNull()) return;
 
 	auto posPicked = LabelDisplay->getPos();
+    QPointF centerCoord(DisplayImage.width()/2, DisplayImage.height()/2);
+    QPointF corner(20,20);
+	QPair<int,int> objectCoord{20,20};
+	QString info = QString("%1 %2").arg(objectCoord.first).arg(objectCoord.second);
 	
-	QPen pen; pen.setWidth(1); pen.setColor(Qt::green);
+	QPen pen; pen.setWidth(2); pen.setColor(Qt::green);
+	QPen pen2; pen2.setWidth(5); pen2.setColor(Qt::red);
 
 	QPainter Painter;
 	Painter.begin(&DisplayImage);
@@ -58,6 +69,11 @@ void SinkDisplayLabel::setImageFrom(SourceImageDisplayInterface* Src)
 	for(auto& rect_pos: Rects) 
 	{ 
 		Painter.drawRect(rect_pos.first-40, rect_pos.second-40, 80,80); ; 
+		Painter.drawEllipse(rect_pos.first-4, rect_pos.second-4,8,8); ; 
+
+	    Painter.setPen(pen2);
+		Painter.drawPoint(centerCoord); ; 
+		Painter.drawText(corner, info);
 	}
 	Painter.end();
 

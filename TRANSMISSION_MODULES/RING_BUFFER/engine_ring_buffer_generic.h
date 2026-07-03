@@ -68,13 +68,14 @@ RingBufferGeneric<H_TYPE,M_SIZE,M_NUM,IT_MODE>::~RingBufferGeneric() { delete DA
 template<typename H_TYPE, size_t M_SIZE, size_t M_NUM, IteratorMode IT_MODE>
 void RingBufferGeneric<H_TYPE,M_SIZE,M_NUM,IT_MODE>::appendData(uint8_t* Data, uint16_t Size)
 {
+  
    DATA_PASSED += Size;
    IncommingPointer.LoadData(Data, Size); 
    MessagePointer.RangeLimits = IncommingPointer.RangeLimits;
    MESSAGE_AVAILABLE = IncommingPointer.MessageNumber;
 
    //qDebug() << "[ MESSAGE IN STORE ]" << MESSAGE_AVAILABLE << "[ PASSED ]" << MESSAGE_PASSED; 
-   QByteArray array((char*)Data,Size); array.truncate(10);
+   //QByteArray array((char*)Data,Size); array.truncate(10);
    //qDebug() << OutputFilter::Filter(2000) << "[ DATA ]" << QString(array.toHex()); 
 
 

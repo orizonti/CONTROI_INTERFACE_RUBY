@@ -12,6 +12,21 @@
 #include "message_struct_generic_ext.h"
 #include "message_command_structures.h"
 
+static QString styleButtons{
+
+"QPushButton {"
+"background-color: rgba(209, 142, 34, 60);"
+"border: 2px solid line;"
+"border-radius: 6px;"
+"border-color: rgb(214, 136, 41); }"
+
+"QPushButton:pressed {"
+"background-color: rgba(209, 142, 34, 110);"
+"border: 4px solid line;"
+"border-radius: 6px;"
+"border-color: rgb(171, 86, 38); }"
+};
+
 WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
     : WidgetAdjustable(parent)
     , ui(new Ui::WidgetComplexInterface)
@@ -26,32 +41,115 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
     widgetMainControl2->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
 
     widgetMainControl1->synchronizePeer(widgetMainControl2);
-    //auto button = new QPushButton(tr("Reset all shortcuts to default"), this);
-    //button->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed, QSizePolicy::ToolButton));
+
     QObject::connect(&widgetMainControl1->butControl1, SIGNAL(clicked()), this, SLOT(slotSetHandleMode()));
     QObject::connect(&widgetMainControl1->butControl2, SIGNAL(clicked()), this, SLOT(slotSetBigImageMode()));
 
     QObject::connect(&widgetMainControl2->butControl1, SIGNAL(clicked()), this, SLOT(slotSetHandleMode()));
     QObject::connect(&widgetMainControl2->butControl2, SIGNAL(clicked()), this, SLOT(slotSetMainMode()));
-    QObject::connect(ui->butToMainControl, SIGNAL(clicked()), this, SLOT(slotSetMainMode()));
 
-    widgetControlRanger    = new WidgetDeviceControl("Дальномер");
-    widgetControlFocusator = new WidgetDeviceControl("Фокусатор");
 
-//void WidgetDeviceControl::setScheme(int schemeParam, int numberLevels, int numberDevice, int schemeArrows) {
 
-    widgetControlRanger->enableScheme(1,0,0,1,0);    widgetControlRanger->setScheme(0,1); 
-    widgetControlFocusator->enableScheme(1,0,0,1,0); widgetControlFocusator->setScheme(0,1);
-
+       
+     widgetControlRanger    = new WidgetDeviceControl("Дальномер");
+     widgetControlFocusator = new WidgetDeviceControl("Фокусатор");
     widgetControlLaserPower = new WidgetDeviceControl("Лазер    "); 
     widgetControlLaserIllum = new WidgetDeviceControl("Подсвет  "); 
-    widgetControlLaserPower->enableScheme(1,0,1,0,0); widgetControlLaserPower->setScheme(2,2); 
-    widgetControlLaserIllum->enableScheme(1,0,1,0,0); widgetControlLaserIllum->setScheme(2,1);
+      widgetControlScanator = new WidgetDeviceControl("Сканатор "); 
+      widgetControlPlatform = new WidgetDeviceControl("Платформа"); 
+           widgetLidControl = new WidgetDeviceControl("Крышки"); 
 
-       widgetControlCamera1 = new WidgetDeviceControl("КамераТК "); 
-       widgetControlCamera2 = new WidgetDeviceControl("КамераТК "); 
-       widgetControlCamera3 = new WidgetDeviceControl("КамераГК "); 
-       widgetControlCamera4 = new WidgetDeviceControl("Тепловиз "); 
+
+        widgetControlRanger->enableScheme(1,0,0,1,0);     widgetControlRanger->setScheme(0,1);   
+     widgetControlFocusator->enableScheme(1,0,0,1,1);  widgetControlFocusator->setScheme(0,1,2);
+      widgetControlScanator->enableScheme(1,0,0,1,1);   widgetControlScanator->setScheme(0,1,4); 
+      widgetControlPlatform->enableScheme(1,0,0,1,1);   widgetControlPlatform->setScheme(0,1,4);
+           widgetLidControl->enableScheme(0,0,0,1,0);        widgetLidControl->setScheme(0,2,0); 
+    widgetControlLaserPower->enableScheme(0,0,1,1,0); widgetControlLaserPower->setScheme(3,2);
+    widgetControlLaserIllum->enableScheme(0,0,1,1,0); widgetControlLaserIllum->setScheme(3,1);
+
+    WidgetDeviceControl* widget_test = new WidgetDeviceControl;
+    widget_test->enableScheme(0,0,0,1,0); widget_test->setScheme(0,4); widget_test->setButtonsMode({true,true, false,false});
+    widget_test->show();
+
+
+      widgetControlScanator->setButtonsMode({false});
+      widgetControlPlatform->setButtonsMode({false});
+      widgetControlRanger->setLabelMode(1);
+      widgetControlFocusator->setLabelMode(1);
+      widgetControlLaserPower->setLevelsName({"20%","50%","100%"});
+      widgetControlLaserIllum->setLevelsName({"20%","50%","100%"});
+
+        widgetControlRanger->setButtonsName({"ПУСК", "ПУСК"});     
+     widgetControlFocusator->setButtonsName({"ПУСК", "ПУСК"});
+    widgetControlLaserPower->setButtonsName({"ПУСК", "ПИЛОТ"});
+    widgetControlLaserIllum->setButtonsName({"ПУСК", "ПУСК"});
+      widgetControlScanator->setButtonsName({"СБРОС", "ПУСК"}); 
+      widgetControlPlatform->setButtonsName({"СБРОС", "ПУСК"});
+           widgetLidControl->setButtonsName({"ПУСК", "ПУСК"}); 
+
+    buttonSwitcher = new QPushButton("РАБОТА");
+    buttonSwitcher->setStyleSheet(styleButtons);
+    buttonSwitcher->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+    buttonSwitcher->setMaximumSize(widgetLidControl->maxButtonsSize);
+    QObject::connect(buttonSwitcher, SIGNAL(clicked()), this, SLOT(slotSetMainMode()));
+
+
+    ui->layoutControlTable->setSpacing(1);
+    ui->layoutControlTable->setContentsMargins(2,2,2,2);
+    ui->layoutControlTable->addWidget(widgetControlRanger   ,1,0);
+    ui->layoutControlTable->addWidget(widgetControlFocusator,2,0);
+    ui->layoutControlTable->addWidget(widgetControlScanator ,3,0);
+    ui->layoutControlTable->addWidget(widgetControlPlatform ,4,0);
+    ui->layoutControlTable->addWidget(widgetLidControl      ,5,0);
+
+    ui->layoutControlTable->addWidget(widgetControlLaserPower,6,0);
+    ui->layoutControlTable->addWidget(widgetControlLaserIllum,7,0);
+
+    ui->layoutControlTable->addWidget(buttonSwitcher,1,1);
+
+            ui->layoutControlBlock->addWidget(widgetMainControl1);
+    ui->layoutControlBlockBigPanel->addWidget(widgetMainControl2);
+
+    ui->layoutControlBlockBigPanel->addSpacerItem(new QSpacerItem(100,100,QSizePolicy::Fixed, QSizePolicy::Minimum));
+
+    //========================================
+           QImage image(720,540,QImage::Format_RGB888);
+                  image.fill(Qt::black);
+
+           outputVideo1 = new SinkDisplayLabel; 
+           outputVideo2 = new SinkDisplayLabel; 
+           outputVideo3 = new SinkDisplayLabel; 
+
+    outputVideo1Control = new SinkDisplayLabel;
+    outputVideo2Control = new SinkDisplayLabel;
+    outputVideo3Control = new SinkDisplayLabel;
+
+       outputVideo1Mini = new SinkDisplayLabel;
+       outputVideo2Mini = new SinkDisplayLabel;
+       outputVideo3Mini = new SinkDisplayLabel;
+         outputVideoBig = new SinkDisplayLabel;
+
+        outputVideo1->linkToDisplay(ui->labelCameraZoom);
+        outputVideo2->linkToDisplay(ui->labelCameraFast);
+        outputVideo3->linkToDisplay(ui->labelCameraThermal);
+           outputVideo1->setImage(image);
+           outputVideo2->setImage(image);
+           outputVideo3->setImage(image);
+
+    outputVideo1Mini->linkToDisplay(ui->labelMiniCameraZoom);
+    outputVideo2Mini->linkToDisplay(ui->labelMiniCameraFast);
+    outputVideo3Mini->linkToDisplay(ui->labelMiniCameraThermal);
+      outputVideoBig->linkToDisplay(ui->labelCameraBig);
+      
+    outputVideo1Mini->linkToSinkNode(outputVideoBig);
+    outputVideo2Mini->linkToSinkNode(outputVideoBig);
+    outputVideo3Mini->linkToSinkNode(outputVideoBig);
+    //========================================
+
+       ui->labelCameraFast->setMaximumSize(800,350);
+       ui->labelCameraZoom->setMaximumSize(800,350);
+    ui->labelCameraThermal->setMaximumSize(800,350);
 
        widgetControlCamera1Float = new WidgetDeviceControl("КамераТК ", Qt::Vertical, this); 
        widgetControlCamera2Float = new WidgetDeviceControl("КамераГК ", Qt::Vertical, this); 
@@ -61,87 +159,30 @@ WidgetComplexInterface::WidgetComplexInterface(QWidget *parent)
        widgetControlCamera2Float->enableScheme(0,0,1,0,0,0); widgetControlCamera2Float->setScheme(6,0,0);
        widgetControlCamera3Float->enableScheme(0,0,1,0,0,0); widgetControlCamera3Float->setScheme(6,0,0);
 
-       widgetControlCamera1Float->move(18,170);  //widgetControlCamera1Float->show();
-       widgetControlCamera2Float->move(18,510);  //widgetControlCamera2Float->show();
-       widgetControlCamera3Float->move(640,170); //widgetControlCamera3Float->show();
+       widgetControlCamera1Float->move(ui->labelCameraZoom->pos().x(), ui->labelCameraZoom->pos().y());  
+       widgetControlCamera2Float->move(ui->labelCameraZoom->pos().x(), ui->labelCameraZoom->pos().y());  
+       widgetControlCamera3Float->move(
+       ui->labelCameraZoom->pos().x() + ui->labelCameraZoom->width() + 170, 
+       ui->labelCameraZoom->pos().y() + 70); 
+
+       buttonSwitcher2 = new QPushButton("<- ->", this);
+       buttonSwitcher2->setStyleSheet(styleButtons);
+       buttonSwitcher2->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+       buttonSwitcher2->setMaximumSize(70,50);
+       buttonSwitcher2->hide();
+       //QObject::connect(buttonSwitcher2, SIGNAL(clicked()), this, SLOT(slotSetBigImageMode()));
+       buttonSwitcher2->move(
+       ui->labelCameraZoom->pos().x() + 20, 
+       ui->labelCameraZoom->pos().y() + ui->labelCameraZoom->height() + 80); 
+
+       
+       //widgetControlCamera1Float->show();
+       //widgetControlCamera2Float->show();
+       //widgetControlCamera3Float->show();
 
        widgetsHidden.push_back(widgetControlCamera3Float);
-       
+       buttonsHidden.push_back(buttonSwitcher2);
 
-//void WidgetDeviceControl::enableScheme(bool enableState, 
-//                                       bool enableParam, 
-//                                       bool enableLevels, 
-//                                       bool enableOnOff, 
-//                                       bool enableArrows)
-    widgetControlCamera1->enableScheme(0,1,1,0,0); widgetControlCamera1->setScheme(5,0); widgetControlCamera1->setLevelsName(QStringList({"X1", "X2", "X3", "X4", "X5"}));
-    widgetControlCamera2->enableScheme(0,1,1,0,0); widgetControlCamera2->setScheme(5,0); widgetControlCamera2->setLevelsName(QStringList({"X1", "X2", "X3", "X4", "X5"})); 
-    widgetControlCamera3->enableScheme(0,1,1,0,0); widgetControlCamera3->setScheme(5,0); widgetControlCamera3->setLevelsName(QStringList({"X1", "X2", "X3", "X4", "X5"}));
-    widgetControlCamera4->enableScheme(0,1,1,0,0); widgetControlCamera4->setScheme(5,0); widgetControlCamera4->setLevelsName(QStringList({"X1", "X2", "X3", "X4", "X5"}));
-
-
-      widgetControlScanator = new WidgetDeviceControl("Сканатор "); 
-      widgetControlPlatform = new WidgetDeviceControl("Платформа"); 
-    widgetControlScanator->enableScheme(1,0,0,0,1); widgetControlScanator->setScheme(0,0,4); 
-    widgetControlPlatform->enableScheme(1,0,0,0,1); widgetControlPlatform->setScheme(0,0,4);
-
-      widgetLidControl = new WidgetDeviceControl("Крышки"); 
-      widgetLidControl->enableScheme(0,0,0,1,0); widgetLidControl->setScheme(0,2,0); 
-
-    ui->layoutControlTable->setSpacing(1);
-    ui->layoutControlTable->setContentsMargins(1,1,1,1);
-    ui->layoutControlTable->addWidget(widgetControlRanger,1,1);
-    ui->layoutControlTable->addWidget(widgetControlFocusator,2,1);
-    ui->layoutControlTable->addWidget(widgetControlScanator,3,1);
-    ui->layoutControlTable->addWidget(widgetControlPlatform,4,1);
-    ui->layoutControlTable->addWidget(widgetLidControl,5,1);
-
-    ui->layoutControlTable->addWidget(widgetControlLaserPower,1,2);
-    ui->layoutControlTable->addWidget(widgetControlLaserIllum,2,2);
-    ui->layoutControlTable->addWidget(widgetControlCamera1   ,3,2);
-    ui->layoutControlTable->addWidget(widgetControlCamera2   ,4,2);
-    ui->layoutControlTable->addWidget(widgetControlCamera3   ,5,2);
-    ui->layoutControlTable->addWidget(widgetControlCamera4   ,6,2);
-
-    ui->layoutControlBlock->addWidget(widgetMainControl1);
-    ui->layoutControlBlockBigPanel->addWidget(widgetMainControl2);
-
-    ui->layoutControlBlockBigPanel->addSpacerItem(new QSpacerItem(100,100,QSizePolicy::Fixed, QSizePolicy::Minimum));
-
-
-    connect(ui->labelCameraFast, &LabelActiveImage::signalLabelPicked, this, &WidgetComplexInterface::slotSetBigImageMode);
-    connect(ui->labelCameraZoom, &LabelActiveImage::signalLabelPicked, this, &WidgetComplexInterface::slotSetBigImageMode);
-    connect(ui->labelCameraThermal, &LabelActiveImage::signalLabelPicked, this, &WidgetComplexInterface::slotSetBigImageMode);
-
-
-    outputVideo1 = new SinkDisplayLabel;
-    outputVideo2 = new SinkDisplayLabel;
-    outputVideo3 = new SinkDisplayLabel;
-
-    outputVideo1Control = new SinkDisplayLabel;
-    outputVideo2Control = new SinkDisplayLabel;
-    outputVideo3Control = new SinkDisplayLabel;
-
-    outputVideo1Mini = new SinkDisplayLabel;
-    outputVideo2Mini = new SinkDisplayLabel;
-    outputVideo3Mini = new SinkDisplayLabel;
-
-    outputVideoBig = new SinkDisplayLabel;
-
-    outputVideo1->linkToDisplay(ui->labelCameraFast);
-    outputVideo2->linkToDisplay(ui->labelCameraZoom);
-    outputVideo3->linkToDisplay(ui->labelCameraThermal);
-    ui->labelCameraFast->setMaximumSize(800,350);
-    ui->labelCameraZoom->setMaximumSize(800,350);
-    ui->labelCameraThermal->setMaximumSize(800,350);
-
-    outputVideo1Mini->linkToDisplay(ui->labelMiniCameraFast);
-    outputVideo2Mini->linkToDisplay(ui->labelMiniCameraZoom);
-    outputVideo3Mini->linkToDisplay(ui->labelMiniCameraThermal);
-      outputVideoBig->linkToDisplay(ui->labelCameraBig);
-      
-    outputVideo1Mini->linkToSinkNode(outputVideoBig);
-    outputVideo2Mini->linkToSinkNode(outputVideoBig);
-    outputVideo3Mini->linkToSinkNode(outputVideoBig);
 
     slotSetMainMode();
     //slotSetBigImageMode();
@@ -276,19 +317,11 @@ void WidgetComplexInterface::slotSetBigImageMode()
    activateBigOutput(true);
 }
 
-void WidgetComplexInterface::slotShowMalfunctionList()
-{
-
-}
-
-void WidgetComplexInterface::slotShowHiddenWidgets()
-{
-for(auto& widget: widgetsHidden) widget->show();
-}
-void WidgetComplexInterface::slotHideHiddenWidgets()
-{
-for(auto& widget: widgetsHidden) widget->hide();
-}
+void WidgetComplexInterface::slotShowMalfunctionList() { }
+void WidgetComplexInterface::slotShowHiddenWidgets() { for(auto& widget: widgetsHidden) widget->show(); 
+                                                       for(auto& widget: buttonsHidden) widget->show(); }
+void WidgetComplexInterface::slotHideHiddenWidgets() { for(auto& widget: widgetsHidden) widget->hide();
+                                                       for(auto& widget: buttonsHidden) widget->hide(); }
 
 
 void WidgetComplexInterface::installEventFilter(KeyboardFilter *filterObj)

@@ -21,6 +21,9 @@ class DeviceGenericHandleControl
 
 	virtual void  setParam (uint16_t CommandID, float    CommandParam) {} ;
 	virtual float getParam (uint16_t CommandID) { return 0;} ;
+
+	            std::shared_ptr<DeviceGenericHandleControl> LinkedControl = nullptr;
+	void linkTo(std::shared_ptr<DeviceGenericHandleControl> Control) { LinkedControl = Control; };
 };
 
 
@@ -48,7 +51,7 @@ public:
 
 	void sendCommand(T_COMMAND& commandToSend) 
 	{ 
-		qDebug()<< TAG_NAME << "[ SEND COMMAND ]" << T_COMMAND::printDataType();
+		//qDebug()<< TAG_NAME << "[ SEND COMMAND ]" << T_COMMAND::printDataType();
 				  Command = commandToSend;
 				  Command.dumpToByteArray(MessageOutputBuffer);
 		ConnectionDevice->slotSendMessage(MessageOutputBuffer);
@@ -75,7 +78,7 @@ public:
 	template<COMMAND_STANDART T_COMMAND>
 	void sendCommand(T_COMMAND& commandToSend) 
 	{ 
-		qDebug()<< TAG_NAME << "[ SEND STANDART COMMAND ]" << typeid(commandToSend).name();
+		//qDebug()<< TAG_NAME << "[ SEND STANDART COMMAND ]" << typeid(commandToSend).name();
 				  Command.DATA = commandToSend;
 		ConnectionDevice->slotSendMessage(Command.castToByteArray());
 	};
@@ -104,18 +107,42 @@ class DeviceGenericControl : public DeviceGenericInterface<T_CONNECTION, Message
 {
 public:
     using DEVICE_INTERFACE = DeviceGenericInterface<T_CONNECTION, MessageDeviceGeneric<NUM_DEVICE>, MessageDeviceGeneric<NUM_DEVICE>>; 
-    explicit DeviceGenericControl(std::shared_ptr<T_CONNECTION> Connection, QString Name = "[ DEVICE ]") : DEVICE_INTERFACE(Connection, Name)
+	using COMMAND_TYPE = CommandDevice<NUM_DEVICE>; 
+    explicit DeviceGenericControl(std::shared_ptr<T_CONNECTION> Connection, QString Name = "[ DEVICE ]") : 
+	DEVICE_INTERFACE(Connection, Name),
+	TAG_NAME{Name}
 	{
 
 	}
+
+    DeviceGenericControl(std::shared_ptr<T_CONNECTION> Connection, uint16_t Number, QString Name = "[ DEVICE ]") : 
+	DEVICE_INTERFACE(Connection, Name), 
+	NumberDefault(Number),
+	TAG_NAME{Name} { }
+
 	~DeviceGenericControl()
 	{
-
 	};
+	uint16_t NumberDefault = 0;
+
+	void setEnable(bool OnOff, uint16_t Number = 0) override 
+	{
+		//qDebug() << TAG_NAME.toStdString().c_str() << "[ENABLE]" << OnOff << "[NUM DEVICE]" << NUM_DEVICE;
+		if(NumberDefault == 0) setParam(Number,OnOff); else setParam(NumberDefault,OnOff);
+	};
+
+	void setParam (uint16_t CommandID, float    CommandParam) 
+	{
+	  qDebug() << TAG_NAME.toStdString().c_str() << "[ SET PARAM ]" << CommandID << CommandParam << "[NUM_DEVICE]" << NUM_DEVICE;
+      this->Command.DATA.Command = CommandID;
+	  this->Command.DATA.CommandParam.ParamFloat = CommandParam;
+	  this->sendCommand(this->Command);
+	} ;
 
 	QString TAG_NAME{"[ DEVICE_ANY ]"};
 	QString DISPLAY_NAME{"Устройство"};
 };
+//=========================================================
 //=========================================================
 
 
@@ -146,6 +173,14 @@ public:
 						  Command.Command = CoordAim;
         this->sendCommand(Command);
     };
+
+	void setParam (uint16_t CommandID, float    CommandParam) override 
+	{
+						  Command.CommandType = CommandID;
+						  Command.Command.first = CommandParam;
+        this->sendCommand(Command);
+		qDebug() << "[CONTROL AIMING]" << "[SET PARAM]" << CommandID << CommandParam;
+	} ;
 
 	void setEnable(bool OnOff, uint16_t Number = 0) 
 	{

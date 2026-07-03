@@ -150,7 +150,8 @@ void DispatchMessages()
 
     if(!TypeRegister<>::isTypeRegistered(Message.HEADER.MESSAGE_IDENT)) 
     {
-    qDebug() << "MESSAGE NOT REGISTERED:" << Message.HEADER.MESSAGE_IDENT; return;
+    qDebug() << "MESSAGE NOT REGISTERED:" << Message.HEADER.MESSAGE_IDENT; 
+    //return;
     }
     
     if(CallList[Message.HEADER.MESSAGE_IDENT] != nullptr && 
@@ -170,7 +171,7 @@ void DispatchMessages(std::shared_ptr<MessageStorageInterface> Storage)
 
     if(!TypeRegister<>::isTypeRegistered(Message.HEADER.MESSAGE_IDENT)) 
     {
-    qDebug() << "MESSAGE NOT REGISTERED:" << Message.HEADER.MESSAGE_IDENT; return;
+    qDebug() << "MESSAGE NOT REGISTERED:" << Message.HEADER.MESSAGE_IDENT; //return;
     }
     
     if(CallList[Message.HEADER.MESSAGE_IDENT] != nullptr && 
@@ -189,7 +190,7 @@ void DispatchMessages(                MessageStorageInterface& Storage)
 
     if(!TypeRegister<>::isTypeRegistered(Message.HEADER.MESSAGE_IDENT)) 
     {
-    qDebug() << "MESSAGE NOT REGISTERED:" << Message.HEADER.MESSAGE_IDENT; return;
+    qDebug() << "MESSAGE NOT REGISTERED:" << Message.HEADER.MESSAGE_IDENT; //return;
     }
     
     if(CallList[Message.HEADER.MESSAGE_IDENT] != nullptr && 

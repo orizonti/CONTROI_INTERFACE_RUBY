@@ -16,7 +16,7 @@ void WidgetRotaryControl::setType(TypeDraw Type) { TypeWidget = (int)Type; initW
 void WidgetRotaryControl::initWidget()
 {
     pointDirection = mapFromGlobal(QCursor::pos());
-    sizeDrawing = sizeWidget*0.7;
+    sizeDrawing = sizeWidget*0.8;
     pointCenterDrawing = rect().center();
 
     if(TypeWidget == 1)
@@ -92,17 +92,10 @@ void WidgetRotaryControl::updateAngle()
         }
 
         if(TypeWidget == 0)
-        {
-        //angleRotationShiftedDegree = angleRotationDegree - angleRotationNull;
-        //if(angleRotationShiftedDegree > 180) angleRotationShiftedDegree = angleRotationShiftedDegree - 360;
-
-          angleRotationShiftedDegree = angleRotationDegree + 180;
-        }
+          angleRotationShiftedDegree = angleRotationDegree;
 
                             angleRotationDeviceDegree = angleRotationShiftedDegree;
         if(TypeWidget == 1) angleRotationDeviceDegree = angleRotationDegree;
-        //qDebug() << "[ SET ANGLE ROTARY ]" << angleRotationDeviceDegree; 
-
 
         if(ControlRotary) ControlRotary->setParam(ControlChannel, angleRotationDeviceDegree);
         //if(allowSignals ) emit signalStateChanged(angleRotationDegree);
@@ -111,10 +104,11 @@ void WidgetRotaryControl::updateAngle()
         update();  
 }
 
-void WidgetRotaryControl::slotMove()
+void WidgetRotaryControl::slotShift()
 {
                                 angleRotationDegree += stepMove*directionMove;
     angleRotationFutureDegree = angleRotationDegree;
+    qDebug() << "ANGLE ROTATION DEGREE" << angleRotationDegree;
 
             angleRotation = angleRotationDegree*M_PI/180;
       angleRotationFuture = angleRotationDegree*M_PI/180;
@@ -126,18 +120,16 @@ void WidgetRotaryControl::slotMove()
     }
 
     if(TypeWidget == 0)
-    {
-       //angleRotationShiftedDegree = angleRotationDegree - angleRotationNull;
-       angleRotationShiftedDegree = angleRotationDegree + 180;
-    //if(angleRotationShiftedDegree > 180) angleRotationShiftedDegree = angleRotationShiftedDegree - 360;
-    }
+       angleRotationShiftedDegree = angleRotationDegree;
 
                         angleRotationDeviceDegree = angleRotationShiftedDegree;
     if(TypeWidget == 1) angleRotationDeviceDegree = angleRotationDegree;
-    if(ControlRotary) ControlRotary->setParam(ControlChannel, angleRotationDeviceDegree);
-    qDebug() << OutputFilter::Filter(10) << "[ SET ANGLE ROTARY ]" << angleRotationDeviceDegree; 
+}
 
-    update();
+void WidgetRotaryControl::slotMove()
+{
+    slotShift();
+    if(ControlRotary) ControlRotary->setParam(ControlChannel, angleRotationDeviceDegree); update();
 }
 
 void WidgetRotaryControl::calcStep()
@@ -155,9 +147,11 @@ void WidgetRotaryControl::calcStep()
 
 void WidgetRotaryControl::setNull(float Null)
 {
-    //angleRotationNull = Null;
     angleRotationDegree = Null;
+    angleRotationDeviceDegree = Null;
     angleRotation = angleRotationDegree*M_PI/180;
+
+    if(ControlRotary) ControlRotary->setParam(ControlChannel, angleRotationDeviceDegree);
     update();
 }
 
@@ -195,7 +189,7 @@ void WidgetRotaryControl::drawRotation()
     if(TypeWidget == 0) painter.drawEllipse(rectDrawing);
     if(TypeWidget == 1) painter.drawArc(rectDrawing, angleRotationMinDegree*16, angleSpanDegree*16);
 
-    if(TypeWidget == 0) drawObjects(&painter);
+    //if(TypeWidget == 0) drawObjects(&painter);
 
     painter.setPen(pen2);
     painter.drawPie(rectDrawing, angleRotationDegree * 16 - 10*16, 20*16);

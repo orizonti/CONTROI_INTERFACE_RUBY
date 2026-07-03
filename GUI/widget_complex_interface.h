@@ -29,6 +29,7 @@ public:
     WidgetComplexInterface(QWidget* parent = nullptr);
     ~WidgetComplexInterface();
     std::vector<WidgetDeviceControl*> widgetsHidden;
+    std::vector<QPushButton*> buttonsHidden;
 
     WidgetMainControl* widgetMainControl1   = nullptr;
     WidgetMainControl* widgetMainControl2   = nullptr;
@@ -42,12 +43,10 @@ public:
     WidgetDeviceControl* widgetControlRanger    = nullptr;
     WidgetDeviceControl* widgetControlFocusator = nullptr;
 
-    WidgetDeviceControl* widgetControlCamera1 = nullptr;
-    WidgetDeviceControl* widgetControlCamera2 = nullptr;
-    WidgetDeviceControl* widgetControlCamera3 = nullptr;
-    WidgetDeviceControl* widgetControlCamera4 = nullptr;
-
     WidgetDeviceControl* widgetLidControl    = nullptr;
+
+    QPushButton* buttonSwitcher   = nullptr;
+    QPushButton* buttonSwitcher2  = nullptr;
 
     WidgetDeviceControl* widgetControlCamera1Float    = nullptr;
     WidgetDeviceControl* widgetControlCamera2Float    = nullptr;

@@ -12,7 +12,11 @@ class MESSAGE_HEADER_GENERIC
     uint32_t DATA_SIZE  = 1; 
     uint32_t MESSAGE_NUMBER = 0x0; 
 
-                  bool isValid()         { return HEADER == 0x8220; }
+                  bool isValid()         
+                  { 
+                    //qDebug() << "[IS HEADER VALID]" << (HEADER == 0x8220 || HEADER == 0x2082);
+                    return HEADER == 0x8220 || HEADER == 0x2082; 
+                  }
   static constexpr int getHeaderSize()   { return sizeof(MESSAGE_HEADER_GENERIC);};
                    int getMessageSize()  { return sizeof(MESSAGE_HEADER_GENERIC) + DATA_SIZE; }
         static uint8_t getHeaderMarker() { MESSAGE_HEADER_GENERIC MESSAGE; return ((uint8_t*) &(MESSAGE.HEADER))[0]; }

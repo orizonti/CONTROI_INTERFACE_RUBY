@@ -34,7 +34,8 @@ void UDPConnectionEngine::connectTo(QString IPDevice, int Port)
                             Socket->open(QIODevice::ReadWrite); 
                             QObject::connect(Socket,SIGNAL(readyRead()),this,SLOT(slotReadData()));
                           }
-
+    //Socket->readAll();
+    //Socket->flush();
     PortRemote = Port; IPRemote = IPDevice;
     qDebug() << "[ UDP SOCKET SET REMOTE ]" << IPRemote << Port;
 };
@@ -50,7 +51,8 @@ void  UDPConnectionEngine::listenTo(QString IPHost, int Port)
        Socket->open(QIODevice::ReadWrite); 
        Socket->bind(QHostAddress(IPHost), Port); 
        //Socket->bind(QHostAddress::Any, Port); 
-       Socket->flush();
+       //Socket->readAll();
+       //Socket->flush();
 
     if(Socket->isOpen()) 
     {
@@ -91,9 +93,12 @@ UDPConnectionEngine::~UDPConnectionEngine()
 
 void UDPConnectionEngine::slotReadData()
 {
-    //qDebug() << "READ DATA FROM: " << IPRemote << PortRemote;
+ if( Socket == nullptr) return;
+ if(!Socket->isOpen()) return;
+
    if(MessageStorage == nullptr) return;
    if(Socket->bytesAvailable() < MessageStorage->getMinMessageSize() ) return;
+   //qDebug() << OutputFilter::Filter(20) << "READ DATA FROM: " << IPRemote << PortRemote << Socket->bytesAvailable();
 
       auto Datagram = Socket->receiveDatagram();
       DataCounter += Datagram.data().size();
@@ -109,11 +114,15 @@ void UDPConnectionEngine::slotReadData()
 void UDPConnectionEngine::slotSendMessage(const QByteArray& Command, uint16_t Param)
 {
  //qDebug() << OutputFilter::Filter(10) << "SEND COMMAND: " << QString(Command.toHex()) << "SIZE: " << Command.size() << "SOCKET: " << IPRemote << PortRemote;
+ //qDebug() << "SEND COMMAND: " << QString(Command.toHex()) << "SIZE: " << Command.size() << "SOCKET: " << IPRemote << PortRemote;
+ if( Socket == nullptr) return;
+ if(!Socket->isOpen()) return;
  Socket->writeDatagram(Command,QHostAddress(IPRemote),PortRemote); 
 }
 
 void UDPConnectionEngine::slotSendMessage(const char* Command, int size, uint16_t Param)
 {
+    qDebug() << "UDP WRITE";
     Socket->writeDatagram(Command,size,QHostAddress(IPRemote), PortRemote);
 }
 

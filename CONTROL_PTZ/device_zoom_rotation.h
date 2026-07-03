@@ -17,7 +17,7 @@ private:
 public:
     DeviceZoomRotation();
     DeviceZoomRotation(QString user, QString pass, QString ip, QString port, QObject* parent = nullptr);
-    std::vector<float> PositionsZoom{0.7,0.75,0.8,0.85,0.9,0.95,1};
+    std::vector<float> PositionsZoom{0.10,0.70,0.80,0.85,0.90,0.95,0.98};
 
     void connectToDevice(QString user, QString pass, QString ip, QString port);
 

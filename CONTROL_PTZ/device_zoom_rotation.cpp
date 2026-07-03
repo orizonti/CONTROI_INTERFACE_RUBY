@@ -230,6 +230,7 @@ void DeviceZoomRotation::setParam(uint16_t CommandID, float    CommandParam)
     case 1:
     qDebug() << "SET ZOOM: "  << CommandParam;
     slotMovePos(CommandParam);
+    if(this->LinkedControl) LinkedControl->setParam(CommandParam+5,CommandParam);
     break;
 
   }

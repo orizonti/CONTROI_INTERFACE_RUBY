@@ -70,7 +70,7 @@ border: 0px solid line black;
          <property name="spacing">
           <number>2</number>
          </property>
-         <item row="1" column="1">
+         <item row="2" column="1">
           <widget class="QStackedWidget" name="widgetStackedMainControl">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -108,118 +108,27 @@ border-color: green;
            <widget class="QWidget" name="page_6">
             <layout class="QGridLayout" name="gridLayout_5">
              <item row="0" column="0" colspan="2">
-              <layout class="QHBoxLayout" name="horizontalLayout_2">
-               <item>
-                <widget class="WidgetBlockStatus" name="widget_2" native="true">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>30</height>
-                  </size>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="butToMainControl">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>30</height>
-                  </size>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">QPushButton
-{
-	background-color: rgba(209, 192, 34, 60);
-    border: 2px solid line;
-    border-radius: 6px;
-   
-	border-color: rgb(214, 136, 41);
-}
-
-QPushButton:pressed
-{
-    background-color: rgba(209, 142, 34, 110);
-    border: 4px solid line;
-    border-radius: 6px;
-   
-	
-	border-color: rgb(171, 86, 38);
-}</string>
-                 </property>
-                 <property name="text">
-                  <string>Работа</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item row="1" column="0" colspan="2">
               <layout class="QGridLayout" name="layoutControlTable">
                <property name="spacing">
                 <number>2</number>
                </property>
+               <item row="0" column="0">
+                <spacer name="horizontalSpacer">
+                 <property name="orientation">
+                  <enum>Qt::Orientation::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
               </layout>
              </item>
             </layout>
            </widget>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="LabelActiveImage" name="labelCameraZoom">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>400</width>
-             <height>200</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>800</width>
-             <height>400</height>
-            </size>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">QLabel
-{
-  border: 2px solid line;
-	border-color: rgb(231, 164, 60);
-  
-border-radius: 8px;
-
-	background-color: rgba(173, 164, 123, 37);
-}</string>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="pixmap">
-            <pixmap>:/newPrefix/Background.png</pixmap>
-           </property>
-           <property name="scaledContents">
-            <bool>true</bool>
-           </property>
-           <property name="margin">
-            <number>3</number>
-           </property>
           </widget>
          </item>
          <item row="0" column="1">
@@ -267,7 +176,7 @@ border-radius: 8px;
            </property>
           </widget>
          </item>
-         <item row="0" column="0">
+         <item row="2" column="0">
           <widget class="LabelActiveImage" name="labelCameraFast">
            <property name="sizePolicy">
             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
@@ -312,6 +221,51 @@ border-radius: 8px;
            </property>
            <property name="indent">
             <number>-1</number>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="LabelActiveImage" name="labelCameraZoom">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>400</width>
+             <height>200</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>800</width>
+             <height>400</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QLabel
+{
+  border: 2px solid line;
+	border-color: rgb(231, 164, 60);
+  
+border-radius: 8px;
+
+	background-color: rgba(173, 164, 123, 37);
+}</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="pixmap">
+            <pixmap>:/newPrefix/Background.png</pixmap>
+           </property>
+           <property name="scaledContents">
+            <bool>true</bool>
+           </property>
+           <property name="margin">
+            <number>3</number>
            </property>
           </widget>
          </item>
@@ -485,12 +439,6 @@ border-radius: 8px;
    <class>LabelActiveImage</class>
    <extends>QLabel</extends>
    <header location="global">label_active_image.h</header>
-  </customwidget>
-  <customwidget>
-   <class>WidgetBlockStatus</class>
-   <extends>QWidget</extends>
-   <header location="global">widget_block_status.h</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

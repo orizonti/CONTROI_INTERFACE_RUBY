@@ -16,6 +16,13 @@ QString styleToggledButtons{
 "border-radius: 6px;"
 "border-color: rgb(30, 221, 78);}"
 
+"QPushButton::pressed{"
+"background-color: rgba(32, 156, 19, 83);"
+"border: 2px solid line;"
+"border-radius: 6px;"
+"border-color: rgb(30, 221, 78);}"
+
+
 };
 
 QString styleArrowButtons{
@@ -41,12 +48,17 @@ QString styleBaseWidget
 "QPushButton { background-color: rgba(32, 156, 19, 83);"
 "border: 2px solid line;"
 "border-radius: 6px;"
-"border-color: rgb(30, 221, 78); }"
+"border-color: rgb(215, 50, 28); }"
 
 "QPushButton:checked { background-color: rgba(204, 53, 10, 62);"
 "border: 2px solid line;"
 "border-radius: 6px;	"
-"border-color: rgb(215, 50, 28); }"
+"border-color: rgb(30, 221, 78); }"
+
+"QPushButton:pressed { background-color: rgba(204, 53, 10, 62);"
+"border: 2px solid line;"
+"border-radius: 6px;	"
+"border-color: rgb(30, 221, 78); }"
 
 "QLineEdit { background-color: rgba(32, 156, 19, 83);"
 "border: 2px solid line;"
@@ -136,11 +148,11 @@ WidgetDeviceControl::WidgetDeviceControl(QString name, Qt::Orientation orientati
     this->layout()->addWidget(labelName);
     this->layout()->addWidget(labelState);
     this->layout()->addWidget(spinParam);
-    this->layout()->addWidget(groupButtonsLevel);
     this->layout()->addWidget(groupButtonsOnOff);
+    this->layout()->addWidget(groupButtonsLevel);
     this->layout()->addWidget(groupArrows);
 
-    this->layout()->setSpacing(2); this->layout()->setContentsMargins(1,1,1,1);
+    this->layout()->setSpacing(2); this->layout()->setContentsMargins(2,2,2,2);
 
     this->setSizes();
 
@@ -152,15 +164,15 @@ void WidgetDeviceControl::setSizes()
     if(orientationWidget == Qt::Horizontal)
 
     {
-                                                          this->setMinimumWidth(2*minLabelsSize.width());
+                                                                this->setMinimumWidth(2*minLabelsSize.width());
      this->labelName->setMaximumSize(maxLabelsSize); this->labelName->setMinimumWidth(minLabelsSize.width());
     this->labelState->setMaximumSize(maxLabelsSize); this->labelState->setMinimumWidth(minLabelsSize.width());
      this->spinParam->setMaximumSize(maxLabelsSize); this->spinParam->setMinimumWidth(minLabelsSize.width());
 
-     buttonLeft->setMinimumWidth(minButtonsSize.width());  buttonLeft->setMaximumSize(maxButtonsSize);
-    buttonRight->setMinimumWidth(minButtonsSize.width()); buttonRight->setMaximumSize(maxButtonsSize);
-       buttonUp->setMinimumWidth(minButtonsSize.width());    buttonUp->setMaximumSize(maxButtonsSize);
-     buttonDown->setMinimumWidth(minButtonsSize.width());  buttonDown->setMaximumSize(maxButtonsSize);
+     buttonLeft->setMinimumWidth(minArrowsSize.width());  buttonLeft->setMaximumSize(maxArrowsSize);
+    buttonRight->setMinimumWidth(minArrowsSize.width()); buttonRight->setMaximumSize(maxArrowsSize);
+       buttonUp->setMinimumWidth(minArrowsSize.width());    buttonUp->setMaximumSize(maxArrowsSize);
+     buttonDown->setMinimumWidth(minArrowsSize.width());  buttonDown->setMaximumSize(maxArrowsSize);
 
     groupButtonsLevel->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
     groupButtonsOnOff->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
@@ -180,7 +192,7 @@ void WidgetDeviceControl::setSizes()
 
     if(orientationWidget == Qt::Vertical)
     {
-      maxButtonsSize = QSize(60,60);
+      maxButtonsSize = QSize(90,60);
       minButtonsSize = QSize(30,30);
      this->labelName->setMaximumSize(maxButtonsSize);
     this->labelState->setMaximumSize(maxButtonsSize); this->labelState->setMinimumHeight(minLabelsSize.height());
@@ -226,14 +238,14 @@ void WidgetDeviceControl::enableScheme(bool enableState,
     if(!enableLevels) groupButtonsLevel->hide();
     if(!enableOnOff)  groupButtonsOnOff->hide();
     if(!enableArrows) groupArrows->hide();
-
 }
+
 void WidgetDeviceControl::setScheme(int numberLevels, int numberDevice, int schemeArrows) {
 
     for(int n = 0; n < numberLevels; n++)
     {
       buttonsLevel.push_back(new QPushButton(QString("X%1").arg(n))); groupButtonsLevel->layout()->addWidget(buttonsLevel.last());
-      buttonsLevel.last()->setMinimumSize(minButtonsSize); buttonsLevel.last()->setMaximumSize(maxButtonsSize);
+      buttonsLevel.last()->setMinimumSize(minLevelsSize); buttonsLevel.last()->setMaximumSize(maxLevelsSize);
       buttonsLevel.last()->setAutoExclusive(true);
       buttonsLevel.last()->setCheckable(true); 
     }
@@ -257,9 +269,6 @@ void WidgetDeviceControl::setScheme(int numberLevels, int numberDevice, int sche
 
     if(schemeArrows == 2)
     {
-    buttonLeft  = new QPushButton;
-    buttonRight = new QPushButton;
-
     groupArrows->layout()->addWidget(buttonLeft);
     groupArrows->layout()->addWidget(buttonRight);
     }
@@ -269,14 +278,23 @@ void WidgetDeviceControl::setScheme(int numberLevels, int numberDevice, int sche
 
 void WidgetDeviceControl::setButtonsName(QVector<QString> names)
 {
-
-    auto name = names.begin();
-    for(auto button: buttonsOnOff)
-    {
-       button->setText(*name); name++; if(name == names.end()) break;  
-    }
-
+                                                 auto name = names.begin();
+    for(auto button: buttonsOnOff) { button->setText(*name); name++; if(name == names.end()) break;  }
 }
+
+void WidgetDeviceControl::addSpace(int group)
+{
+  auto width = buttonsOnOff.first()->width();
+  auto spacer = new QSpacerItem(100,20,QSizePolicy::Fixed, QSizePolicy::Fixed);
+  ((QHBoxLayout*)groupButtonsOnOff->layout())->addSpacerItem(spacer);
+}
+
+void WidgetDeviceControl::setButtonsMode(QVector<bool> modes)
+{
+                                                 auto mode = modes.begin();
+    for(auto button: buttonsOnOff) { button->setCheckable(*mode); mode++; if(mode == modes.end()) break;  }
+}
+
 void WidgetDeviceControl::setLevelsName(QVector<QString> names)
 {
     auto name = names.begin();
@@ -284,6 +302,12 @@ void WidgetDeviceControl::setLevelsName(QVector<QString> names)
     {
        button->setText(*name); name++; if(name == names.end()) break;  
     }
+}
+void WidgetDeviceControl::setLabelMode(int Mode)
+{
+    labelState->setText("0000.00"); 
+    if(Mode == 2)
+    labelState->setText("0000.00\n0000.00"); 
 }
 
 void WidgetDeviceControl::setName(QString name) { labelName->setText(name); }
@@ -311,12 +335,16 @@ void WidgetDeviceControl::linkSignals()
     {
       connect(button, &QPushButton::toggled, [device, this](bool OnOff) { DeviceLinked->setEnable(OnOff,device); } ); device++;
     }
-      connect(spinParam, &QSpinBox::valueChanged, [this](int Value) { DeviceLinked->setValue(Value); } ); 
 
+      connect(spinParam, &QSpinBox::valueChanged, [this](int Value) { DeviceLinked->setValue(Value); } ); 
     //if(!groupArrows->isVisible()) return;
 
     State = DeviceLinked->getPair(); 
+
+    if(ModeLabel == 2)
     labelState->setText(QString("%1\n%2").arg(State.first).arg(State.second));
+    if(ModeLabel == 1)
+    labelState->setText(QString("%1").arg(State.first));
 
     std::vector<QPair<float,float>> VelsVector;
     float VelocityScale = 0.50;

@@ -63,6 +63,7 @@ class SinkDisplayNode : public QObject
 
             void setFrequency(int Freq) { Frequency = Freq; timerSetImage.setInterval(1000/Freq); };
 	virtual void setImageFrom(SourceImageDisplayInterface* Src) = 0;
+	virtual void setImage(QImage image) = 0;
     void linkToSource(SourceImageDisplayInterface* Src) { SrcNode = Src; };
     
     SourceImageDisplayInterface* GetSource() { return SrcNode;};
@@ -77,7 +78,7 @@ class SinkDisplayNode : public QObject
     { 
         if(SrcNode == nullptr) return;
         if(OnOff) timerSetImage.start(1000/Frequency); else timerSetImage.stop(); 
-        qDebug() << "ACTIVATE RTSP DISPLAY" << OnOff;
+        qDebug() << "[ ACTIVATE RTSP DISPLAY ]" << OnOff;
     }; 
 
     private slots:

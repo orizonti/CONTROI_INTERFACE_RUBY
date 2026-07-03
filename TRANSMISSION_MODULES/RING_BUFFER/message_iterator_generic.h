@@ -4,6 +4,7 @@
 #include <cstring>
 #include <QDebug>
 #include "message_struct_generic.h"
+#include "debug_output_filter.h"
 
 //template<HEADER_GENERIC H> class MessageIteratorGenericBase;
 enum class IteratorMode {Chunked = 0, ChunkedContinous = 1, Continous = 2};
@@ -240,7 +241,7 @@ public:
     MessageIteratorGeneric<H,IteratorMode::Chunked> operator++(int) { this->SwitchToNext(); return* this; };
 	void LoadData(uint8_t* DataSourceBuffer, uint16_t BytesToLoad) override
 	{
-		         //if(!this->GetHeader(DataSourceBuffer).isValid()) return;
+	if(!this->GetHeader(DataSourceBuffer).isValid()) return;
 
 		std::memcpy(this->PtrDataEnd,DataSourceBuffer, BytesToLoad); 
 					this->PtrDataEnd += BytesToLoad; 
@@ -351,11 +352,22 @@ public:
 	void LoadData(uint8_t* DataSourceBuffer, uint16_t BytesToLoad) override
 	{
 
-	std::memcpy(this->PtrDataEnd,DataSourceBuffer,BytesToLoad); this->PtrDataEnd += BytesToLoad;
+	if(BytesToLoad > 5*24) { qDebug() << "[BUFFER]" << "[ TOO HIGH BYTES TO LOAD ]" << BytesToLoad; return; }
 
+	std::memcpy(this->PtrDataEnd,DataSourceBuffer,BytesToLoad); this->PtrDataEnd += BytesToLoad;
 	    //===================================================================
         //PARSE MESSAGES
-			  HeaderCurrent = this->GetHeaderPtr();                  BytesToLoad  = this->PtrDataEnd - this->PtrMessageBegin;
+		HeaderCurrent = this->GetHeaderPtr();                  BytesToLoad  = this->PtrDataEnd - this->PtrMessageBegin;
+
+		if(!HeaderCurrent->isValid()) 
+		{
+		qDebug() << "[BUFFER]" << "[ HEADER IS NOT VALID RESET ]" << QByteArray((char*)this->PtrMessageBegin,12).toHex();
+		this->ResetIterator();
+		this->MessageNumber = 0;   
+		this->PtrDataEnd = this->PtrBufferBegin;
+		return;
+		}
+
 		while(HeaderCurrent->isValid() && HeaderCurrent->getMessageSize() <= BytesToLoad)
 		{
 			this->MessageNumber++;          this->PtrMessageBegin += HeaderCurrent->getMessageSize(); 
@@ -363,8 +375,8 @@ public:
 
 			  HeaderCurrent = this->GetHeaderPtr();                  BytesToLoad  = this->PtrDataEnd - this->PtrMessageBegin;
 
+
 		}
-	    //===================================================================
 
 	    //===================================================================
 		//MOVE AVAILABLE DATA TO BEGIN IF BUFFER AT END

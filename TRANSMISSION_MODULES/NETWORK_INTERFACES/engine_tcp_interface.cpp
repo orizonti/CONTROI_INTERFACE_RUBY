@@ -31,6 +31,7 @@ void TCPConnectionEngine::connectTo(QString address, int Port)
 
 void TCPConnectionEngine::slotReadData()
 {
+   if(Socket == nullptr) return;
    if(!MessageStorage) return;
    if(Socket->bytesAvailable() < MessageStorage->getMinMessageSize()) return;
 
@@ -134,16 +135,17 @@ void TCPConnectionEngine::slotCheckConnection() { }
 
 void TCPConnectionEngine::slotAcceptConnection()
 {
+  qDebug() << "[ TCP ACCEPT CONNECTION DEVICE ]";
   Socket = Server->nextPendingConnection();
   connect(Socket, SIGNAL(readyRead()), this, SLOT(slotReadData()),Qt::QueuedConnection);
   disconnect(Server, SIGNAL(newConnection()), this, SLOT(slotAcceptConnection()));
 
-  qDebug() << "ACCEPT CONNECTION DEVICE: " << Socket->peerAddress();
+  qDebug() << "[ ACCEPT CONNECTION DEVICE ]" << Socket->peerAddress();
 }
 
 void TCPConnectionEngine::slotConnectedToHost()
 {
-    emit signalDeviceConnected(); qDebug() << "CONNECTED TO HOST: " << IPRemote << PortRemote; 
+    emit signalDeviceConnected(); qDebug() << "[TCP CONNECTION]" << "[ CONNECTED TO HOST ]" << IPRemote << PortRemote; 
 }
 
 bool TCPConnectionEngine::isMessageAvailable() { return MessageStorage->isMessageAvailable(); }
